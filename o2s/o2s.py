@@ -85,12 +85,32 @@ def on_cmd(mosq, userdata, msg):
     save_rawdata(msg.topic, msg.topic)
     watcher(mosq, msg.topic, msg.topic)
 
+def device_name(topic, subtopic=None):
+    ''' find base topic name from topic and subtopic. E.g. if
+        topic == 'owntracks/gw/JP/start' and subtopic == '/start'
+        return 'owntracks/gw/JP'
+        '''
+
+    device = topic
+    if subtopic is not None:
+        if device.endswith(subtopic):
+            device = device[:-len(subtopic)]
+    return device
+
+def rkey(prefix, topic, subtopic=None):
+    ''' construct a Redis key '''
+
+    return "%s:%s" % (prefix, device_name(topic, subtopic))
+
 def on_status(mosq, userdata, msg):
     if msg.retain == 1 or len(msg.payload) < 0:
         return
 
     save_rawdata(msg.topic, msg.payload)
     watcher(mosq, msg.topic, msg.payload)
+
+    if redis:
+        redis.hmset(rkey("t", msg.topic, "/status"), dict(status=msg.payload))
 
 def on_voltage(mosq, userdata, msg):
     if msg.retain == 1 or len(msg.payload) < 0:
@@ -119,21 +139,17 @@ def on_start(mosq, userdata, msg):
     save_rawdata(msg.topic, msg.payload)
     watcher(mosq, msg.topic, msg.payload)
 
-    device = str(msg.topic)
-    if device.endswith("/start"):
-        device = device[:-len("/start")]
-
     imei, version, tstamp = msg.payload.split(' ')
 
     if redis:
-        redis.hmset("t:" + device, {
+        redis.hmset(rkey("t", msg.topic, "/start"), {
                         'imei' : imei,
                         'version' : version,
                         'tstamp' : tstamp,
                         })
 
         # Register IMEI for lookups in otap.jad
-        print redis.set("imei:" + imei, "t:" + device)
+        print redis.set("imei:" + imei, "t:" + device_name(msg.topic, "/start"))
 
 
 
