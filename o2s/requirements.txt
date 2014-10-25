@@ -1,5 +1,4 @@
 python-geohash
 redis
 paho-mqtt
-json
 peewee
