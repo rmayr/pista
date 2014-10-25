@@ -9,6 +9,8 @@ def alarmplugin(topic, item, mosq):
 
     lat = item['lat']
     lon = item['lon']
+
+    print item
     
     # use lat, lon and do something
 

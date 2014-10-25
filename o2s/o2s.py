@@ -163,6 +163,17 @@ def on_alarm(mosq, userdata, msg):
     if item is None or type(item) != dict:
         return
 
+    item['addr'] = 'unknown location'
+    try:
+        g = geo.rev(item.get('lat'), item.get('lon'), api='google')
+        if g is not None:
+            item['ghash'] = g.get('ghash')
+            item['cc']    = g.get('cc', None)
+            if 'addr' in g:
+                item['addr'] = g.get('addr')
+    except:
+        pass
+
     watcher(mosq, msg.topic, item)
     if alarm_plugin is not None:
         try:
