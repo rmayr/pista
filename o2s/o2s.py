@@ -52,8 +52,14 @@ def on_connect(mosq, userdata, rc):
     for t in base_topics:
         mqttc.subscribe("%s/+" % t, 0)
         mqttc.subscribe("%s/+/waypoints" % t, 0)
-        mqttc.subscribe("%s/+/operators" % t, 0)
+        if cf.g('features', 'plmn', False) == True:
+            mqttc.subscribe("%s/+/operators" % t, 0)
+            mqttc.subscribe("%s/+/operators/+" % t, 0)
         mqttc.subscribe("%s/+/cmd/#" % t, 0)
+        mqttc.subscribe("%s/+/alarm" % t, 0)
+        mqttc.subscribe("%s/+/status" % t, 0)
+        mqttc.subscribe("%s/+/voltage/+" % t, 0)
+        mqttc.subscribe("%s/+/gpio/+" % t, 0)
 
 def on_disconnect(mosq, userdata, rc):
     reasons = {
@@ -67,15 +73,50 @@ def on_disconnect(mosq, userdata, rc):
     print "Disconnected: code=%s (%s)" % (rc, reasons.get(rc, 'unknown'))
 
 def on_cmd(mosq, userdata, msg):
-    if msg.retain == 1:
+    if msg.retain == 1 or len(msg.payload) < 0:
         return
-    topic = msg.topic
-    payload = str(msg.payload)
 
-    print "***** ", payload
+    save_rawdata(msg.topic, msg.topic)
+    watcher(mosq, msg.topic, msg.topic)
 
-    save_rawdata(topic, payload)
-    watcher(mosq, topic, payload)
+def on_status(mosq, userdata, msg):
+    if msg.retain == 1 or len(msg.payload) < 0:
+        return
+
+    save_rawdata(msg.topic, msg.topic)
+    watcher(mosq, msg.topic, msg.topic)
+
+def on_voltage(mosq, userdata, msg):
+    if msg.retain == 1 or len(msg.payload) < 0:
+        return
+
+    print "VOLTAGE ", msg.payload
+
+    save_rawdata(msg.topic, msg.payload)
+    watcher(mosq, msg.topic, msg.payload)
+
+def on_alarm(mosq, userdata, msg):
+    if msg.retain == 1 or len(msg.payload) < 0:
+        return
+
+    print "ALARM ", msg.payload
+
+    save_rawdata(msg.topic, msg.payload)
+    watcher(mosq, msg.topic, msg.payload)
+
+def on_gpio(mosq, userdata, msg):
+    if msg.retain == 1 or len(msg.payload) < 0:
+        return
+
+    print "GPIO ", msg.payload
+
+    save_rawdata(msg.topic, msg.payload)
+    watcher(mosq, msg.topic, msg.payload)
+
+def on_operator_watch(mosq, userdata, msg):
+    if msg.retain == 1 or len(msg.payload) < 0:
+        return
+    watcher(mosq, msg.topic, msg.payload)
 
 def on_operator(mosq, userdata, msg):
 
@@ -132,14 +173,12 @@ def on_operator(mosq, userdata, msg):
             try:
                 c = mobile_codes.mcc_mnc(mcc, mnc)
                 s = "%s (%s)" % (str(c.brand), str(cc))
-                print code, s
                 mosq.publish(topic + "/" + code, s, qos=0, retain=False)
             except:
                 s = "not found"
-                print code, s
                 mosq.publish(topic + "/" + code, s, qos=0, retain=False)
     except Exception, e:
-        print "Cannot split operators in ", str(e)
+        print "Cannot handle operators", str(e)
 
 def payload2location(topic, payload):
 
@@ -198,16 +237,12 @@ def watcher(mosq, topic, data):
     time_format = "%d.%m %H:%M:%S"
     tstamp = datetime.datetime.fromtimestamp(int(time.time())).strftime(time_format)
 
-    fmt = u"%-14s %-30s %s"
+    fmt = u"%-14s %-32s %s"
 
     if type(data) is not dict:
         s = fmt % (tstamp, topic, data)
-        mosq.publish(watcher_topic, s, qos=0, retain=False)
-        return
-
-    if type(data) is not dict:
-        s = fmt % (tstamp, topic, payload)
-        mosq.publish(watcher_topic, s, qos=0, retain=False)
+        bb = bytearray(s.encode('utf-8'))
+        mosq.publish(watcher_topic, bb, qos=0, retain=False)
         return
 
     time_str = None
@@ -381,7 +416,13 @@ except Exception, e:
 
 for t in base_topics:
     mqttc.message_callback_add("%s/+/operators" % t, on_operator)
+    if cf.g('features', 'plmn', False) == True:
+        mqttc.message_callback_add("%s/+/operators/+" % t, on_operator_watch)
     mqttc.message_callback_add("%s/+/cmd/#" % t, on_cmd)
+    mqttc.message_callback_add("%s/+/status" % t, on_status)
+    mqttc.message_callback_add("%s/+/voltage/+" % t, on_voltage)
+    mqttc.message_callback_add("%s/+/gpio/+" % t, on_voltage)
+    mqttc.message_callback_add("%s/+/alarm" % t, on_alarm)
 
 
 # FIXME: I must keep record of ../status up/down and their times

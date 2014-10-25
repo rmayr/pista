@@ -8,7 +8,6 @@ from dbschema import Geo, sql_db
 
 class RevGeo(object):
     def __init__(self, conf, host='localhost', port=8081):
-        print conf
         self.enabled = conf.get('enabled', False)
         self.host = host
         self.port = port
