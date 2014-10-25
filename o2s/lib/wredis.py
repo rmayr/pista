@@ -56,3 +56,9 @@ class Wredis(object):
 
     def hgetall(self, key=None):
         return self._request(self.r.hgetall, key)
+
+    def lpush(self, key, val):
+        return self._request(self.r.lpush, key, val)
+
+    def ltrim(self, key, n, m):
+        return self._request(self.r.ltrim, key, n, m)

@@ -46,3 +46,31 @@ u23qhh
 ```
 
 See [geohash.org](http://geohash.org).
+
+
+#### Redis
+
+```
+redis 127.0.0.1:6379> keys *X1*
+1) "driving:X1"
+2) "lastloc:X1"
+3) "t:owntracks/gw/X1"
+4) "vbatt:owntracks/gw/X1"
+5) "vext:owntracks/gw/X1"
+redis 127.0.0.1:6379> hgetall driving:X1
+1) "tid"
+2) "X1"
+3) "tst"
+4) "1414238743"
+5) "vel"
+6) "91"
+7) "trip"
+8) "306878"
+redis 127.0.0.1:6379> hgetall lastloc:X1
+1) "lat"
+2) "46.70984"
+3) "tst"
+4) "1414238743"
+5) "lon"
+6) "8.607769"
+```

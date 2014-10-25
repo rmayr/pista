@@ -22,6 +22,8 @@ import imp
 cf = conf(os.getenv('WAPPCONFIG', 'o2s.conf'))
 
 SEEN_DRIVING = 1200
+MAX_VOLTAGES = 10
+LASTLOC_EXPIRY = 3600
 
 geo = RevGeo(cf.config('revgeo'))
 redis = None
@@ -126,10 +128,30 @@ def on_voltage(mosq, userdata, msg):
     if msg.retain == 1 or len(msg.payload) < 0:
         return
 
-    print "VOLTAGE ", msg.payload
-
     save_rawdata(msg.topic, msg.payload)
     watcher(mosq, msg.topic, msg.payload)
+
+    if redis is None:
+        return
+
+    device = msg.topic
+    payload = msg.payload
+
+    if device.endswith('/voltage/batt'):
+        voltage = 'batt'
+        device = device[:-len("/voltage/batt")]
+        redis.hmset("t:" + device, dict(vbatt=payload))
+
+        redis.lpush("vbatt:" + device, payload)
+        redis.ltrim("vbatt:" + device, 0, MAX_VOLTAGES)
+    else:
+        voltage = 'ext'
+        device = device[:-len("/voltage/ext")]
+        redis.hmset("t:" + device, dict(vext=payload))
+
+        redis.lpush("vext:" + device, payload)
+        redis.ltrim("vext:" + device, 0, MAX_VOLTAGES)
+
 
 def on_alarm(mosq, userdata, msg):
     if msg.retain == 1 or len(msg.payload) < 0:
@@ -449,6 +471,16 @@ def on_message(mosq, userdata, msg):
                                         'vel'  : vel,
                                       }, SEEN_DRIVING)
 
+
+    # Set position key in Redis to drive a map
+    if redis:
+        redis.hmset("lastloc:" + tid, {
+                                    'lat' : lat,
+                                    'lon' : lon,
+                                    'tst' : orig_tst,
+                                    }, LASTLOC_EXPIRY)
+
+
     # FIXME: handle geofence events (see https://github.com/owntracks/gw/issues/73 )
 
     eventdata = {
@@ -470,7 +502,8 @@ mqttc.on_message = on_message
 mqttc.on_connect = on_connect
 mqttc.on_disconnect = on_disconnect
 
-mqttc.username_pw_set(m.get('username'), m.get('password'))
+if m.get('username') is not None:
+    mqttc.username_pw_set(m.get('username'), m.get('password'))
 
 if m.get('ca_certs') is not None:   # use TLS
     tls_version = m.get('tls_version', 'tlsv1')
