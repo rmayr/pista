@@ -2,12 +2,13 @@
 import redis
 
 class Wredis(object):
-    def __init__(self, enabled=0, host='localhost', port=6379, db=0, unixsocket=None):
-        self.enabled = enabled
-        self.host = host
-        self.port = port
-        self.db = db
-        self.unixsocket = unixsocket
+    def __init__(self, conf):
+        self.enabled = conf.get('enabled', False)
+        self.host = conf.get('host')
+        self.port = conf.get('port')
+        self.db = conf.get('db')
+        self.unixsocket = conf.get('unix_socket_path')
+
 
         self._reconnect()
 
