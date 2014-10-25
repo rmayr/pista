@@ -17,6 +17,7 @@ import mobile_codes
 from dbschema import Location, Waypoint, RAWdata, Operators, sql_db
 import io
 import csv
+import imp
 
 cf = conf(os.getenv('WAPPCONFIG', 'o2s.conf'))
 
@@ -28,6 +29,15 @@ if cf.g('features', 'redis', False) == True:
     redis = Wredis(cf.config('redis'))
 
 base_topics = []
+
+alarm_plugin = None
+if cf.g('features', 'alarm') is not None:
+    try:
+        alarm_plugin = imp.load_source('alarmplugin', cf.g('features', 'alarm'))
+    except Exception, e:
+        # logging.info("Can't import storage_plugin %s: %s" % (storage_plugin, e))
+        print e
+        sys.exit(2)
 
 if sys.version < '3':
     import codecs
@@ -82,8 +92,8 @@ def on_cmd(mosq, userdata, msg):
     if msg.retain == 1 or len(msg.payload) < 0:
         return
 
-    save_rawdata(msg.topic, msg.topic)
-    watcher(mosq, msg.topic, msg.topic)
+    save_rawdata(msg.topic, msg.payload)
+    watcher(mosq, msg.topic, msg.payload)
 
 def device_name(topic, subtopic=None):
     ''' find base topic name from topic and subtopic. E.g. if
@@ -125,10 +135,20 @@ def on_alarm(mosq, userdata, msg):
     if msg.retain == 1 or len(msg.payload) < 0:
         return
 
-    print "ALARM ", msg.payload
-
     save_rawdata(msg.topic, msg.payload)
-    watcher(mosq, msg.topic, msg.payload)
+
+    item = payload2location(msg.topic, msg.payload)
+    if item is None or type(item) != dict:
+        return
+
+    watcher(mosq, msg.topic, item)
+    if alarm_plugin is not None:
+        try:
+            alarm_plugin.alarmplugin(msg.topic, item, mosq)
+        except Exception, e:
+            print "NOPLUG ", e
+            # logging.info("storage_plugin %s: %s" % (storage_plugin, e))
+
 
 def on_start(mosq, userdata, msg):
     if msg.retain == 1 or len(msg.payload) < 0:

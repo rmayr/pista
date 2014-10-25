@@ -33,6 +33,11 @@ redis = True
 
 rawdata = True
 
+# If alarm is not None, it contains the path to a Python plugin which
+# will fire when an alarm is detecte.
+
+alarm = "alarmhelper.py"
+
 # Defines a list of which trigger types (`t') should *not* be persisted to
 # the database. This is a Python list.
 
