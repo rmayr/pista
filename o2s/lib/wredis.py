@@ -1,4 +1,7 @@
 
+__author__    = 'Jan-Piet Mens <jpmens()gmail.com>'
+__copyright__ = 'Copyright 2014 Jan-Piet Mens'
+
 import redis
 
 class Wredis(object):
@@ -38,8 +41,12 @@ class Wredis(object):
     def get(self, key=None):
         return self._request(self.r.get, key)
 
-    def hmset(self, key=None, arg=None):
-        return self._request(self.r.hmset, key, arg)
+    def hmset(self, key=None, arg=None, expire=None):
+        pipe = self.r.pipeline()
+        pipe.hmset(key, arg)
+        if expire:
+            pipe.expire(key, expire)
+        pipe.execute()
 
     def hget(self, key=None, field=None):
         return self._request(self.r.hget, key, field)
