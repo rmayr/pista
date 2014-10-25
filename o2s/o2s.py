@@ -191,7 +191,7 @@ def on_start(mosq, userdata, msg):
                         })
 
         # Register IMEI for lookups in otap.jad
-        print redis.set("imei:" + imei, "t:" + device_name(msg.topic, "/start"))
+        redis.set("imei:" + imei, "t:" + device_name(msg.topic, "/start"))
 
 
 
@@ -479,6 +479,10 @@ def on_message(mosq, userdata, msg):
                                     'lon' : lon,
                                     'tst' : orig_tst,
                                     }, LASTLOC_EXPIRY)
+
+    # Record number of PUBs as metric
+    if redis:
+        redis.hincrby(rkey("t", msg.topic), "npubs", 1)
 
 
     # FIXME: handle geofence events (see https://github.com/owntracks/gw/issues/73 )

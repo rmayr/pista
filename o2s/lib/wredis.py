@@ -62,3 +62,9 @@ class Wredis(object):
 
     def ltrim(self, key, n, m):
         return self._request(self.r.ltrim, key, n, m)
+
+    def incr(self, key):
+        return self._request(self.r.incr, key)
+
+    def hincrby(self, key, field, increment):
+        return self._request(self.r.hincrby, key, field, increment)
