@@ -20,8 +20,13 @@ import csv
 
 cf = conf(os.getenv('WAPPCONFIG', 'o2s.conf'))
 
+SEEN_DRIVING = 1200
 
 geo = RevGeo(cf.config('revgeo'))
+redis = None
+if cf.g('features', 'redis', False) == True:
+    redis = Wredis(cf.config('redis'))
+
 base_topics = []
 
 if sys.version < '3':
@@ -57,6 +62,7 @@ def on_connect(mosq, userdata, rc):
             mqttc.subscribe("%s/+/operators/+" % t, 0)
         mqttc.subscribe("%s/+/cmd/#" % t, 0)
         mqttc.subscribe("%s/+/alarm" % t, 0)
+        mqttc.subscribe("%s/+/start" % t, 0)
         mqttc.subscribe("%s/+/status" % t, 0)
         mqttc.subscribe("%s/+/voltage/+" % t, 0)
         mqttc.subscribe("%s/+/gpio/+" % t, 0)
@@ -83,8 +89,8 @@ def on_status(mosq, userdata, msg):
     if msg.retain == 1 or len(msg.payload) < 0:
         return
 
-    save_rawdata(msg.topic, msg.topic)
-    watcher(mosq, msg.topic, msg.topic)
+    save_rawdata(msg.topic, msg.payload)
+    watcher(mosq, msg.topic, msg.payload)
 
 def on_voltage(mosq, userdata, msg):
     if msg.retain == 1 or len(msg.payload) < 0:
@@ -103,6 +109,34 @@ def on_alarm(mosq, userdata, msg):
 
     save_rawdata(msg.topic, msg.payload)
     watcher(mosq, msg.topic, msg.payload)
+
+def on_start(mosq, userdata, msg):
+    if msg.retain == 1 or len(msg.payload) < 0:
+        return
+
+    print "STARTUP ", msg.payload
+
+    save_rawdata(msg.topic, msg.payload)
+    watcher(mosq, msg.topic, msg.payload)
+
+    device = str(msg.topic)
+    if device.endswith("/start"):
+        device = device[:-len("/start")]
+
+    imei, version, tstamp = msg.payload.split(' ')
+
+    if redis:
+        redis.hmset("t:" + device, {
+                        'imei' : imei,
+                        'version' : version,
+                        'tstamp' : tstamp,
+                        })
+
+        # Register IMEI for lookups in otap.jad
+        print redis.set("imei:" + imei, "t:" + device)
+
+
+
 
 def on_gpio(mosq, userdata, msg):
     if msg.retain == 1 or len(msg.payload) < 0:
@@ -303,11 +337,13 @@ def on_message(mosq, userdata, msg):
         print str(e)
 
 
+    tid = item.get('tid')
     tst = item.get('tst', int(time.time()))
     lat = item.get('lat')
     lon = item.get('lon')
+    trip = item.get('trip', 0)
+    dist = item.get('dist', 0)
     vel = item.get('vel', 0)
-    tid = item.get('tid')
 
 
     t_ignore = cf.g('features', 't_store', [ 'p' ])
@@ -368,6 +404,14 @@ def on_message(mosq, userdata, msg):
     item['tst'] = orig_tst
     watcher(mosq, topic, item)
 
+    # If this is a 'driving' report, add a key to Redis with expiry
+    if redis and item.get('t') == 't':
+        redis.hmset("driving:" + tid, {
+                                        'tid'  : tid,
+                                        'tst'  : tst,
+                                        'trip' : trip,
+                                        'vel'  : vel,
+                                      }, SEEN_DRIVING)
 
     # FIXME: handle geofence events (see https://github.com/owntracks/gw/issues/73 )
 
@@ -423,6 +467,7 @@ for t in base_topics:
     mqttc.message_callback_add("%s/+/voltage/+" % t, on_voltage)
     mqttc.message_callback_add("%s/+/gpio/+" % t, on_voltage)
     mqttc.message_callback_add("%s/+/alarm" % t, on_alarm)
+    mqttc.message_callback_add("%s/+/start" % t, on_start)
 
 
 # FIXME: I must keep record of ../status up/down and their times

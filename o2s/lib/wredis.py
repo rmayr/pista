@@ -38,6 +38,9 @@ class Wredis(object):
         except:
             return None
 
+    def set(self, key, arg):
+        return self._request(self.r.set, key, arg)
+
     def get(self, key=None):
         return self._request(self.r.get, key)
 
