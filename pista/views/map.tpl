@@ -18,7 +18,6 @@
     <script src="map/mapfuncs.js"></script>
     <script src="map/mqttfuncs.js"></script>
 
-FIXME
 <a href="#" id="mqttstatus-details">No connection made yet.</a>
 
     
