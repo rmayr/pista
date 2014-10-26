@@ -431,6 +431,11 @@ def get_geoJSON():
     to_date = data.get('todate')
     spacing = int(data.get('spacing', POINT_KM))
 
+    if from_date is None or from_date == "":
+        from_date = time.strftime("%Y-%m-%d")
+    if to_date is None or to_date == "":
+        to_date = time.strftime("%Y-%m-%d")
+
     track = getDBdata(username, device, from_date, to_date, spacing)
 
     last_point = [None, None]
