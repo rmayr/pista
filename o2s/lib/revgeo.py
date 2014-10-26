@@ -14,8 +14,6 @@ class RevGeo(object):
         self.hashlen = conf.get('ghashlen', 5)
         self.storage = conf.get('storage')
 
-        print "GEOGEO ", self.storage
-
     def rev(self, lat, lon, api='geonames'):
         if not self.enabled:
             return None

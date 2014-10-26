@@ -458,7 +458,8 @@ def on_message(mosq, userdata, msg):
         return
 
     item['ghash'] = None
-    item['cc'] = None
+    item['cc']    = None
+    item['addr']  = None
     event_desc = "(%s, %s)" % (lat, lon)
     g = geo.rev(lat, lon, api='google')
     if g is not None:
@@ -504,7 +505,13 @@ def on_message(mosq, userdata, msg):
     # Record number of PUBs as metric
     if redis:
         redis.hincrby(rkey("t", msg.topic), "npubs", 1)
-        redis.hmset(rkey("t", msg.topic), dict(tid=tid))
+        redis.hmset(rkey("t", msg.topic), {
+                        'tid'       : tid,
+                        'cc'        : item.get('cc'),
+                        'addr'      : item.get('addr'),
+                        'lat'       : lat,
+                        'lon'       : lon,
+            })
 
 
     # FIXME: handle geofence events (see https://github.com/owntracks/gw/issues/73 )
