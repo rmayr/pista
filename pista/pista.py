@@ -24,6 +24,7 @@ from xml.etree import ElementTree as ET
 from ElementTree_pretty import prettify
 from cf import conf
 from dbschema import Location, Waypoint, Geo, fn, sql_db, JOIN_LEFT_OUTER
+import time
 
 cf = conf(os.getenv('PISTACONFIG', 'pista.conf'))
 
@@ -58,6 +59,11 @@ def track_length(track):
 def getDBdata(username, device, from_date, to_date, spacing):
 
     track = []
+
+    if from_date == 'NaN-NaN-NaN':
+        from_date = time.strftime("%Y-%m-%d")
+    if to_date == 'NaN-NaN-NaN':
+        to_date = time.strftime("%Y-%m-%d")
 
     to_date = "%s 23:59:59" % to_date
     print "FROM=%s, TO=%s" % (from_date, to_date)
