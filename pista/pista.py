@@ -178,8 +178,38 @@ def page_map():
     return template('map')
 
 @app.route('/hw')
-def page_console():
-    return template('hw')
+def page_hw():
+
+    device_list = []
+
+    # Find all devices in Redis and extract their info into a list
+    # of objects. Ensure values of hash keys are None if unset or
+    # the template will bail out.
+
+    for device in redis.keys("t:*"):
+        data = redis.hgetall(device)
+        tid     = data.get('tid', None)
+        imei    = data.get('imei', None)
+        version = data.get('version', None)
+        tstamp  = data.get('tstamp', None)
+
+        if tid is not None and imei is not None and version is not None and tstamp is not None:
+
+            device_list.append({
+                    'tid'       : tid,
+                    'status'    : int(data.get('status', -1)),
+                    'imei'      : imei,
+                    'version'   : version,
+                    'tstamp'    : tstamp,
+                    'npubs'     : data.get('npubs', None),
+                    'topic'     : device[2:],
+                })
+
+    params = {
+            'devices' : device_list,
+    }
+
+    return template('hw', params)
 
 @app.route('/status')
 def page_console():
@@ -264,30 +294,6 @@ def users():
         userlist.append(user)
 
     return dict(userlist=userlist)
-
-@app.route("/api/flotbatt/<voltage>", method="GET")
-def flotbatt(voltage):
-
-    flot = {
-        'label' : 'Batt',
-    }
-
-    sdict = None # FIXME PersistentDict('p/status.json', 'r', format='json')  #FIXME: configurable path
-
-    battlevels = []
-
-    for dev in sdict:
-        level = 0
-        try:
-            level = sdict[dev]['batt'][0]
-        except:
-            pass
-        battlevels.append([ sdict[dev]['tid'], level ])
-
-    flot['data'] = battlevels
-
-    return flot
-
 
 
 # ?userdev=alx%7Cy300&fromdate=2014-08-19&todate=2014-08-20&format=tx
@@ -546,6 +552,32 @@ def onevehicle(tid):
 
     response.content_type = 'text/plain; charset: UTF-8'
     return template('onevehicle', params)
+
+@app.route("/api/flotbatt/<voltage>", method="GET")
+def flotbatt(voltage):
+
+
+    battlevels = []
+
+    # Find all devices in Redis and add their vbatt into a list
+
+    for device in redis.keys("t:*"):
+        data = redis.hgetall(device)
+
+        tid = data.get('tid')
+        vbatt = data.get('vbatt')
+
+        if tid is not None and vbatt is not None:
+            vbatt = float(vbatt)
+
+            battlevels.append( [tid, vbatt] )
+
+    flot = {
+        'label' : 'Batt',
+        'data'  : battlevels,
+    }
+
+    return flot
 
 
 @app.route('/<filename:re:.*\.js>')

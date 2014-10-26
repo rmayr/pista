@@ -67,31 +67,23 @@
 <table class='table table-striped table-condensed'>
 <thead>
   <tr>
-  	<th>Topic</th>
 	<th>TID</th>
 	<th>IMEI</th>
 	<th>Version</th>
 	<th>Startup</th>
-	<th>Batt</th>
-	<th>Ext</th>
+	<th>nPUBs</th>
     </tr>
   </thead>
 <tbody>
 
-% import json
-% sdict = json.load(open('p/status.json')) #FIXME: filename? configurable?
-% for dev in sdict:
-%    d = sdict[dev]
-%    vbatt = ", ".join(map(str, d.get('batt', [0, 0, 0, 0])))
-%    vext  = ", ".join(map(str, d.get('ext', [0, 0, 0, 0])))
+
+% for d in devices:
      <tr>
-        <td>{{dev}}</td>
-	<td>{{ d.get('tid', dev[-2:]) }}</td>
-	<td>{{ d.get('imei', '') }}</td>
-     	<td>{{ d.get('version', '') }}</td>
-     	<td>{{ d.get('tstamp', '') }}</td>
-	<td><span class='inlinebar'>{{ vbatt }}</span></td>
-	<td><span class='inlinebar'>{{ vext }}</span></td>
+        <td><acronym title="{{ d.get('topic') }}">{{ d.get('tid') }}</acronym></td>
+        <td>{{ d.get('imei') }}</td>
+        <td>{{ d.get('version') }}</td>
+        <td>{{ d.get('tstamp') }}</td>
+        <td>{{ d.get('npubs') }}</td>
        </tr>
 % end
 

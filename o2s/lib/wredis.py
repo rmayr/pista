@@ -68,3 +68,6 @@ class Wredis(object):
 
     def hincrby(self, key, field, increment):
         return self._request(self.r.hincrby, key, field, increment)
+
+    def keys(self, pattern):
+        return self._request(self.r.keys, pattern)

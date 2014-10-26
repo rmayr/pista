@@ -498,6 +498,7 @@ def on_message(mosq, userdata, msg):
     # Record number of PUBs as metric
     if redis:
         redis.hincrby(rkey("t", msg.topic), "npubs", 1)
+        redis.hmset(rkey("t", msg.topic), dict(tid=tid))
 
 
     # FIXME: handle geofence events (see https://github.com/owntracks/gw/issues/73 )
