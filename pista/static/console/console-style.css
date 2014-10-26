@@ -8,7 +8,7 @@ body {
 	padding-top: 50px;
 }
 
-ul {
+ul#ws {
 	list-style-type: none;
 	font-family: Courier New, Courier, monospace;
 	margin: 0;
