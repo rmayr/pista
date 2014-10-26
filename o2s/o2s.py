@@ -27,6 +27,7 @@ LASTLOC_EXPIRY = 3600
 
 storage = cf.g('features', 'storage', 'True')
 maptopic = None
+devices = {}
 
 geo = RevGeo(cf.config('revgeo'), storage=storage)
 redis = None
@@ -117,12 +118,54 @@ def rkey(prefix, topic, subtopic=None):
 
     return "%s:%s" % (prefix, device_name(topic, subtopic))
 
+def push_map(mosq, device, device_data):
+    ''' device is the original topic to which an update was published.
+        device_data contains all we currently know of this device. If the
+        data doesn't have a TID, do not publish as this means the object
+        isn't yet complete, i.e. we don't yet know its position.
+    '''
+
+    if 'tid' not in device_data:
+        print "Object %s not yet complete." % device
+        return
+
+    try:
+        payload = json.dumps(device_data, sort_keys=True, separators=(',',':'))
+    except Exception, e:
+        print "Cannot JSON ", str(e)
+        return
+
+    topic = maptopic
+    if topic.endswith('/'):
+        topic = topic + device
+    else:
+        topic = topic + "/" + device
+
+    mosq.publish(topic, payload, qos=0, retain=False)
+
 def on_status(mosq, userdata, msg):
     if msg.retain == 1 or len(msg.payload) < 0:
         return
 
+    device = str(msg.topic)
+    if device.endswith('/status'):
+        device = device[:-7]
+
     save_rawdata(msg.topic, msg.payload)
     watcher(mosq, msg.topic, msg.payload)
+
+    if maptopic:
+        if device in devices:
+            status = -1
+            try:
+                status = int(msg.payload)
+            except:
+                pass
+            devices[device].update(dict(status=status))
+        else:
+            devices[device] = dict(status=int(msg.payload))
+        push_map(mosq, device, devices[device])
+
 
     if redis:
         redis.hmset(rkey("t", msg.topic, "/status"), dict(status=msg.payload))
@@ -523,6 +566,29 @@ def on_message(mosq, userdata, msg):
                         'compass'   : compass,
 
             })
+
+
+    # Republish to map.
+    if maptopic:
+        new_data = {
+            'tid'     : tid,
+            'lat'     : lat,
+            'lon'     : lon,
+            'cog'     : item.get('cog', 0),
+            'vel'     : item.get('vel', 0),
+            'alt'     : item.get('alt', 0),
+            'tstamp'  : time.strftime('%d/%H:%M:%S', time.localtime(orig_tst)),
+            'compass' : compass,
+            'addr'    : item.get('addr'),
+            'cc'      : item.get('cc'),
+            'status'  : 1,      # Safe to assume it's "online" if we get position
+        }
+        try:
+            devices[topic].update(new_data)
+        except KeyError:
+            devices[topic] = new_data
+        push_map(mosq, topic, devices[topic])
+
 
 
     # FIXME: handle geofence events (see https://github.com/owntracks/gw/issues/73 )
