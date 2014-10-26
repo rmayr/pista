@@ -47,6 +47,7 @@ function handlerfunc(topic, payload) {
 			addr: 	        addr,
 			location:       mapslink,
 			tid:            tid,
+			cc:		d.cc,
 		};
 		upsert(o);
 	} catch (err) {
@@ -181,12 +182,20 @@ $(document).ready( function () {
                         "targets" : [7],
 		},
 		{
+			className: 'cc',
+			name: 'cc',
+			title: "CC",
+			data: null,
+			render: 'cc',
+                        "targets" : [8],
+                },
+		{
 			className: 'location',
 			name: 'location',
 			title: "Location",
 			data: null,
 			render: 'location',
-                        "targets" : [8],
+                        "targets" : [9],
                 },
         ],
 

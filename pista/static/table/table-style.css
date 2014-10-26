@@ -25,7 +25,7 @@ a:hover {
 th {
 }
 
-.topic, .status, .vehicle, .cog, .latlon, .tstamp, .batt, .location {
+.topic, .status, .vehicle, .cog, .latlon, .tstamp, .cc, .location {
 	text-align: left;
 }
 
@@ -40,19 +40,19 @@ td.status {
 td.location {
 }
 
-td.alt, td.tstamp, td.degrees, td.batt, td.latlon {
+td.alt, td.tstamp, td.cc, td.latlon {
 	font-family: 'Andale Mono', 'Courier New', monospace;
 }
+td.cc {
+	font-size: 80%;
+}
+
 td.car {
 	font-weight: bold;
 	width: 10px;
 }
 
 td.vel, td.alt {
-	text-align: right;
-}
-
-td.weather, td.temp {
 	text-align: right;
 }
 
