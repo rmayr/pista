@@ -30,4 +30,7 @@ var config = {
    // Console
    console_topic: {{ !console_topic }},
 
+   // Map and Table
+   maptopic: {{ !maptopic }},
+
 };

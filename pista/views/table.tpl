@@ -23,7 +23,7 @@ function errorfunc(status, reason) {
 function handlerfunc(topic, payload) {
 	try {
 		var d = JSON.parse(payload);
-		console.log(topic + " " + payload);
+		// console.log(topic + " " + payload);
 	
 		d.status =  (d.status === undefined) ? null : d.status;
 		d.vel = (d.vel) ? Math.round(d.vel) : "";
@@ -197,11 +197,11 @@ $(document).ready( function () {
     });
 
 
-    var tlist = [ "_map/#" ];  // FIXME: configurable??  was:  config.topics;
+    var tlist = [ config.maptopic ];
     var sub = [];
 
     for (var n = 0; n < tlist.length; n++) {
-		sub.push(tlist[n]);
+		sub.push(tlist[n] + "/" + '#');
     }
     mqtt_setup(sub, handlerfunc, errorfunc);
     mqtt_connect();

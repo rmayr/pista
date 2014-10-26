@@ -28,6 +28,12 @@ apiKey = None
 
 console_topic = "_look"
 
+; This is the MQTT topic the Map and Table subscribes to. It *must*
+; correspond to `maptopic' as configured in o2s, and it must not
+; end with a slash.
+
+maptopic = "_map"
+
 
 # ------------------------
 geofences = None
