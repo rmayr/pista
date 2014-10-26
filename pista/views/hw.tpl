@@ -83,7 +83,7 @@
         <td>{{ d.get('imei') }}</td>
         <td>{{ d.get('version') }}</td>
         <td>{{ d.get('tstamp') }}</td>
-        <td>{{ d.get('npubs') }}</td>
+        <td align='right'>{{ d.get('npubs') }}</td>
        </tr>
 % end
 
