@@ -26,6 +26,7 @@ MAX_VOLTAGES = 10
 LASTLOC_EXPIRY = 3600
 
 storage = cf.g('features', 'storage', 'True')
+maptopic = None
 
 geo = RevGeo(cf.config('revgeo'), storage=storage)
 redis = None
@@ -480,6 +481,13 @@ def on_message(mosq, userdata, msg):
     item['tst'] = orig_tst
     watcher(mosq, topic, item)
 
+    compass = '-'
+    points = [ 'N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW', 'N' ]
+    if item.get('cog') is not None:
+        cog = int(item.get('cog', 0))
+        idx = int(cog / 45)
+        compass = points[idx]
+
     # TID to Topic (tid:J4 -> t:owntracks/gw/J4)
     if redis:
         redis.set("tid:%s" % tid, "t:%s" % topic)
@@ -512,6 +520,8 @@ def on_message(mosq, userdata, msg):
                         'lat'       : lat,
                         'lon'       : lon,
                         'modif'     : time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(int(time.time()))),
+                        'compass'   : compass,
+
             })
 
 
@@ -554,6 +564,7 @@ if m.get('ca_certs') is not None:   # use TLS
         mqttc.tls_insecure_set(True)
 
 
+maptopic = m.get('maptopic', None)
 host = m.get('host', 'localhost')
 port = int(m.get('port', 1883))
 try:

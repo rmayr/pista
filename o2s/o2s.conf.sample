@@ -73,6 +73,12 @@ tls_insecure = False
 
 base_topics = [ 'owntracks/gw', 'owntracks/jane']
 
+# If maptopic isn't None, completed messages (with additional data) are
+# republished to this topic for the Pista Map and Tracks pages
+
+maptopic = "_map"
+
+
 #   ____  ____  
 #  |  _ \| __ ) 
 #  | | | |  _ \ 

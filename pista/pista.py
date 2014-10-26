@@ -550,6 +550,7 @@ def onevehicle(tid):
         'lat'       : None,
         'lon'       : None,
         'modif'     : None,
+        'compass'   : None,
     }
 
     key = "tid:%s" % tid
