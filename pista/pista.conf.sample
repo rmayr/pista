@@ -44,3 +44,7 @@ geofences = None
 ; on/off in the UI) by default.
 topic_visible = False
 
+
+# STATUS
+
+status_topics = [ 'owntracks/gw/+' ]

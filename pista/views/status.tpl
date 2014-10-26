@@ -169,7 +169,7 @@
 
     $(document).ready(function() {
 
-    	var tlist = config.topics;
+    	var tlist = config.status_topics;
 	var sub = [];
 
 	for (var n = 0; n < tlist.length; n++) {

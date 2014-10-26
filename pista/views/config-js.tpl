@@ -17,20 +17,20 @@ var config = {
    username:    {{ !username if username else "null" }},
    password:    {{ !password if password else "null" }},
 
-   topic: 	{{ !topic }},
-   topics: 	{{ !topics }},
    apikey:      {{ !apikey if apikey else "null" }},
 
    geofences:    {{ !geofences if geofences else "null" }},
 
    // tables
    topic_visible : {{ !topic_visible }},
-   topiclist: {{ !topiclist }},
 
    // Console
    console_topic: {{ !console_topic }},
 
    // Map and Table
    maptopic: {{ !maptopic }},
+
+   // Status
+   status_topics: {{ !status_topics }},
 
 };
