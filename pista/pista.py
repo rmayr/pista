@@ -575,7 +575,7 @@ def flotbatt(voltage):
 
     flot = {
         'label' : 'Batt',
-        'data'  : battlevels,
+        'data'  : sorted(battlevels),
     }
 
     return flot
