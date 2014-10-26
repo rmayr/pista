@@ -43,9 +43,3 @@ geofences = None
 ; on/off in the UI) by default.
 topic_visible = False
 
-; List of topics to subscribe to in Tables.
-
-# topiclist =   [ 't/+/+', 'owntracks/+/+' ]
-topiclist =   [ 't/+/+' ]
-
-
