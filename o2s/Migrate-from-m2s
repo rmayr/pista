@@ -33,7 +33,7 @@ ALTER TABLE location ADD cog INTEGER;
 ALTER TABLE location ADD trip INTEGER;
 ALTER TABLE location ADD dist INTEGER;
 ALTER TABLE location ADD t VARCHAR(1) NOT NULL;
-ALTER TABLE location ADD geohash VARCHAR(6);
+ALTER TABLE location ADD ghash VARCHAR(6);
 ALTER TABLE location ADD cc VARCHAR(2);
 ALTER TABLE location ADD alt INTEGER;
 
