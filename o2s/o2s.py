@@ -163,7 +163,10 @@ def on_status(mosq, userdata, msg):
                 pass
             devices[device].update(dict(status=status))
         else:
-            devices[device] = dict(status=int(msg.payload))
+            try:
+                devices[device] = dict(status=int(msg.payload))
+            except:
+                devices[device] = dict(status=-1)
         push_map(mosq, device, devices[device])
 
 
