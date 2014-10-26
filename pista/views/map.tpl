@@ -19,17 +19,17 @@
     <script src="all/mqtt.js" type="text/javascript"></script>
 
     
-	    <div id="map" style=""></div>
-	    <div id='msg'>
-	    	<span id='msg-date'></span>
-		<span id='msg-user'></span>
-		<span id='msg-cog'><img id='img-cog' src='images/arrow.gif' /></span>
-		<span id='msg-revgeo'><a href='#' id='link-revgeo'>xxx</a></span>
-		<span id='msg-vel'></span>
-		<span id='msg-alt'></span>
-		<span id='msg-lat'></span>
-		<span id='msg-lon'></span>
-	    </div>
+    <div id="map" style=""></div>
+    <div id='msg'>
+	<span id='msg-date'></span>
+	<span id='msg-user'></span>
+	<span id='msg-cog'><img id='img-cog' src='images/arrow.gif' /></span>
+	<span id='msg-revgeo'><a href='#' id='link-revgeo'>xxx</a></span>
+	<span id='msg-vel'></span>
+	<span id='msg-alt'></span>
+	<span id='msg-lat'></span>
+	<span id='msg-lon'></span>
+    </div>
 
 <script type="text/javascript">
 function errorfunc(status, reason) {
@@ -45,12 +45,10 @@ function handlerfunc(topic, payload) {
 
 		$('#msg-date').text(tstamp);
 		$('#msg-user').text(d.tid);
+		$('#link-revgeo').text(d.addr);
+		$('#link-revgeo').prop("href", 'http://maps.google.com/?q=' + d.lat + ',' + d.lon);
 		$('#msg-lat').text(d.lat);
 		$('#msg-lon').text(d.lon);
-
-		$('#link-revgeo').text(d.addr);
-		$('#link-revgeo').prop("href", 
-			 'http://maps.google.com/?q=' + d.lat + ',' + d.lon);
 
 		if (d.vel) {
 			$('#msg-vel').text(Math.round(d.vel) + "k");
@@ -68,8 +66,6 @@ function handlerfunc(topic, payload) {
 		} else {
 			$('#img-cog').hide();
 		}
-
-		// console.log(topic + " " + d.lat + ", " + d.lon);
 	} catch (err) {
 		console.log("JSON parse error " + err);
 		return;
@@ -86,7 +82,6 @@ function handlerfunc(topic, payload) {
 		var sub = [];
 
     		load_map(config.apikey);
-    		// getuserlist();
 
 		for (var n = 0; n < tlist.length; n++) {
 			sub.push(tlist[n] + "/" + '#');

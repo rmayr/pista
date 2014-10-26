@@ -21,12 +21,17 @@ function getPopupText(user, lat, lon) {
 function friend_add(user, lat, lon)
 {
 	// Add marker with icon (and text) and return marker object
+	var className = 'count-icon';
+	if (user.status != 1) {
+		className = 'count-icon-offline';
+	}
+
 
         var m = L.marker([lat, lon],
                         {
                           // icon: myIcon,
                           icon: L.divIcon({
-                                className: 'count-icon',
+                                className: className,
                                 html: user.name, // AK
                                 iconSize: [30, 30]
                             }),
@@ -51,6 +56,12 @@ function friend_add(user, lat, lon)
 
 function friend_move(user, lat, lon)
 {
+	var className = 'count-icon';
+
+	if (user.status != 1) {
+		className = 'count-icon-offline';
+	}
+
 	if (user.marker) {
 		user.marker.setLatLng({lat: lat, lng: lon});
 		
@@ -60,7 +71,7 @@ function friend_move(user, lat, lon)
 		map.removeLayer(user.marker);
 		user.marker = L.marker([lat, lon], {
 			icon: L.divIcon({
-				className: 'count-icon',
+				className: className,
 				html: user.name, // AK
 				iconSize: [30, 30]
 			}),

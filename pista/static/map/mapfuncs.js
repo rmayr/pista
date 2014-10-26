@@ -3,6 +3,7 @@ var map;
 var redIcon;
 var latlngs = Array();
 
+/* FIXME: load_geofences from MQTT retained  */
 function load_geofences()
 {
 	$.ajax({
@@ -72,12 +73,15 @@ function mapit(topic, d, date)
 			name: tid,
 			count: 0,
 			addr: d.addr,
+			status: d.status,
 		};
 		users[topic] = user;
 	}
 		
 	var f = {}
 
+	user.status = d.status;
+	console.log(user.name + ": " + user.status);
 		
 	if (user.marker) {
 		f = friend_move(user, d.lat, d.lon);
@@ -87,4 +91,3 @@ function mapit(topic, d, date)
 		map.fitBounds(L.latLngBounds(latlngs));
 	}
 }
-
