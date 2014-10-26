@@ -94,9 +94,12 @@ $(document).ready( function () {
     tab = $('#livetable').DataTable({
         paging: false,
         searching: false,
-        ordering: false,
+        ordering: true,
         autoWidth: false,
+	order: [[ 2, "asc" ]],
         columnDefs: [
+		{ orderable : true, targets: [2] },
+
                 {
                         className: 'topic',
                         name: 'topic',
