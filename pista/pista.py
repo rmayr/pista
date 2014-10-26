@@ -575,9 +575,10 @@ class StripPathMiddleware(object):
         return self.a(e, h)
 
 if __name__ == '__main__':
+    pistaconf = cf.config('pista')
     bottle.debug(True)
     bottle.run(app=StripPathMiddleware(app),
         # server='python_server',
-        # host='0.0.0.0',
-        port=8080,
+        host=pistaconf.get('listen_host', "127.0.0.1"),
+        port=pistaconf.get('listen_port', 8080),
         reloader=True)
