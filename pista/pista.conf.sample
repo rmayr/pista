@@ -1,0 +1,34 @@
+[websocket]
+host = "127.0.0.1"
+port = 9001
+reconnect_in = 5000 ; milliseconds
+usetls = False
+cleansession = True
+username = None
+password = None
+# username = "jjolie"
+# password = "sécret"
+
+topic = "owntracks/echle/+"
+
+; FIXME: this must be consolidated through all
+topics = [ 'owntracks/echle/+', 'owntracks/gw/+' ]   ; done in status
+
+; if apikey is set, it must be a key obtained for Mapbox use
+; (format: 'xxxxxx.AAAAAAAA')
+; if set to None, OSM is used as map provider
+apiKey = None
+
+
+# ------------------------
+geofences = None
+
+# TABLE:
+; Whether or not to show the topic name in Tables (can be toggled
+; on/off in the UI) by default.
+topic_visible = False
+
+; List of topics to subscribe to in Tables.
+
+# topiclist =   [ 't/+/+', 'owntracks/+/+' ]
+topiclist =   [ 't/+/+' ]
