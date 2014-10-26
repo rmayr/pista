@@ -1,7 +1,13 @@
 [pista]
 
+# Which address:port should the Pista app listen on? Specify
+# listen_host="0.0.0.0" to have it listen on all interfaces
+
 listen_host = "localhost"
 listen_port = 8080
+
+# The following parameters are for the Websocket connections and
+# most of these are made available by ../config.js automatically.
 
 [websocket]
 host = "127.0.0.1"
@@ -13,11 +19,6 @@ username = None
 password = None
 # username = "jjolie"
 # password = "sécret"
-
-topic = "owntracks/echle/+"
-
-; FIXME: this must be consolidated through all
-topics = [ 'owntracks/echle/+', 'owntracks/gw/+' ]   ; done in status
 
 ; if apikey is set, it must be a key obtained for Mapbox use
 ; (format: 'xxxxxx.AAAAAAAA')
