@@ -8,6 +8,12 @@
 
 [features]
 
+# If storage is False, no data will be written to the relational database
+# store. This is useful *only* if redis is True, but is for special
+# installations.
+
+storage = True
+
 # If plmn is True, mobile operator codes are looked up and republished.
 # For example, when Greenwich says: ../operators 26201 +26202
 # o2s will translate and republish as

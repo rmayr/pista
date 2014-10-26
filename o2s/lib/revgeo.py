@@ -7,11 +7,14 @@ import geohash # https://code.google.com/p/python-geohash/
 from dbschema import Geo, sql_db
 
 class RevGeo(object):
-    def __init__(self, conf, host='localhost', port=8081):
+    def __init__(self, conf, storage, host='localhost', port=8081):
         self.enabled = conf.get('enabled', False)
         self.host = host
         self.port = port
         self.hashlen = conf.get('ghashlen', 5)
+        self.storage = conf.get('storage')
+
+        print "GEOGEO ", self.storage
 
     def rev(self, lat, lon, api='geonames'):
         if not self.enabled:
@@ -25,13 +28,14 @@ class RevGeo(object):
             content, else perform lookup and store in cache. '''
 
         ghash = geohash.encode(lat, lon)[:self.hashlen]
-        try:
-            g = Geo.get(Geo.ghash == ghash)
-            return dict(ghash=ghash, cc=g.cc, addr=g.addr, cached=1)
-        except Geo.DoesNotExist:
-            pass
-        except Exception, e:
-            raise
+        if self.storage:
+            try:
+                g = Geo.get(Geo.ghash == ghash)
+                return dict(ghash=ghash, cc=g.cc, addr=g.addr, cached=1)
+            except Geo.DoesNotExist:
+                pass
+            except Exception, e:
+                raise
 
         methods = {
             'geonames' : (1, self._geoname),
@@ -52,11 +56,12 @@ class RevGeo(object):
 
         data['src'] = src
         data['ghash'] = ghash
-        try:
-            g = Geo(**data)
-            g.save()
-        except Exception, e:
-            logging.warn("Cannot store GEO in DB: %s" % (str(e)))
+        if self.storage:
+            try:
+                g = Geo(**data)
+                g.save()
+            except Exception, e:
+                logging.warn("Cannot store GEO in DB: %s" % (str(e)))
 
         return dict(ghash=ghash, cc=data['cc'], addr=data['addr'], cached=0)
 

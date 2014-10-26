@@ -25,7 +25,9 @@ SEEN_DRIVING = 1200
 MAX_VOLTAGES = 10
 LASTLOC_EXPIRY = 3600
 
-geo = RevGeo(cf.config('revgeo'))
+storage = cf.g('features', 'storage', 'True')
+
+geo = RevGeo(cf.config('revgeo'), storage=storage)
 redis = None
 if cf.g('features', 'redis', False) == True:
     redis = Wredis(cf.config('redis'))
@@ -50,7 +52,7 @@ else:
         return x
 
 def save_rawdata(topic, payload):
-    if cf.g('features', 'rawdata', False) == False:
+    if not storage or cf.g('features', 'rawdata', False) == False:
         return
 
     rawdata = {
@@ -234,19 +236,20 @@ def on_operator(mosq, userdata, msg):
 
     watcher(mosq, topic, payload)
 
-    try:
-        o = payload.split()
-        odata = {
-            'topic'    : topic.replace("/operators", ""),
-            'tst'      : time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(int(time.time()))),
-            'plmn'     : o[0],
-            'extended' : " ".join(o[1:]),
-        }
+    if storage:
+        try:
+            o = payload.split()
+            odata = {
+                'topic'    : topic.replace("/operators", ""),
+                'tst'      : time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(int(time.time()))),
+                'plmn'     : o[0],
+                'extended' : " ".join(o[1:]),
+            }
 
-        op = Operators(**odata)
-        op.save()
-    except Exception, e:
-        print "OPERATORS: ", str(e)
+            op = Operators(**odata)
+            op.save()
+        except Exception, e:
+            print "OPERATORS: ", str(e)
 
     save_rawdata(topic, payload)
 
@@ -400,11 +403,6 @@ def on_message(mosq, userdata, msg):
     if 'lat' not in item or 'lon' not in item:
         return
 
-    try:
-        sql_db.connect()
-    except Exception, e:
-        print str(e)
-
 
     tid = item.get('tid')
     tst = item.get('tst', int(time.time()))
@@ -432,22 +430,29 @@ def on_message(mosq, userdata, msg):
     tstamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(tst))
     item['tst'] = tstamp
 
+    if storage:
+        try:
+            sql_db.connect()
+        except Exception, e:
+            print str(e)
+
     if item['_type'] == 'waypoint':
         # FIXME: publish this as geofence for maps
 
-        # Upsert
-        try:
-            sql_db.execute_sql("""
-                  REPLACE INTO waypoint
-                  (topic, username, device, tid, lat, lon, tst, rad, waypoint)
-                  VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                  """, (
-                      item['topic'], item['username'], item['device'], item['tid'], item['lat'],
-                      item['lon'], tstamp, item['rad'], item['desc'],))
-        except Exception, e:
-            print("Cannot upsert waypoint in DB: %s" % (str(e)))
+        if storage:
+            # Upsert
+            try:
+                sql_db.execute_sql("""
+                      REPLACE INTO waypoint
+                      (topic, username, device, tid, lat, lon, tst, rad, waypoint)
+                      VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                      """, (
+                          item['topic'], item['username'], item['device'], item['tid'], item['lat'],
+                          item['lon'], tstamp, item['rad'], item['desc'],))
+            except Exception, e:
+                print("Cannot upsert waypoint in DB: %s" % (str(e)))
 
-        return
+            return
 
     if item['_type'] != 'location':
         return
@@ -467,8 +472,9 @@ def on_message(mosq, userdata, msg):
         print "  %-2s" % tid
 
 
-    loca = Location(**item)
-    loca.save()
+    if storage:
+        loca = Location(**item)
+        loca.save()
 
     item['tst'] = orig_tst
     watcher(mosq, topic, item)
