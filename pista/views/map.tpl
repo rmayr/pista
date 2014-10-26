@@ -16,9 +16,7 @@
     <script src="config.js"></script>
     <script src="map/userdata.js"></script>
     <script src="map/mapfuncs.js"></script>
-    <script src="map/mqttfuncs.js"></script>
-
-<a href="#" id="mqttstatus-details">No connection made yet.</a>
+    <script src="all/mqtt.js" type="text/javascript"></script>
 
     
 	    <div id="map" style=""></div>
@@ -33,13 +31,70 @@
 		<span id='msg-lon'></span>
 	    </div>
 
-    <script>
+<script type="text/javascript">
+function errorfunc(status, reason) {
+        console.log("STATUS: " + status + "; " + reason);
+}
+
+function handlerfunc(topic, payload) {
+	try {
+		var d = $.parseJSON(payload);
+
+		var date = new Date(d.tst * 1000); //convert epoch time to datetime
+		var tstamp = date.toLocaleString();
+
+		$('#msg-date').text(tstamp);
+		$('#msg-user').text(d.tid);
+		$('#msg-lat').text(d.lat);
+		$('#msg-lon').text(d.lon);
+
+		$('#link-revgeo').text(d.addr);
+		$('#link-revgeo').prop("href", 
+			 'http://maps.google.com/?q=' + d.lat + ',' + d.lon);
+
+		if (d.vel) {
+			$('#msg-vel').text(Math.round(d.vel) + "k");
+		}
+		if (d.alt) {
+			$('#msg-alt').text(Math.round(d.alt) + "m");
+		}
+
+		/* Course over Ground */
+
+		if (d.cog) {
+			$('#img-cog').show();
+			// -90 because original arrow points right (90)
+			$('#img-cog').rotate(parseFloat(d.cog) - 90.0);
+		} else {
+			$('#img-cog').hide();
+		}
+
+		// console.log(topic + " " + d.lat + ", " + d.lon);
+	} catch (err) {
+		console.log("JSON parse error " + err);
+		return;
+	}
+
+	mapit(topic, d, date);
+
+};
+</script>
+
+<script type="text/javascript">
     	$(document).ready(function() {
+		var tlist = [ config.maptopic ];
+		var sub = [];
+
     		load_map(config.apikey);
     		// getuserlist();
-    		MQTTconnect();
+
+		for (var n = 0; n < tlist.length; n++) {
+			sub.push(tlist[n] + "/" + '#');
+		}
+		mqtt_setup(sub, handlerfunc, errorfunc);
+		mqtt_connect();
     		$('#msg').val('starting');
     	});
-    </script>
+</script>
 
 % include('tbsbot.tpl')

@@ -71,6 +71,7 @@ function mapit(topic, d, date)
 		user = {
 			name: tid,
 			count: 0,
+			addr: d.addr,
 		};
 		users[topic] = user;
 	}

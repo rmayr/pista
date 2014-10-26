@@ -586,6 +586,7 @@ def on_message(mosq, userdata, msg):
             'cc'      : item.get('cc'),
             'status'  : 1,      # Safe to assume it's "online" if we get position
             'topic'   : topic,
+            'tst'     : orig_tst,
         }
         try:
             devices[topic].update(new_data)
