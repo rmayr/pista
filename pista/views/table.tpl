@@ -13,7 +13,48 @@
 
     <script type="text/javascript" src="config.js"></script>
     <script type="text/javascript" src="js/mqttws31.js"></script>
-    <script type="text/javascript" src="table/mqttfuncs.js"></script>
+    <script src="all/mqtt.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+function errorfunc(status, reason) {
+	console.log("STATUS: " + status + "; " + reason);
+}
+
+function handlerfunc(topic, payload) {
+	try {
+		var d = JSON.parse(payload);
+		console.log(topic + " " + payload);
+	
+		d.status =  (d.status === undefined) ? null : d.status;
+		d.vel = (d.vel) ? Math.round(d.vel) : "";
+		d.alt = (d.alt) ? Math.round(d.alt) + "m" : "";
+		var latlon = d.lat + "," + d.lon;
+		var tstamp = d.tstamp;
+		var addr = d.addr;
+		var compass = d.compass;
+		var tid = d.tid;
+	
+		var mapslink = '<a href="http://maps.google.com/?q=' + latlon + '">' + addr + '</a>';
+		var o = {
+			topic:          d.topic,
+			status:         d.status,
+			vehicle:        tid,
+			kmh:            d.vel,
+			alt:            d.alt,
+			cog:            compass,
+			latlon:         latlon,
+			tstamp:         tstamp,
+			addr: 	        addr,
+			location:       mapslink,
+			tid:            tid,
+		};
+		upsert(o);
+	} catch (err) {
+		console.log("JSON parse: " + err);
+		return;
+	}
+};
+</script>
 
 <script type="text/javascript">
 var tab;
@@ -137,36 +178,12 @@ $(document).ready( function () {
                         "targets" : [7],
 		},
 		{
-			className: 'weather',
-			name: 'weather',
-			title: "Weather",
-			data: null,
-			render: 'weather',
-                        "targets" : [8],
-		},
-		{
-			className: 'degrees',
-			name: 'degrees',
-			title: "C",
-			data: null,
-			render: 'degrees',
-                        "targets" : [9],
-		},
-		{
-			className: 'batt',
-			name: 'batt',
-			title: "Batt",
-			data: null,
-			render: 'batt',
-                        "targets" : [10],
-                },
-		{
 			className: 'location',
 			name: 'location',
 			title: "Location",
 			data: null,
 			render: 'location',
-                        "targets" : [11],
+                        "targets" : [8],
                 },
         ],
 
@@ -179,7 +196,15 @@ $(document).ready( function () {
         column.visible( ! column.visible() );
     });
 
-    MQTTconnect();
+
+    var tlist = [ "_map/#" ];  // FIXME: configurable??  was:  config.topics;
+    var sub = [];
+
+    for (var n = 0; n < tlist.length; n++) {
+		sub.push(tlist[n]);
+    }
+    mqtt_setup(sub, handlerfunc, errorfunc);
+    mqtt_connect();
 
 });
 </script>
@@ -195,7 +220,5 @@ Toggle: <a href="#" class="toggle-vis" data-column="0">Topic</a> -
         <table id="livetable" class="table table-striped compact nowrap" cellspacing="0" width="100%">
         </table>
 </div>
-
-
 
 % include('tbsbot.tpl')
