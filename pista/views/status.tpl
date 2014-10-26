@@ -102,7 +102,7 @@
 				var field = '<div id="' + id + '" tid="' + tid + '" class="fixed-size-square blue" data-tid="' + tid + '">\
 						    <span>' + tid + '<div></div></span>\
 						</div>';
-				console.log(field);
+				// console.log(field);
 				$(matrix).append(field);
 
 				box = $('#' + id);
@@ -128,39 +128,27 @@
 				$(box).on('mouseleave', function(){
 					$('#hiddenDiv').hide();
 				});
+			} 
+
+			/* Obtain the actual status (0, 1, -1) and color the box */
+
+			var classname;
+			var s = d.status;
+
+			if (s == 1) {
+				classname = 'fixed-size-square green hovr';
+			} else if (s == 0) {
+				classname = 'fixed-size-square red hovr';
+			} else {
+				classname = 'fixed-size-square yellow hovr';
 			}
+
+			$(box).attr("class", classname);
+
 			return;
 		}
 	} catch (err) {
 		console.log("JSON parse: " + err);
-		return;
-	}
-
-	if (endsWith(topic, "/status")) {
-		var tarr = topic.split('/');
-		var classname;
-		var realtopic = ""; // i.e. topic corresponding to the /status we got
-		for (var n = 0; n < tarr.length - 1; n++) {
-			realtopic = realtopic + tarr[n] + ((n < (tarr.length - 2)) ? "/" : "");
-		}
-		console.log("Got status " + payload + " for " + realtopic);
-
-		var id = realtopic.replace(/\//g, '-');
-		var box = $('#' + id);
-		var s = payload;
-
-		if (s == 1) {
-			classname = 'fixed-size-square green hovr';
-		} else if (s == 0) {
-			classname = 'fixed-size-square red hovr';
-		} else {
-			classname = 'fixed-size-square yellow hovr';
-		}
-
-		if (box.length == 1) {
-			// $(box).addClass('boxred').removeClass('boxgreen');
-			$(box).attr("class", classname);
-		}
 		return;
 	}
 
@@ -169,13 +157,13 @@
 
     $(document).ready(function() {
 
-    	var tlist = config.status_topics;
+	var tlist = [ config.maptopic ];
 	var sub = [];
 
 	for (var n = 0; n < tlist.length; n++) {
-		sub.push(tlist[n]);
-		sub.push(tlist[n] + '/status');
+		sub.push(tlist[n] + "/" + '#');
 	}
+
 	mqtt_setup(sub, handlerfunc, errorfunc);
         mqtt_connect();
 

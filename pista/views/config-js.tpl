@@ -30,7 +30,4 @@ var config = {
    // Map and Table
    maptopic: {{ !maptopic }},
 
-   // Status
-   status_topics: {{ !status_topics }},
-
 };
