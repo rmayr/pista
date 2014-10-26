@@ -205,6 +205,7 @@ def page_hw():
                     'topic'     : device[2:],
                 })
 
+    device_list.sort(key=lambda x: x['tid'], reverse=False)
     params = {
             'devices' : device_list,
     }
