@@ -3,75 +3,38 @@
 
     <script src="js/mqttws31.js" type="text/javascript"></script>
     <script src="config.js" type="text/javascript"></script>
+    <script src="all/mqtt.js" type="text/javascript"></script>
     <link href="console/console-style.css" rel="stylesheet">
 
-    <script type="text/javascript">
-    var mqtt;
-    var reconnectTimeout = 2000;
+<script type="text/javascript">
+	function errorfunc(status, reason) {
+		console.log("STATUS: " + status + "; " + reason);
+	}
 
-    function MQTTconnect() {
-        mqtt = new Messaging.Client(
-                        config.host,
-                        config.port,
-                        "web_" + parseInt(Math.random() * 100,
-                        10));
-        var options = {
-            timeout: 3,
-            useSSL: config.usetls,
-            cleanSession: config.cleansession,
-            onSuccess: onConnect,
-            onFailure: function (message) {
-                $('#status').val("Connection failed: " + message.errorMessage + "Retrying");
-                setTimeout(MQTTconnect, reconnectTimeout);
-            }
-        };
+	function handlerfunc(topic, payload) {
+		$('#ws').prepend('<li>' + payload + '</li>');
+	};
+</script>
 
-        mqtt.onConnectionLost = onConnectionLost;
-        mqtt.onMessageArrived = onMessageArrived;
+<script type="text/javascript">
 
-        if (config.username != null) {
-            options.userName = config.username;
-            options.password = config.password;
-        }
-        console.log("Host="+ config.host + ", port=" + config.port + " TLS = " + config.usetls + " username=" + config.username + " password=" + config.password);
-        mqtt.connect(options);
-    }
+	$(document).ready( function () {
 
-    function onConnect() {
-        $('#status').val('Connected to ' + config.host + ':' + config.port);
-        // Connection succeeded; subscribe to our topic
-        mqtt.subscribe(config.console_topic, {qos: 0});
-        $('#topic').val(config.console_topic);
-    }
+	    var tlist = [ config.console_topic ];
+	    var sub = [];
 
-    function onConnectionLost(response) {
-        setTimeout(MQTTconnect, reconnectTimeout);
-        $('#status').val("connection lost: " + response.errorMessage + ". Reconnecting");
-
-    };
-
-    function onMessageArrived(message) {
-
-        var topic = message.destinationName;
-        var payload = message.payloadString;
-
-        $('#ws').prepend('<li>' + payload + '</li>');
-    };
+	    for (var n = 0; n < tlist.length; n++) {
+			sub.push(tlist[n]);
+	    }
+	    mqtt_setup(sub, handlerfunc, errorfunc);
+	    mqtt_connect();
+});
+</script>
 
 
-    $(document).ready(function() {
-        MQTTconnect();
-    });
-
-    </script>
-
-    <h2>MQTT live</h2>
-    <div>
-        <div>Subscribed to <input type='text' id='topic' disabled />
-        Status: <input type='text' id='status' size="80" disabled /></div>
-
-        <ul id='ws'></ul>
-    </div>
-
+<h3>MQTT live</h3>
+<div>
+	<ul id='ws'></ul>
+</div>
 
 % include('tbsbot.tpl')
