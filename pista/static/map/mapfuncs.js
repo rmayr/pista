@@ -73,7 +73,7 @@ function mapit(topic, d, date)
 			name: tid,
 			count: 0,
 			addr: d.addr,
-			status: d.status,
+			status: -1,
 		};
 		users[topic] = user;
 	}
@@ -81,6 +81,7 @@ function mapit(topic, d, date)
 	var f = {}
 
 	user.status = d.status;
+
 	console.log(user.name + ": " + user.status);
 		
 	if (user.marker) {
