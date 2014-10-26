@@ -374,7 +374,10 @@ def payload2location(topic, payload):
     for elem in ['tst', 'cog', 'vel', 'alt', 'dist', 'trip']:
         item[elem] = int(item.get(elem, 0))
     for elem in ['lat', 'lon']:
-        item[elem] = float(item.get(elem))
+        try:
+            item[elem] = float(item.get(elem))
+        except:
+            pass
 
     return item
 
@@ -582,6 +585,7 @@ def on_message(mosq, userdata, msg):
             'addr'    : item.get('addr'),
             'cc'      : item.get('cc'),
             'status'  : 1,      # Safe to assume it's "online" if we get position
+            'topic'   : topic,
         }
         try:
             devices[topic].update(new_data)
