@@ -25,13 +25,17 @@ from ElementTree_pretty import prettify
 from cf import conf
 from dbschema import Location, Waypoint, Geo, fn, sql_db, JOIN_LEFT_OUTER
 import time
+from wredis import Wredis
 
 cf = conf(os.getenv('PISTACONFIG', 'pista.conf'))
+oconf = conf(os.getenv('O2SCONFIG', 'o2s.conf'))
 
 POINT_KM = 20
 
 app = application = bottle.Bottle()
 bottle.SimpleTemplate.defaults['get_url'] = app.get_url
+
+redis = Wredis(oconf.config('redis'))
 
 # FIXME: load from dict     app.config.load_config('jjj.conf')
 
@@ -522,8 +526,22 @@ def get_geoJSON():
 def onevehicle(tid):
 
     params = {
-        'tid' : tid,
+        'tid'       : tid,
+        'tstamp'    : None,
+        'version'   : None,
+        'vbatt'     : None,
+        'vext'      : None,
+        'imei'      : None,
+        'npubs'     : None,
     }
+
+    key = "tid:%s" % tid
+    tidkey = redis.get(key)
+
+    data = redis.hgetall(tidkey)
+    for k in params:
+        if k in data:
+            params[k] = data[k]
 
 
     response.content_type = 'text/plain; charset: UTF-8'

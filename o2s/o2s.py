@@ -473,6 +473,10 @@ def on_message(mosq, userdata, msg):
     item['tst'] = orig_tst
     watcher(mosq, topic, item)
 
+    # TID to Topic (tid:J4 -> t:owntracks/gw/J4)
+    if redis:
+        redis.set("tid:%s" % tid, "t:%s" % topic)
+
     # If this is a 'driving' report, add a key to Redis with expiry
     if redis and item.get('t') == 't':
         redis.hmset("driving:" + tid, {
