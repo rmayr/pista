@@ -24,6 +24,10 @@ topics = [ 'owntracks/echle/+', 'owntracks/gw/+' ]   ; done in status
 ; if set to None, OSM is used as map provider
 apiKey = None
 
+; This is the MQTT topic the Console subscribes to.
+
+console_topic = "_look"
+
 
 # ------------------------
 geofences = None
@@ -37,3 +41,5 @@ topic_visible = False
 
 # topiclist =   [ 't/+/+', 'owntracks/+/+' ]
 topiclist =   [ 't/+/+' ]
+
+

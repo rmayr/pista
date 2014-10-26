@@ -27,4 +27,7 @@ var config = {
    topic_visible : {{ !topic_visible }},
    topiclist: {{ !topiclist }},
 
+   // Console
+   console_topic: {{ !console_topic }},
+
 };

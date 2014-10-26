@@ -3,6 +3,7 @@
 
     <script src="js/mqttws31.js" type="text/javascript"></script>
     <script src="config.js" type="text/javascript"></script>
+    <link href="console/console-style.css" rel="stylesheet">
 
     <script type="text/javascript">
     var mqtt;
@@ -39,8 +40,8 @@
     function onConnect() {
         $('#status').val('Connected to ' + config.host + ':' + config.port);
         // Connection succeeded; subscribe to our topic
-        mqtt.subscribe(config.topic, {qos: 0});
-        $('#topic').val(config.topic);
+        mqtt.subscribe(config.console_topic, {qos: 0});
+        $('#topic').val(config.console_topic);
     }
 
     function onConnectionLost(response) {
@@ -54,7 +55,7 @@
         var topic = message.destinationName;
         var payload = message.payloadString;
 
-        $('#ws').prepend('<li>' + topic + ' = ' + payload + '</li>');
+        $('#ws').prepend('<li>' + payload + '</li>');
     };
 
 
@@ -69,7 +70,7 @@
         <div>Subscribed to <input type='text' id='topic' disabled />
         Status: <input type='text' id='status' size="80" disabled /></div>
 
-        <ul id='ws' style="font-family: 'Courier New', Courier, monospace;"></ul>
+        <ul id='ws'></ul>
     </div>
 
 
