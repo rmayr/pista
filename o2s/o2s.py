@@ -19,7 +19,7 @@ import io
 import csv
 import imp
 
-cf = conf(os.getenv('WAPPCONFIG', 'o2s.conf'))
+cf = conf(os.getenv('O2SCONFIG', 'o2s.conf'))
 
 SEEN_DRIVING = 1200
 MAX_VOLTAGES = 10
