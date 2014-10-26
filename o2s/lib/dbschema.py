@@ -6,7 +6,7 @@ import datetime
 import os
 import sys
 
-cf = conf(os.getenv('WAPPCONFIG', 'o2s.conf'))
+cf = conf(os.getenv('O2SCONFIG', 'o2s.conf'))
 
 sql_db = None
 if (cf.g('database', 'dbengine', 'mysql') == 'postgresql'):
