@@ -68,6 +68,11 @@ tls_version = 'tlsv1'
 # tls_version = 'sslv3'
 tls_insecure = False
 
+# If skip_retained is True, messages retained by the broker will not
+# be processed. Note that this can cause duplicate entries in DB.
+
+skip_retained = False
+
 # This is a Python list of topics to track. Note that just the base topic
 # is required here; o2s subscribes to the required subtopics
 

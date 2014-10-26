@@ -141,10 +141,10 @@ def push_map(mosq, device, device_data):
     else:
         topic = topic + "/" + device
 
-    mosq.publish(topic, payload, qos=0, retain=False)
+    mosq.publish(topic, payload, qos=0, retain=True)
 
 def on_status(mosq, userdata, msg):
-    if msg.retain == 1 or len(msg.payload) < 0:
+    if (skip_retained and msg.retain == 1) or len(msg.payload) < 0:
         return
 
     device = str(msg.topic)
@@ -171,7 +171,7 @@ def on_status(mosq, userdata, msg):
         redis.hmset(rkey("t", msg.topic, "/status"), dict(status=msg.payload))
 
 def on_voltage(mosq, userdata, msg):
-    if msg.retain == 1 or len(msg.payload) < 0:
+    if (skip_retained and msg.retain == 1) or len(msg.payload) < 0:
         return
 
     save_rawdata(msg.topic, msg.payload)
@@ -200,7 +200,7 @@ def on_voltage(mosq, userdata, msg):
 
 
 def on_alarm(mosq, userdata, msg):
-    if msg.retain == 1 or len(msg.payload) < 0:
+    if (skip_retained and msg.retain == 1) or len(msg.payload) < 0:
         return
 
     save_rawdata(msg.topic, msg.payload)
@@ -230,7 +230,7 @@ def on_alarm(mosq, userdata, msg):
 
 
 def on_start(mosq, userdata, msg):
-    if msg.retain == 1 or len(msg.payload) < 0:
+    if (skip_retained and msg.retain == 1) or len(msg.payload) < 0:
         return
 
     print "STARTUP ", msg.payload
@@ -254,7 +254,7 @@ def on_start(mosq, userdata, msg):
 
 
 def on_gpio(mosq, userdata, msg):
-    if msg.retain == 1 or len(msg.payload) < 0:
+    if (skip_retained and msg.retain == 1) or len(msg.payload) < 0:
         return
 
     print "GPIO ", msg.payload
@@ -263,13 +263,13 @@ def on_gpio(mosq, userdata, msg):
     watcher(mosq, msg.topic, msg.payload)
 
 def on_operator_watch(mosq, userdata, msg):
-    if msg.retain == 1 or len(msg.payload) < 0:
+    if (skip_retained and msg.retain == 1) or len(msg.payload) < 0:
         return
     watcher(mosq, msg.topic, msg.payload)
 
 def on_operator(mosq, userdata, msg):
 
-    if msg.retain == 1 or len(msg.payload) < 1:
+    if (skip_retained and msg.retain == 1) or len(msg.payload) < 1:
         return
 
     if cf.g('features', 'plmn', False) == False:
@@ -429,10 +429,10 @@ def watcher(mosq, topic, data):
 
 def on_message(mosq, userdata, msg):
     
-    types = ['location', 'waypoint']
-
-    if msg.retain == 1:
+    if (skip_retained and msg.retain == 1) or len(msg.payload) < 1:
         return
+
+    types = ['location', 'waypoint']
 
     topic = msg.topic
     payload = str(msg.payload)
@@ -635,6 +635,7 @@ if m.get('ca_certs') is not None:   # use TLS
 
 
 maptopic = m.get('maptopic', None)
+skip_retained = m.get('skip_retained', False)
 host = m.get('host', 'localhost')
 port = int(m.get('port', 1883))
 try:
