@@ -540,6 +540,11 @@ def onevehicle(tid):
         'vext'      : None,
         'imei'      : None,
         'npubs'     : None,
+        'addr'      : None,
+        'cc'        : None,
+        'lat'       : None,
+        'lon'       : None,
+        'modif'     : None,
     }
 
     key = "tid:%s" % tid

@@ -511,6 +511,7 @@ def on_message(mosq, userdata, msg):
                         'addr'      : item.get('addr'),
                         'lat'       : lat,
                         'lon'       : lon,
+                        'modif'     : time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(int(time.time()))),
             })
 
 
