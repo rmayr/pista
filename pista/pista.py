@@ -73,9 +73,9 @@ def getDBdata(username, device, from_date, to_date, spacing):
 
     track = []
 
-    if from_date == 'NaN-NaN-NaN':
+    if from_date == 'NaN-NaN-NaN' or from_date is None or from_date == "":
         from_date = time.strftime("%Y-%m-%d")
-    if to_date == 'NaN-NaN-NaN':
+    if to_date is None or to_date == "" or to_date == 'NaN-NaN-NaN':
         to_date = time.strftime("%Y-%m-%d")
 
     to_date = "%s 23:59:59" % to_date
