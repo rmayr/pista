@@ -1,5 +1,7 @@
 # pista
 
+![Logo](static/images/pista/pista-logo.png)
+
 _pista_ (the Spanish word for _track_) is a Python Bottle app which works hand-in-hand with _o2s_ for displaying data, maps, tracks and information from that database.
 
 
@@ -13,4 +15,6 @@ Run `./pista.py` and connect to it with a supported Web browser. By default, the
 
 
 
+### Credits
 
+* Brand image from [openclipart](https://openclipart.org/detail/28088/Roadsign_slippery-by-Simarilius)
