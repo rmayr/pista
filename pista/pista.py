@@ -336,7 +336,9 @@ def get_download():
                 't'   : tp.get('t', '-'),
             })
 
-        s.write(json.dumps(dict(track=tlist, tstamp="maybe now"), indent=2))
+        message = "OK"  # or clear-text error shown to user
+        tstamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(int(time.time())))
+        s.write(json.dumps(dict(track=tlist, tstamp=tstamp, status=message), indent=2))
 
     if fmt == 'txt':
 
@@ -417,6 +419,53 @@ def get_download():
     response.headers['Content-Length'] = str(octets)
 
     return s.getvalue()
+
+@app.route('/api/tracktest', method='POST')
+def get_geoJSON():
+    data = bottle.request.body.read()
+    print data
+
+    username = request.forms.get('username')
+    password = request.forms.get('password')
+    tid = request.forms.get('tid')
+
+    print "user=[%s:%s] TID=[%s]" % (username, password, tid)
+
+    db_reconnect()
+
+    query = (Location
+                .select(Location, Geo.addr.alias('addr'))
+                .join(Geo, JOIN_LEFT_OUTER, on=(Location.ghash == Geo.ghash)).
+                where(
+                    (Location.tid == tid) 
+                    )
+                ).order_by(Location.tst.desc()).limit(3)
+            
+    track = []
+    for l in query.naive():
+
+        dbid    = l.id
+        lat     = float(l.lat)
+        lon     = float(l.lon)
+        dt      = l.tst
+
+        tp = {
+            'lat' : float(l.lat),
+            'lon' : float(l.lon),
+            'tst' : l.tst.strftime('%s'),
+            't'   : l.t,
+            'vel' : int(l.vel),
+        }
+        track.append(tp)
+    
+    response.content_type = 'application/json'
+
+    data = {
+        'message'  :  "OK",  # or clear-text error shown to user
+        'tstamp'   :  time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(int(time.time()))),
+        'track'    : track,
+    }
+    return json.dumps(data, indent=2)
 
 
 @app.route('/api/getGeoJSON', method='POST')
