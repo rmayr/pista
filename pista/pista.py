@@ -100,20 +100,23 @@ def getDBdata(username, device, from_date, to_date, spacing):
 
         # FIXME: add distance haversine to previous point
 
-        tp = {
-            'lat' : float(l.lat),
-            'lon' : float(l.lon),
-            'tst' : l.tst,
-            't'   : l.t,
-            'vel' : int(l.vel),
-            'cog' : int(l.cog),
-            'alt' : int(l.alt),
-            'ghash' : l.ghash,
-            'cc'  : l.cc,
-            'addr' : l.addr,
-        }
+        try:
+            tp = {
+                'lat' : float(l.lat),
+                'lon' : float(l.lon),
+                'tst' : l.tst,
+                't'   : l.t,
+                'vel' : int(l.vel),
+                'cog' : int(l.cog),
+                'alt' : int(l.alt),
+                'ghash' : l.ghash,
+                'cc'  : l.cc,
+                'addr' : l.addr,
+            }
 
-        track.append(tp)
+            track.append(tp)
+        except:
+            pass
 
     return track
 
@@ -328,13 +331,16 @@ def get_download():
     if fmt == 'ctrl':
         tlist = []
         for tp in track:
-            tlist.append({
-                'tst' : tp['tst'].strftime('%s'),
-                'lat' : tp.get('lat'),
-                'lon' : tp.get('lon'),
-                'vel' : int(tp.get('vel', 0)),
-                't'   : tp.get('t', '-'),
-            })
+            try:
+                tlist.append({
+                    'tst' : tp['tst'].strftime('%s'),
+                    'lat' : tp.get('lat'),
+                    'lon' : tp.get('lon'),
+                    'vel' : int(tp.get('vel', 0)),
+                    't'   : tp.get('t', '-'),
+                })
+            except:
+                pass
 
         message = "OK"  # or clear-text error shown to user
         tstamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(int(time.time())))
@@ -421,9 +427,10 @@ def get_download():
     return s.getvalue()
 
 @app.route('/api/tracktest', method='POST')
-def get_geoJSON():
+def ctrl_trackdump():
     data = bottle.request.body.read()
-    print data
+
+    track = []
 
     username = request.forms.get('username')
     password = request.forms.get('password')
@@ -435,9 +442,14 @@ def get_geoJSON():
 
     print "user=[%s:%s] TID=[%s] nrecs=%s" % (username, password, tid, nrecs)
 
-    db_reconnect()
+    authorized = True
+    message = "Not authorized"
 
-    query = (Location
+    if authorized:
+        db_reconnect()
+        message = "OK"
+
+        query = (Location
                 .select(Location, Geo.addr.alias('addr'))
                 .join(Geo, JOIN_LEFT_OUTER, on=(Location.ghash == Geo.ghash)).
                 where(
@@ -445,30 +457,32 @@ def get_geoJSON():
                     )
                 ).order_by(Location.tst.desc()).limit(nrecs)
             
-    track = []
-    for l in query.naive():
+        for l in query.naive():
+            lat     = float(l.lat)
+            lon     = float(l.lon)
+            dt      = l.tst
 
-        dbid    = l.id
-        lat     = float(l.lat)
-        lon     = float(l.lon)
-        dt      = l.tst
-
-        tp = {
-            'lat' : float(l.lat),
-            'lon' : float(l.lon),
-            'tst' : l.tst.strftime('%s'),
-            't'   : l.t,
-            'vel' : int(l.vel),
-        }
-        track.append(tp)
+            try:
+                tp = {
+                    'lat' : float(l.lat),
+                    'lon' : float(l.lon),
+                    'tst' : int(dt.strftime('%s')),
+                    't'   : l.t,
+                    'vel' : int(l.vel),
+                }
+                track.append(tp)
+            except:
+                pass
     
     response.content_type = 'application/json'
 
     data = {
-        'message'  :  "OK",  # or clear-text error shown to user
-        'tstamp'   :  time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(int(time.time()))),
+        'tid'      : tid,
+        'message'  : message,
+        'tstamp'   : time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(int(time.time()))),
         'track'    : track,
     }
+    return json.dumps(data, sort_keys=True, separators=(',',':'))
     return json.dumps(data, indent=2)
 
 
