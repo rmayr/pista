@@ -39,6 +39,15 @@ redis = Wredis(oconf.config('redis'))
 
 # FIXME: load from dict     app.config.load_config('jjj.conf')
 
+def notauth(reason):
+    return bottle.HTTPResponse(status=403, body=reason)
+
+def auth(username, password):
+    if username is None or password is None:
+        return False
+
+    return True
+
 
 def db_reconnect():
     # Attempt to connect if not already connected. For MySQL, take care of MySQL 2006
@@ -431,6 +440,7 @@ def ctrl_trackdump():
     data = bottle.request.body.read()
 
     track = []
+    status = 200
 
     username = request.forms.get('username')
     password = request.forms.get('password')
@@ -442,8 +452,9 @@ def ctrl_trackdump():
 
     print "user=[%s:%s] TID=[%s] nrecs=%s" % (username, password, tid, nrecs)
 
-    authorized = True
-    message = "Not authorized"
+    authorized = auth(username, password)
+    if authorized == False:
+        status = 403
 
     if authorized:
         db_reconnect()
@@ -482,8 +493,8 @@ def ctrl_trackdump():
         'tstamp'   : time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(int(time.time()))),
         'track'    : track,
     }
+    response.status = status
     return json.dumps(data, sort_keys=True, separators=(',',':'))
-    return json.dumps(data, indent=2)
 
 
 @app.route('/api/getGeoJSON', method='POST')
