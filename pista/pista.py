@@ -428,8 +428,12 @@ def get_geoJSON():
     username = request.forms.get('username')
     password = request.forms.get('password')
     tid = request.forms.get('tid')
+    nrecs = request.forms.get('nrecs')
 
-    print "user=[%s:%s] TID=[%s]" % (username, password, tid)
+    if nrecs is None or int(nrecs) < 1:
+        nrecs = 50
+
+    print "user=[%s:%s] TID=[%s] nrecs=%s" % (username, password, tid, nrecs)
 
     db_reconnect()
 
@@ -439,7 +443,7 @@ def get_geoJSON():
                 where(
                     (Location.tid == tid) 
                     )
-                ).order_by(Location.tst.desc()).limit(3)
+                ).order_by(Location.tst.desc()).limit(nrecs)
             
     track = []
     for l in query.naive():
