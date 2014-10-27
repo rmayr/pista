@@ -45,11 +45,16 @@ class Wredis(object):
         return self._request(self.r.get, key)
 
     def hmset(self, key=None, arg=None, expire=None):
-        pipe = self.r.pipeline()
-        pipe.hmset(key, arg)
-        if expire:
-            pipe.expire(key, expire)
-        pipe.execute()
+        try:
+            pipe = self.r.pipeline()
+            pipe.hmset(key, arg)
+            if expire:
+                pipe.expire(key, expire)
+            return pipe.execute()
+        except:
+            pass
+
+        return None
 
     def hget(self, key=None, field=None):
         return self._request(self.r.hget, key, field)
