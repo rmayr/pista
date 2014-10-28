@@ -18,6 +18,7 @@ from dbschema import Location, Waypoint, RAWdata, Operators, sql_db
 import io
 import csv
 import imp
+import waypoints
 
 cf = conf(os.getenv('O2SCONFIG', 'o2s.conf'))
 
@@ -660,6 +661,8 @@ for t in base_topics:
 
 
 # FIXME: I must keep record of ../status up/down and their times
+
+## waypoints.load_waypoints()
 
 while True:
     try:
