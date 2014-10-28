@@ -49,7 +49,8 @@ def auth(username, password, apns_token):
     print "Hash match for [%s]: %s" % (username, match)
 
     if match == True and apns_token is not None:
-        q = User.update(token = apns_token).where(User.username == username)
+        tstamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
+        q = User.update(token = apns_token, tstamp = tstamp).where(User.username == username)
         q.execute()
 
     return match
