@@ -49,6 +49,10 @@ alarm = "alarmhelper.py"
 
 t_ignore = [ 'p', ]
 
+# config helper for CTRL
+
+ctrlconfer = True
+
 #   __  __  ___ _____ _____ 
 #  |  \/  |/ _ \_   _|_   _|
 #  | |\/| | | | || |   | |  
