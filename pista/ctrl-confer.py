@@ -76,7 +76,7 @@ def conf():
     if not authorized:
         status = 403
     else:
-        topics = [ 'owntracks/demo/MV' ]
+        topics = [ 'owntracks/+/MV', 'owntracks/+/+' ]  # FIXME: from DB
         resp = {
             '_type'         : 'configuration',
             'topicList'     : topics,
