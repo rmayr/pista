@@ -23,6 +23,9 @@ def notauth(reason):
 def auth(username, password, apns_token):
     print "***DEBUG AUTH CONF: username=%s, pw=[%s], TOK=%s" % ( username, password, apns_token)
 
+    if username is None or password is None:
+        return False
+
     try:
         sql_db.connect()
     except Exception, e:
