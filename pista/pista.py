@@ -345,8 +345,8 @@ def get_download():
                     'tst' : tp['tst'].strftime('%s'),
                     'lat' : tp.get('lat'),
                     'lon' : tp.get('lon'),
-                    'vel' : int(tp.get('vel', 0)),
-                    't'   : tp.get('t', '-'),
+                    # 'vel' : int(tp.get('vel', 0)),
+                    # 't'   : tp.get('t', '-'),
                 })
             except:
                 pass
