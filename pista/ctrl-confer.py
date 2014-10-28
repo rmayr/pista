@@ -13,6 +13,7 @@ import json
 import time
 from cf import conf
 from authschema import User, fn, sql_db
+from dbschema import Location
 import hashing_passwords as hp
 
 app = application = bottle.Bottle()
@@ -20,7 +21,7 @@ app = application = bottle.Bottle()
 def notauth(reason):
     return bottle.HTTPResponse(status=403, body=json.dumps({"message": reason}))
 
-def auth(username, password, apns_token):
+def auth(username, password, apns_token=None):
     print "***DEBUG AUTH CONF: username=%s, pw=[%s], TOK=%s" % ( username, password, apns_token)
 
     if username is None or password is None:
@@ -109,6 +110,76 @@ def cacert():
 
     response.content_type = 'application/x-pem-file'
     return pem
+
+
+# TRACKS ---------------------------------------------------------------
+@app.route('/ext/ctrl/tracks/<user>', method='POST')
+def ctrl_trackdump(user):
+    data = bottle.request.body.read()
+
+    track = []
+    status = 200
+
+    username = request.forms.get('username')
+    password = request.forms.get('password')
+    tid = request.forms.get('tid')
+    nrecs = request.forms.get('nrecs')
+    topic = request.forms.get('topic')
+
+    authorized = auth(username, password)
+    if authorized == False:
+        return notauth("Not authenticated")
+
+    if topic is None:
+        return notauth("topic is empty")
+
+    if nrecs is None or int(nrecs) < 1:
+        nrecs = 50
+
+    print "user=[%s:%s] TID=[%s] nrecs=%s TOPIC=[%s]" % (username, password, tid, nrecs, topic)
+
+    track = []
+
+    query = (Location
+                .select(Location).
+                where(
+                    (Location.topic == topic)
+                    )
+                ).order_by(Location.tst.desc()).limit(nrecs)
+    for l in query.naive():
+
+        dbid    = l.id
+        lat     = float(l.lat)
+        lon     = float(l.lon)
+        dt      = l.tst
+
+        try:
+            tp = {
+                'lat' : float(l.lat),
+                'lon' : float(l.lon),
+                'tst' : int(dt.strftime('%s')),
+            }
+
+            track.append(tp)
+        except:
+            pass
+
+    message = "OK"  # or clear-text error shown to user
+
+    data = {
+        'topic'    : topic,
+        'message'  : message,
+        'tstamp'   : time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(int(time.time()))),
+        'track'    : track,
+    }
+
+
+    response.content_type = 'application/json'
+    response.status = status
+    return json.dumps(data, sort_keys=True, indent=2)
+    return json.dumps(data, sort_keys=True, separators=(',',':'))
+
+#  ---------------------------------------------------------------
 
 if __name__ == '__main__':
     bottle.run(app,
