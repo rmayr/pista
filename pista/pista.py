@@ -478,8 +478,8 @@ def ctrl_trackdump():
                     'lat' : float(l.lat),
                     'lon' : float(l.lon),
                     'tst' : int(dt.strftime('%s')),
-                    't'   : l.t,
-                    'vel' : int(l.vel),
+                    # 't'   : l.t,
+                    # 'vel' : int(l.vel),
                 }
                 track.append(tp)
             except:
