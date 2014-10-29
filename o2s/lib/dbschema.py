@@ -57,6 +57,7 @@ class Location(OwntracksModel):
 
             # Create non-unique on tid
             (('tid', ), False),
+            (('topic', ), False),
         )
 
 class RAWdata(OwntracksModel):
