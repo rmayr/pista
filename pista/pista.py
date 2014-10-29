@@ -207,7 +207,8 @@ def page_hw():
 
         if tid is not None and imei is not None and version is not None and tstamp is not None:
 
-            device_list.append({
+            try:
+                device_list.append({
                     'tid'       : tid,
                     'status'    : int(data.get('status', -1)),
                     'imei'      : imei,
@@ -215,7 +216,9 @@ def page_hw():
                     'tstamp'    : tstamp,
                     'npubs'     : data.get('npubs', None),
                     'topic'     : device[2:],
-                })
+                    })
+            except:
+                pass
 
     device_list.sort(key=lambda x: x['tid'], reverse=False)
     params = {
