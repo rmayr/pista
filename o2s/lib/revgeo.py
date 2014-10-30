@@ -84,8 +84,11 @@ class RevGeo(object):
     def _google(self, lat, lon):
 
         try:
+            # https://developers.google.com/maps/documentation/geocoding/
+            maplang = 'de'
+            region_bias = 'de'
             url = 'http://maps.googleapis.com/maps/api/geocode/json' + \
-                    '?latlng=%s,%s&sensor=false' % (lat, lon)
+                    '?latlng=%s,%s&sensor=false&language=%s&region=%s' % (lat, lon, maplang, region_bias)
             google_data = json.load(urllib2.urlopen(url))
 
             revgeo = { }
