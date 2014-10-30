@@ -349,22 +349,25 @@ def payload2location(topic, payload):
 
         fieldnames = ['tid', 'tst', 't', 'lat', 'lon', 'cog', 'vel', 'alt', 'dist', 'trip' ]
 
-        csvreader = csv.DictReader(io.StringIO(u(payload)), fieldnames=fieldnames)
-        for r in csvreader:
-            item = {
-                '_type' : 'location',
-                'tid'   : r.get('tid', '??'),
-                'tst'   : int(r.get('tst', 0), 16),
-                't'     : r.get('t', 'X'),
-                'lat'   : float(float(r.get('lat')) / MILL),
-                'lon'   : float(float(r.get('lon')) / MILL),
-                'cog'   : int(r.get('cog', 0)) * 10,
-                'vel'   : int(r.get('vel', 0)),
-                'alt'   : int(r.get('alt', 0)) * 10,
-                'dist'  : int(r.get('dist', 0)),
-                'trip'  : int(r.get('trip', 0)) * 1000,
-            }
-            # print (json.dumps(item, sort_keys=True))
+        try:
+            csvreader = csv.DictReader(io.StringIO(u(payload)), fieldnames=fieldnames)
+            for r in csvreader:
+                item = {
+                    '_type' : 'location',
+                    'tid'   : r.get('tid', '??'),
+                    'tst'   : int(r.get('tst', 0), 16),
+                    't'     : r.get('t', 'X'),
+                    'lat'   : float(float(r.get('lat')) / MILL),
+                    'lon'   : float(float(r.get('lon')) / MILL),
+                    'cog'   : int(r.get('cog', 0)) * 10,
+                    'vel'   : int(r.get('vel', 0)),
+                    'alt'   : int(r.get('alt', 0)) * 10,
+                    'dist'  : int(r.get('dist', 0)),
+                    'trip'  : int(r.get('trip', 0)) * 1000,
+                }
+                # print (json.dumps(item, sort_keys=True))
+            except:
+                return None
     except:
         return None
 
