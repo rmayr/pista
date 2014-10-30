@@ -14,7 +14,7 @@ from bottle import response, template, static_file, request
 import json
 import time
 from cf import conf
-from authschema import User, Acl, fn, sql_db
+from authschema import User, Acl, Params, fn, sql_db
 from dbschema import Location
 import hashing_passwords as hp
 import paho.mqtt.client as paho
@@ -22,8 +22,8 @@ import paho.mqtt.client as paho
 
 SCRIPTNAME = os.path.splitext(os.path.basename(__file__))[0]
 LOGFILE    = os.getenv(SCRIPTNAME.upper() + 'LOG', SCRIPTNAME + '.log')
-LOGLEVEL   = logging.INFO
-#LOGLEVEL   = logging.DEBUG
+#LOGLEVEL   = logging.INFO
+LOGLEVEL   = logging.DEBUG
 LOGFORMAT  = '%(asctime)-15s %(levelname)-5s [%(module)s] %(message)s'
 
 logging.basicConfig(filename=LOGFILE, level=LOGLEVEL, format=LOGFORMAT)
@@ -89,6 +89,44 @@ def conf():
     if authorized == False:
         return notauth("Not authenticated")
 
+    mqtthost    = 'demo.owntracks.de'
+    mqttport    = 8883
+    mqtt_tls    = 1
+    mqtt_auth   = 1
+    mqtt_username = username
+    mqtt_password = password
+    certurl     = "https://demo.owntracks.de/ext/ctrl/cacert.pem"
+    trackurl    = 'https://demo.owntracks.de/ext/ctrl/tracks/%s' % username
+
+    try:
+        params = (Params
+                    .select()
+                    .join(User)
+                    .where(
+                        (User.username == username)
+                    )
+                    .get())
+        if params.host is not None:
+            mqtthost = params.host
+        if params.port is not None:
+            mqttport = params.port
+        if params.tls is not None:
+            mqtt_tls = params.tls
+        if params.auth is not None:
+            mqtt_auth = params.auth
+        if params.mqttuser is not None:
+            mqtt_username = params.mqttuser
+        if params.mqttpass is not None:
+            mqtt_password = params.mqttpass
+        if params.certurl is not None:
+            certurl = params.certurl
+        if params.trackurl is not None:
+            trackurl = params.trackurl
+
+    except Exception, e:
+        logging.error("Get params for %s fails: %s" % (username, str(e)))
+        pass
+
     topic_list = []
 
     # Select list of topics for this user. Attempt to expand %u which the client
@@ -105,15 +143,15 @@ def conf():
     resp = {
             '_type'         : 'configuration',
             'topicList'     : topic_list,
-            'host'          : 'demo.owntracks.de',
-            'port'          : 8883,
-            'tls'           : 1,
-            'auth'          : 1,
+            'host'          : mqtthost,
+            'port'          : mqttport,
+            'tls'           : mqtt_tls,
+            'auth'          : mqtt_auth,
             'clientid'      : 'iosCTRL-' + username,
-            'trackurl'      : 'https://demo.owntracks.de/ext/ctrl/tracks/%s' % username,
-            'username'      : username,  # Return to client for MQTT connection
-            'password'      : password,  # Return to client for MQTT connection
-            'certurl'       : "https://demo.owntracks.de/ext/ctrl/cacert.pem",
+            'trackurl'      : trackurl,
+            'username'      : mqtt_username,  # Return to client for MQTT connection
+            'password'      : mqtt_password,  # Return to client for MQTT connection
+            'certurl'       : certurl,
         }
 
     if username == 'jp2':

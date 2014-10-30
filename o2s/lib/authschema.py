@@ -34,6 +34,7 @@ class User(ConferModel):
     username        = CharField(null=False, unique=True)
     pwhash          = CharField(null=False)
     superuser       = IntegerField(null=False)
+    org             = IntegerField(null=True)
     token           = CharField(null=True)
     note            = CharField(null=True)
     tstamp          = DateTimeField(default=datetime.datetime.now)
@@ -52,6 +53,18 @@ class Acl(ConferModel):
             (('username', 'topic'), True),
         )
 
+class Params(ConferModel):
+    org             = ForeignKeyField(User)
+    name            = CharField(null=True)
+    host            = CharField(null=True)
+    port            = IntegerField(null=True)
+    tls             = IntegerField(null=True)
+    auth            = IntegerField(null=True)
+    mqttuser        = CharField(null=True)
+    mqttpass        = CharField(null=True)
+    certurl         = CharField(null=True)
+    trackurl        = CharField(null=True)
+
 if __name__ == '__main__':
     sql_db.connect()
 
@@ -63,5 +76,10 @@ if __name__ == '__main__':
 
         try:
             Acl.create_table(fail_silently=True)
+        except Exception, e:
+            print str(e)
+
+        try:
+            Params.create_table(fail_silently=True)
         except Exception, e:
             print str(e)
