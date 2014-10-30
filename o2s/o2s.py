@@ -96,7 +96,7 @@ def on_disconnect(mosq, userdata, rc):
     print "Disconnected: code=%s (%s)" % (rc, reasons.get(rc, 'unknown'))
 
 def on_cmd(mosq, userdata, msg):
-    if msg.retain == 1 or len(msg.payload) < 0:
+    if msg.retain == 1 or len(msg.payload) == 0:
         return
 
     save_rawdata(msg.topic, msg.payload)
@@ -145,7 +145,7 @@ def push_map(mosq, device, device_data):
     mosq.publish(topic, payload, qos=0, retain=True)
 
 def on_status(mosq, userdata, msg):
-    if (skip_retained and msg.retain == 1) or len(msg.payload) < 0:
+    if (skip_retained and msg.retain == 1) or len(msg.payload) == 0:
         return
 
     device = str(msg.topic)
@@ -175,7 +175,7 @@ def on_status(mosq, userdata, msg):
         redis.hmset(rkey("t", msg.topic, "/status"), dict(status=msg.payload))
 
 def on_voltage(mosq, userdata, msg):
-    if (skip_retained and msg.retain == 1) or len(msg.payload) < 0:
+    if (skip_retained and msg.retain == 1) or len(msg.payload) == 0:
         return
 
     save_rawdata(msg.topic, msg.payload)
@@ -204,7 +204,7 @@ def on_voltage(mosq, userdata, msg):
 
 
 def on_alarm(mosq, userdata, msg):
-    if (skip_retained and msg.retain == 1) or len(msg.payload) < 0:
+    if (skip_retained and msg.retain == 1) or len(msg.payload) == 0:
         return
 
     save_rawdata(msg.topic, msg.payload)
@@ -234,7 +234,7 @@ def on_alarm(mosq, userdata, msg):
 
 
 def on_start(mosq, userdata, msg):
-    if (skip_retained and msg.retain == 1) or len(msg.payload) < 0:
+    if (skip_retained and msg.retain == 1) or len(msg.payload) == 0:
         return
 
     print "STARTUP ", msg.payload
@@ -258,7 +258,7 @@ def on_start(mosq, userdata, msg):
 
 
 def on_gpio(mosq, userdata, msg):
-    if (skip_retained and msg.retain == 1) or len(msg.payload) < 0:
+    if (skip_retained and msg.retain == 1) or len(msg.payload) == 0:
         return
 
     print "GPIO ", msg.payload
@@ -267,13 +267,13 @@ def on_gpio(mosq, userdata, msg):
     watcher(mosq, msg.topic, msg.payload)
 
 def on_operator_watch(mosq, userdata, msg):
-    if (skip_retained and msg.retain == 1) or len(msg.payload) < 0:
+    if (skip_retained and msg.retain == 1) or len(msg.payload) == 0:
         return
     watcher(mosq, msg.topic, msg.payload)
 
 def on_operator(mosq, userdata, msg):
 
-    if (skip_retained and msg.retain == 1) or len(msg.payload) < 1:
+    if (skip_retained and msg.retain == 1) or len(msg.payload) == 0:
         return
 
     if cf.g('features', 'plmn', False) == False:
@@ -433,7 +433,7 @@ def watcher(mosq, topic, data):
 
 def on_message(mosq, userdata, msg):
     
-    if (skip_retained and msg.retain == 1) or len(msg.payload) < 1:
+    if (skip_retained and msg.retain == 1) or len(msg.payload) == 0:
         return
 
     types = ['location', 'waypoint']
@@ -519,7 +519,7 @@ def on_message(mosq, userdata, msg):
         if 'addr' in g:
             event_desc = g.get('addr')
             item['addr'] = g.get('addr')
-        print "%s %-2s %5d %s" % (g.get('cached', -1), tid, vel, g.get('addr', ''))
+        print "%s %-2s %5d %s [%s] %s,%s" % (g.get('cached', -1), tid, vel, g.get('addr', ''), item.get('ghash'), item.get('lat'), item.get('lon'))
     else:
         print "  %-2s" % tid
 
