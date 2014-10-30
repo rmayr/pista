@@ -438,9 +438,11 @@ def on_message(mosq, userdata, msg):
 
     topic = msg.topic
 
-# FIXME
-    if False and len(msg.payload) == 0:
-        ''' Clear out everthing we know of this vehicle '''
+    if len(msg.payload) == 0:
+        '''
+        Clear out everthing we know of this vehicle in Redis.
+        We cannot delete our own MQTT topics, because that'll result in a loop.
+        '''
 
         # 1) "t:owntracks/gw/B2"
         # 2) "vbatt:owntracks/gw/B2"
@@ -449,9 +451,8 @@ def on_message(mosq, userdata, msg):
         # 5) "vext:owntracks/gw/B2"
 
         if redis:
-            data = redis.hgetall(topic)
+            data = redis.hgetall("t:" + topic)
             if data is not None and 'tid' in data:
-                print data
                 tid = data['tid']
                 if tid is not None:
                     redis.delete("lastloc:%s" % tid)
@@ -461,11 +462,10 @@ def on_message(mosq, userdata, msg):
                 redis.delete("vext:%s" % topic)
 
         # FIXME: we should subscribe to topic/# to find 'em all...
-
-        for s in ['status', 'start', 'gpio', 'voltage', 'operators', 'info']:
-            mosq.publish("%s/%s" % (topic, s), None, qos=2, retain=True)
-        mosq.publish(topic, None, qos=2, retain=True)
-        mosq.publish(maptopic + "/" + topic, None, qos=2, retain=True)
+        # for s in ['status', 'start', 'gpio', 'voltage', 'operators', 'info']:
+        #     mosq.publish("%s/%s" % (topic, s), None, qos=2, retain=True)
+        # mosq.publish(topic, None, qos=2, retain=True)
+        # mosq.publish(maptopic + "/" + topic, None, qos=2, retain=True)
 
         return
 
