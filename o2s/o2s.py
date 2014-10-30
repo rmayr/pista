@@ -366,8 +366,8 @@ def payload2location(topic, payload):
                     'trip'  : int(r.get('trip', 0)) * 1000,
                 }
                 # print (json.dumps(item, sort_keys=True))
-            except:
-                return None
+        except:
+            return None
     except:
         return None
 
