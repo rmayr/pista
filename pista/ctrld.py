@@ -127,6 +127,8 @@ def conf():
 
 @app.route('/ext/ctrl/cacert.pem', method='GET')
 def cacert():
+    ''' Return the PEM-encoded CA certificate for the connection
+        to the MQTT broker. '''
 
     # FIXME
     f = open('demo-8883.crt')
@@ -172,6 +174,7 @@ def ctrl_trackdump(user):
 
     track_authorized = False
     message = "Not authorized"
+    status = 403
 
     try:
         query = (Acl.select(Acl). where(
@@ -185,6 +188,7 @@ def ctrl_trackdump(user):
             logging.debug("sub %s (%s) => %s" % (sub, new_sub, matches))
             if matches:
                 track_authorized = True
+                status = 200
                 break
     except Exception, e:
         logging.error("Can't query ACL: %s" % (str(e)))
@@ -200,6 +204,7 @@ def ctrl_trackdump(user):
 
     if track_authorized == True:
         message = "OK"
+        status = 200
         query = (Location
                     .select(Location).
                     where(
