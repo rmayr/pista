@@ -105,6 +105,11 @@ dbpasswd = 'secret'
 [revgeo]
 enabled = True
 ghashlen = 5  ; default=5
+# The region_bias is a ccTLD country code which attempts to bias
+# the type of data returned. (Compare "Toledo" in Spain with Toledo
+# somewhere in the US.) We set map language to the same value.
+# https://developers.google.com/maps/documentation/geocoding/?csw=1#RegionCodes
+region_bias = "de"
 
 [redis]
 enabled = True

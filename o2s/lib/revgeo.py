@@ -13,6 +13,7 @@ class RevGeo(object):
         self.port = port
         self.hashlen = conf.get('ghashlen', 5)
         self.storage = storage
+        self.region_bias = conf.get('region_bias', 'de')
 
     def rev(self, lat, lon, api='geonames'):
         if not self.enabled:
@@ -85,10 +86,9 @@ class RevGeo(object):
 
         try:
             # https://developers.google.com/maps/documentation/geocoding/
-            maplang = 'de'
-            region_bias = 'de'
+            maplang = self.region_bias
             url = 'http://maps.googleapis.com/maps/api/geocode/json' + \
-                    '?latlng=%s,%s&sensor=false&language=%s&region=%s' % (lat, lon, maplang, region_bias)
+                    '?latlng=%s,%s&sensor=false&language=%s&region=%s' % (lat, lon, maplang, self.region_bias)
             google_data = json.load(urllib2.urlopen(url))
 
             revgeo = { }
