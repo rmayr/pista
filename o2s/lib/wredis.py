@@ -76,3 +76,6 @@ class Wredis(object):
 
     def keys(self, pattern):
         return self._request(self.r.keys, pattern)
+
+    def delete(self, key):
+        return self._request(self.r.delete, key)

@@ -433,12 +433,45 @@ def watcher(mosq, topic, data):
 
 def on_message(mosq, userdata, msg):
     
-    if (skip_retained and msg.retain == 1) or len(msg.payload) == 0:
+    if (skip_retained and msg.retain == 1):
         return
+
+    topic = msg.topic
+
+# FIXME
+    if False and len(msg.payload) == 0:
+        ''' Clear out everthing we know of this vehicle '''
+
+        # 1) "t:owntracks/gw/B2"
+        # 2) "vbatt:owntracks/gw/B2"
+        # 3) "lastloc:B2"
+        # 4) "tid:B2"
+        # 5) "vext:owntracks/gw/B2"
+
+        if redis:
+            data = redis.hgetall(topic)
+            if data is not None and 'tid' in data:
+                print data
+                tid = data['tid']
+                if tid is not None:
+                    redis.delete("lastloc:%s" % tid)
+                    redis.delete("tid:%s" % tid)
+                redis.delete("t:%s" % topic)
+                redis.delete("vbatt:%s" % topic)
+                redis.delete("vext:%s" % topic)
+
+        # FIXME: we should subscribe to topic/# to find 'em all...
+
+        for s in ['status', 'start', 'gpio', 'voltage', 'operators', 'info']:
+            mosq.publish("%s/%s" % (topic, s), None, qos=2, retain=True)
+        mosq.publish(topic, None, qos=2, retain=True)
+        mosq.publish(maptopic + "/" + topic, None, qos=2, retain=True)
+
+        return
+
 
     types = ['location', 'waypoint']
 
-    topic = msg.topic
     payload = str(msg.payload)
     save_rawdata(topic, msg.payload)
 
