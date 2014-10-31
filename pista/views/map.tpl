@@ -63,11 +63,15 @@ function handlerfunc(topic, payload) {
 				$('#img-cog').show();
 				// -90 because original arrow points right (90)
 				$('#img-cog').rotate(parseFloat(d.cog) - 90.0);
-		} else {
-				$('#img-cog').hide();
+			} else {
+					$('#img-cog').hide();
 			}
+			mapit(topic, d, date);
 		}
-		mapit(topic, d, date);
+
+		if (d._type == 'fence') {
+			draw_geofence(d);
+		}
 	} catch (err) {
 		console.log("JSON parse error " + err);
 		return;

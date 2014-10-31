@@ -3,30 +3,25 @@ var map;
 var redIcon;
 var latlngs = Array();
 
-/* FIXME: load_geofences from MQTT retained  */
-function load_geofences()
+/*
+ * Draw a geofence (blue circle) on the map for the Geo fence (a.k.a. waypoint).
+ * `fence` is an object with the following data:
+ * {"lat": 52.3773, "radius": 500, "_type": "fence", "lon": 9.74236, "waypoint": "Hannover HBF"}
+ */
+
+function draw_geofence(data)
 {
-	$.ajax({
-		type: 'GET',
-		url: config.geofences,
-		async: false,
-		data: {},
-		dataType: 'json',
-		success: function(data) {
+	try{
+		lat	= data.lat;
+		lon	= data.lon;
+		radius	= data.radius;
 
-			for (var key in data) {
-				console.log(key + " -> " + data[key].desc);
-				lat = data[key].lat;
-				lon = data[key].lon;
-				radius = data[key].meters;
+		L.circle([lat, lon], radius).addTo(map);
 
-				L.circle([lat, lon], radius).addTo(map);
-			}
-		},
-		error: function(xhr, status, error) {
-			alert('get: ' + status + ", " + error);
-		}
-	});
+	} catch (err) {
+		console.log("Cannot draw_geofence " + err);
+		return;
+	}
 }
 
 function load_map(apiKey)
@@ -50,10 +45,6 @@ function load_map(apiKey)
 	}
 
 	map.scrollWheelZoom.disable();
-
-	if (config.geofences !== null) {
-		load_geofences();
-	}
 }
 
 // topic is received topic

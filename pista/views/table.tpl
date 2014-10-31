@@ -25,7 +25,7 @@ function handlerfunc(topic, payload) {
 		var d = JSON.parse(payload);
 
 		if (d._type != 'location') {
-			console.log('Not a location: ignoring ' + payload);
+			// console.log('Not a location: ignoring ' + payload);
 			return;
 		}
 		// console.log(topic + " " + payload);
