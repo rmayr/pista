@@ -17,6 +17,17 @@ function getPopupText(user, lat, lon) {
 	return text;
 }
 
+function _titlefmt(user) {
+	var s = "";
+
+	if (user.info) {
+		s = "* " + user.info + "\n";
+	}
+	if (user.addr) {
+		s = s + user.addr;
+	}
+	return (s);
+}
 
 function friend_add(user, lat, lon)
 {
@@ -35,7 +46,7 @@ function friend_add(user, lat, lon)
                                 html: user.name, // AK
                                 iconSize: [30, 30]
                             }),
-                          title: user.addr + "\n" + user.info
+                          title: _titlefmt(user),
                         })
                         .addTo(map);
 	
@@ -75,7 +86,7 @@ function friend_move(user, lat, lon)
 				html: user.name, // AK
 				iconSize: [30, 30]
 			}),
-                        title: user.addr + "\n" + user.info,
+                        title: _titlefmt(user),
 		}).addTo(map);
 
 
