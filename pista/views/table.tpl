@@ -23,6 +23,11 @@ function errorfunc(status, reason) {
 function handlerfunc(topic, payload) {
 	try {
 		var d = JSON.parse(payload);
+
+		if (d._type != 'location') {
+			console.log('Not a location: ignoring ' + payload);
+			return;
+		}
 		// console.log(topic + " " + payload);
 	
 		d.status =  (d.status === undefined) ? null : d.status;

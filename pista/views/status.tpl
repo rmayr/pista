@@ -92,6 +92,9 @@
 	var d;
 	try {
 		d = JSON.parse(payload);
+		if (d._type != 'location') {
+			return;
+		}
 		if (d.tid) {
 			var tid = d.tid;
 			var id = topic.replace(/\//g, '-');

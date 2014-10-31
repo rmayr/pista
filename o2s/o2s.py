@@ -125,12 +125,14 @@ def push_map(mosq, device, device_data):
         device_data contains all we currently know of this device. If the
         data doesn't have a TID, do not publish as this means the object
         isn't yet complete, i.e. we don't yet know its position.
+        Ensure device_data is marked as type 'location'
     '''
 
     if 'tid' not in device_data:
         print "Object %s not yet complete." % device
         return
 
+    device_data['_type'] = 'location'
     try:
         payload = json.dumps(device_data, sort_keys=True, separators=(',',':'))
     except Exception, e:

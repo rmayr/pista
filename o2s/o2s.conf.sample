@@ -88,7 +88,8 @@ skip_retained = False
 base_topics = [ 'owntracks/gw', 'owntracks/jane']
 
 # If maptopic isn't None, completed messages (with additional data) are
-# republished to this topic for the Pista Map and Tracks pages
+# republished to this topic for the Pista Map, Status and Tracks pages. If this
+# is not defined, those pages will be empty.
 
 maptopic = "_map"
 
