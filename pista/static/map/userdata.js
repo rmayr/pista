@@ -7,30 +7,26 @@ function getUser(topic)
 }
 
 function getPopupText(user, lat, lon) {
-	var geoloc = user.addr;
-	var text;
+	var text = "";
+
+	var template = "\
+		<table id='infopopup'>\
+			<tr><td>TID</td><td>{{tid}}</td></tr>\
+			<tr><td>Info</td><td>{{info}}</td></tr>\
+			<tr><td>Addr</td><td>{{addr}}</td>\
+			<tr><td>Location</td><td>{{lat}}, {{lon}}</td></tr>\
+			<tr><td>Speed</td><td>{{vel}}</td></tr>\
+			<tr><td>Altitude</td><td>{{alt}}</td></tr>\
+			<tr><td>CoG</td><td>{{compass}}</td></tr>\
+			<tr><td>Updated</td><td>{{dstamp}}</td></tr>\
+		</table>";
+
 	try {
-		text = "";
-		if (user.info) {
-			text = "<b>" + user.info + "</b><br/>";
-		}
-		text = text + user.addr;
+		text = Mustache.render(template, user.data);
 	} catch(err) {
-		text = "unknown";
+		text = "Cannot render Mustache";
 	}
 	return text;
-}
-
-function _titlefmt(user) {
-	var s = "";
-
-	if (user.info) {
-		s = "* " + user.info + "\n";
-	}
-	if (user.addr) {
-		s = s + user.addr;
-	}
-	return (s);
 }
 
 function friend_add(user, lat, lon)
@@ -50,7 +46,7 @@ function friend_add(user, lat, lon)
                                 html: user.name, // AK
                                 iconSize: [30, 30]
                             }),
-                          title: _titlefmt(user),
+                          // title: _titlefmt(user),
                         })
                         .addTo(map);
 	
@@ -88,7 +84,7 @@ function friend_move(user, lat, lon)
 				html: user.name, // AK
 				iconSize: [30, 30]
 			}),
-                        title: _titlefmt(user),
+                        // title: _titlefmt(user),
 		}).addTo(map);
 
 

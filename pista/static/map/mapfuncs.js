@@ -76,6 +76,8 @@ function mapit(topic, d, date)
 	user.addr   = d.addr;
 	user.info   = d.info;
 
+	user.data   = d;
+
 	console.log(user.name + ": " + user.status);
 		
 	if (user.marker) {

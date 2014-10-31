@@ -16,6 +16,7 @@
     <script src="config.js"></script>
     <script src="map/userdata.js"></script>
     <script src="map/mapfuncs.js"></script>
+    <script src="map/mustache.js"></script>
     <script src="all/mqtt.js" type="text/javascript"></script>
 
     
