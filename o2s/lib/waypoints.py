@@ -62,12 +62,13 @@ class WP(object):
                     # doesn't clobber the previous if both were originally to 
                     # same topic.
 
-                    unique = "%s-%s-%s-%d" % (wptopic, lat, lon, meters)
+                    unique = "%s-%s-%s" % (wptopic, lat, lon)
                     hash_object = hashlib.sha1(unique)
                     unique_sha = hash_object.hexdigest()
 
                     try:
                         fence_topic = self.maptopic + "/" + unique_sha
+                        print fence_topic
                         self.mosq.publish(fence_topic, json.dumps(fence_data), qos=0, retain=True)
                     except Exception, e:
                         logging.warn("Cannot publish fence: %s" % (str(e)))
