@@ -10,9 +10,13 @@ function getPopupText(user, lat, lon) {
 	var geoloc = user.addr;
 	var text;
 	try {
-		text = "<b>" + user.name + "</b><br/>" + lat + ", " + lon + "</br>" + geoloc;
+		text = "";
+		if (user.info) {
+			text = "<b>" + user.info + "</b><br/>";
+		}
+		text = text + user.addr;
 	} catch(err) {
-		text = "unknown user<br/>" + lat + ", " + lon + "</br>" + geoloc;
+		text = "unknown";
 	}
 	return text;
 }
@@ -51,12 +55,10 @@ function friend_add(user, lat, lon)
                         .addTo(map);
 	
 	/* Optional: set marker with revgeo */
-	/*
 	m.bindPopup(getPopupText(user, lat, lon));
 	m.on('mouseover', function(evt) {
 		evt.target.openPopup();
 	});
-	*/
 
 
 	// Bind marker to user
