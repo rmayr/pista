@@ -13,11 +13,21 @@ from geolocation import GeoLocation
 import persist
 import logging
 
+TRIGGER_ENTER   = 1
+TRIGGER_LEAVE   = 0
+
 class WP(object):
-    def __init__(self, persistence_db, mosq, maptopic=None):
+    def __init__(self, persistence_db, mosq, maptopic=None, alert_topic=None, alert_keys=None, watcher_topic=None):
         self.persistence_db = persistence_db
         self.mosq = mosq
         self.maptopic = maptopic
+        self.watcher_topic = watcher_topic
+        self.alert_topic = alert_topic
+        self.alert_keys = []    # list of keys to add to JSON payload on fence alerts
+
+        if alert_keys is not None:
+            for elem in alert_keys.split():
+                self.alert_keys.append(elem)
 
         self.tlist = persist.PersistentDict(self.persistence_db, 'c', format='pickle')
         self.wplist = self.load_waypoints()
@@ -57,6 +67,52 @@ class WP(object):
 
         return wplist
 
+    def alert(self, wp, trigger, item, meters, km):
+
+        if self.alert_topic is None:
+            return
+
+        payload = {
+                '_type'     : 'alert',
+                'trigger'   : trigger,
+                'meters'    : int(meters),
+                'km'        : km,
+                'wplat'     : wp.lat,
+                'wplon'     : wp.lon,
+                'wpname'    : wp.description,
+            }
+
+        if trigger == TRIGGER_ENTER:
+            payload['event'] = 'enters'
+        else:
+            payload['event'] = 'leaves'
+
+        key_list = self.alert_keys
+        if key_list is None or len(key_list) == 0:
+            key_list = list(item.keys())
+        for key in key_list:
+            if key in item:
+                if key == '_type':
+                    continue
+                if key == 'topic':
+                    payload['wptopic'] = item[key]
+                else:
+                    payload[key] = item[key]
+
+
+        try:
+            self.mosq.publish(self.alert_topic, json.dumps(payload, sort_keys=True), qos=0, retain=False)
+        except Exception, e:
+            logging.warn("Cannot publish fence: %s" % (str(e)))
+
+        if self.watcher_topic is not None:
+            message = "ALERT: {tid}: {event} {wpname} at {tstamp}. Distance: {meters}m".format(**payload)
+            try:
+                self.mosq.publish(self.watcher_topic, message, qos=0, retain=False)
+            except Exception, e:
+                logging.warn("Cannot publish fence: %s" % (str(e)))
+
+
     def check(self, item):
 
         lat = item['lat']
@@ -67,6 +123,7 @@ class WP(object):
         try:
             here = GeoLocation.from_degrees(lat, lon)
             for wp in self.wplist:
+                trigger = None
                 meters = 0
                 try:
                     meters = here.distance_to(wp.point) * 1000.
@@ -85,29 +142,23 @@ class WP(object):
                 if very_near is False:
                     if topic in self.tlist:
                         if self.tlist[topic] == wp:
-                            movement['event'] = 'leave'
-                            movement['location'] = str(self.tlist[topic])
+                            trigger = TRIGGER_LEAVE
+                            self.alert(wp, trigger, item, meters, km)
 
-                            msg = "%s ↜ LEAVES  %s (%s km)" % (topic, self.tlist[topic], km)
-                            print msg
-
-                            # alert(mosq, movement)
                             del self.tlist[topic]
                             self.tlist.sync()
 
                 if very_near is True:
                     if topic not in self.tlist:
+                        trigger = TRIGGER_ENTER
                         self.tlist[topic] = wp
                         self.tlist.sync()
-                        movement['event'] = 'enter'
-                        movement['location'] = str(self.tlist[topic])
-                        msg = "%s ⇉ ENTERS  %s (%s km)" % (topic, self.tlist[topic], km)
-                        print msg
-                        # alert(mosq, movement)
+
+                        self.alert(wp, trigger, item, meters, km)
                     else:
                         # Optional:
-                        msg = "%s STILL AT  %s (%s km)" % (topic, self.tlist[topic], km)
-                        print msg
+                        # msg = "%s STILL AT  %s (%s km)" % (topic, self.tlist[topic], km)
+                        # print msg
                         return
         except:
             raise

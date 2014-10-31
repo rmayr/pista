@@ -93,6 +93,45 @@ base_topics = [ 'owntracks/gw', 'owntracks/jane']
 
 maptopic = "_map"
 
+# If the `geofences' feature is enabled and alert_topic is not None, it is an
+# MQTT topic name to which geofence enter/leave events will be published. The
+# payload will consist of a JSON object which is populated with the elements
+# you wish from the list of available data, which includes any of
+#
+#             tid
+#             lat
+#             lon
+#             cog
+#             vel
+#             alt
+#             tstamp
+#             compass
+#             addr
+#             cc
+#             status
+#             topic
+#             tst
+#
+# Configure `alert_keys` to be a string of white-space separated names
+# of the elements you require in the payload. The JSON payload will, in
+# addition, contain the following elements:
+#
+#  "_type" : "alert"
+#  "event" : "enters"                   // or "leaves"
+#  "trigger"  : 1                       // or 0 (1 == enter, 0 == leave)
+#  "km"       : "2.03"                  // distance in Km from center of waypoint
+#  "meters"   : 2312                    // distance in meters "     "
+#  "wpname"   : "Favorite restaurant"   // waypoint description from database
+#  "wplat"    : xxx.xx                  // waypoint-configured lat
+#  "wplon"    : yyy.yy                  // waypoint-configured lon
+#
+# These events are also published to _look, if configured
+# If `alert_keys` is None, all keys are published.
+
+alert_topic = "_alerts"
+# alert_keys  = "addr tst lat tid"
+alert_keys = None
+
 
 #   ____  ____  
 #  |  _ \| __ ) 

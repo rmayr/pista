@@ -637,21 +637,12 @@ def on_message(mosq, userdata, msg):
             devices[topic] = new_data
         push_map(mosq, topic, devices[topic])
 
+    # Geofence events
     if wp:
+        new_data['tstamp'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(int(orig_tst)))
         wp.check(new_data)
 
 
-    # FIXME: handle geofence events (see https://github.com/owntracks/gw/issues/73 )
-
-    eventdata = {
-        'tid'       : tid,
-        'event'     : "enter",  # leave
-        'desc'      : event_desc,
-        'tst'       : orig_tst,
-    }
-    event_topic = topic + "/event"
-
-    # publish event_topic, json.dumps(eventdata)
 
 m = cf.config('mqtt')
 base_topics = list(m['base_topics'])
@@ -703,8 +694,12 @@ for t in base_topics:
 
 # FIXME: I must keep record of ../status up/down and their times
 
-if cf.g('features', 'geofences', None) is not None:
-    wp = waypoints.WP(cf.g('features', 'geofences'), mqttc, maptopic=maptopic)
+geofences = cf.g('features', 'geofences', None)
+if geofences is not None:
+    alert_topic = cf.g('mqtt', 'alert_topic', None)
+    alert_keys  = cf.g('mqtt', 'alert_keys', None)
+    watcher_topic = cf.g('features', 'watcher', None)
+    wp = waypoints.WP(geofences, mqttc, maptopic=maptopic, alert_topic=alert_topic, alert_keys=alert_keys, watcher_topic=watcher_topic)
 
 while True:
     try:
