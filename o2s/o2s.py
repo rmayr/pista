@@ -621,7 +621,8 @@ def on_message(mosq, userdata, msg):
             'cog'     : item.get('cog', 0),
             'vel'     : item.get('vel', 0),
             'alt'     : item.get('alt', 0),
-            'tstamp'  : time.strftime('%d/%H:%M:%S', time.localtime(orig_tst)),
+            'dstamp'  : time.strftime('%d/%H:%M:%S', time.localtime(orig_tst)), # display in Tables
+            'tstamp'  : time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(int(orig_tst))),
             'compass' : compass,
             'addr'    : item.get('addr'),
             'cc'      : item.get('cc'),
@@ -639,7 +640,6 @@ def on_message(mosq, userdata, msg):
 
     # Geofence events
     if wp:
-        new_data['tstamp'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(int(orig_tst)))
         wp.check(new_data)
 
 

@@ -72,6 +72,7 @@ function mapit(topic, d, date)
 	var f = {}
 
 	user.status = d.status;
+	user.addr   = d.addr;
 
 	console.log(user.name + ": " + user.status);
 		

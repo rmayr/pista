@@ -107,6 +107,7 @@ class WP(object):
 
         if self.watcher_topic is not None:
             message = "ALERT: {tid}: {event} {wpname} at {tstamp}. Distance: {meters}m".format(**payload)
+            print message
             try:
                 self.mosq.publish(self.watcher_topic, message, qos=0, retain=False)
             except Exception, e:

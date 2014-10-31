@@ -34,7 +34,7 @@ function handlerfunc(topic, payload) {
 		d.vel = (d.vel) ? Math.round(d.vel) : "";
 		d.alt = (d.alt) ? Math.round(d.alt) + "m" : "";
 		var latlon = d.lat + "," + d.lon;
-		var tstamp = d.tstamp;
+		var tstamp = d.dstamp;
 		var addr = d.addr;
 		var compass = d.compass;
 		var tid = d.tid;
