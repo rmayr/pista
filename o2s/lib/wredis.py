@@ -84,22 +84,3 @@ class Wredis(object):
     def delete(self, key):
         return self._request(self.r.delete, key)
 
-
-    # http://stackoverflow.com/questions/12870772/
-    def set_value(self, key, value):
-        return self._request(self.r.set, key, pickle.dumps(value))
-
-    def get_value(self, key):
-        print key, self.get(key)
-        pickled_value = self.get(key)
-        if pickled_value is None:
-            return None
-        return pickle.loads(pickled_value)
-
-    def set_waypoint(self, topic, value):
-        return self.set_value("waypointcache:%s" % topic, value)
-
-    def get_waypoint(self, topic):
-        return self.get_value("waypointcache:%s" % topic)
-    def delete_waypoint(self, topic):
-        return self.delete("waypointcache:%s" % topic)
