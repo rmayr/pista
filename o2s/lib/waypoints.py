@@ -12,6 +12,7 @@ from dbschema import Waypoint, sql_db
 from geolocation import GeoLocation
 import persist
 import logging
+import hashlib
 
 TRIGGER_ENTER   = 1
 TRIGGER_LEAVE   = 0
@@ -57,11 +58,19 @@ class WP(object):
                         'radius'   : meters,
                         'waypoint' : desc,
                     }
-                try:
-                    fence_topic = self.maptopic + "/" + wptopic
-                    self.mosq.publish(fence_topic, json.dumps(fence_data), qos=0, retain=True)
-                except Exception, e:
-                    logging.warn("Cannot publish fence: %s" % (str(e)))
+                    # I need a "key" to publish to maptopic so that one waypoint
+                    # doesn't clobber the previous if both were originally to 
+                    # same topic.
+
+                    unique = "%s-%s-%s-%d" % (wptopic, lat, lon, meters)
+                    hash_object = hashlib.sha1(unique)
+                    unique_sha = hash_object.hexdigest()
+
+                    try:
+                        fence_topic = self.maptopic + "/" + unique_sha
+                        self.mosq.publish(fence_topic, json.dumps(fence_data), qos=0, retain=True)
+                    except Exception, e:
+                        logging.warn("Cannot publish fence: %s" % (str(e)))
             except:
                 pass
 
