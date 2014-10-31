@@ -64,6 +64,7 @@ function mapit(topic, d, date)
 			name: tid,
 			count: 0,
 			addr: d.addr,
+			info: d.info,
 			status: -1,
 		};
 		users[topic] = user;
@@ -73,6 +74,7 @@ function mapit(topic, d, date)
 
 	user.status = d.status;
 	user.addr   = d.addr;
+	user.info   = d.info;
 
 	console.log(user.name + ": " + user.status);
 		

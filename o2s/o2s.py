@@ -82,6 +82,7 @@ def on_connect(mosq, userdata, rc):
         mqttc.subscribe("%s/+/alarm" % t, 0)
         mqttc.subscribe("%s/+/start" % t, 0)
         mqttc.subscribe("%s/+/status" % t, 0)
+        mqttc.subscribe("%s/+/info" % t, 0)
         mqttc.subscribe("%s/+/voltage/+" % t, 0)
         mqttc.subscribe("%s/+/gpio/+" % t, 0)
 
@@ -146,6 +147,23 @@ def push_map(mosq, device, device_data):
         topic = topic + "/" + device
 
     mosq.publish(topic, payload, qos=0, retain=True)
+
+def on_info(mosq, userdata, msg):
+    if (skip_retained and msg.retain == 1) or len(msg.payload) == 0:
+        return
+
+    device = str(msg.topic)
+    if device.endswith('/info'):
+        device = device[:-5]
+
+    save_rawdata(msg.topic, msg.payload)
+    watcher(mosq, msg.topic, msg.payload)
+
+    if maptopic:
+        if device in devices:
+            devices[device].update(dict(info=msg.payload))
+            push_map(mosq, device, devices[device])
+
 
 def on_status(mosq, userdata, msg):
     if (skip_retained and msg.retain == 1) or len(msg.payload) == 0:
@@ -686,6 +704,7 @@ for t in base_topics:
         mqttc.message_callback_add("%s/+/operators/+" % t, on_operator_watch)
     mqttc.message_callback_add("%s/+/cmd/#" % t, on_cmd)
     mqttc.message_callback_add("%s/+/status" % t, on_status)
+    mqttc.message_callback_add("%s/+/info" % t, on_info)
     mqttc.message_callback_add("%s/+/voltage/+" % t, on_voltage)
     mqttc.message_callback_add("%s/+/gpio/+" % t, on_voltage)
     mqttc.message_callback_add("%s/+/alarm" % t, on_alarm)

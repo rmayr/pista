@@ -111,6 +111,7 @@ maptopic = "_map"
 #             status
 #             topic
 #             tst
+#             info
 #
 # Configure `alert_keys` to be a string of white-space separated names
 # of the elements you require in the payload. The JSON payload will, in

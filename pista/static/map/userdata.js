@@ -35,7 +35,7 @@ function friend_add(user, lat, lon)
                                 html: user.name, // AK
                                 iconSize: [30, 30]
                             }),
-                          title: user.addr
+                          title: user.addr + "\n" + user.info
                         })
                         .addTo(map);
 	
@@ -75,7 +75,7 @@ function friend_move(user, lat, lon)
 				html: user.name, // AK
 				iconSize: [30, 30]
 			}),
-                        title: user.addr,
+                        title: user.addr + "\n" + user.info,
 		}).addTo(map);
 
 
