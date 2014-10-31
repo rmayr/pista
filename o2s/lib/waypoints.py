@@ -11,11 +11,14 @@ import os
 from dbschema import Waypoint, sql_db
 from geolocation import GeoLocation
 import persist
+import logging
 
 class WP(object):
-    def __init__(self, persistence_db, mosq):
+    def __init__(self, persistence_db, mosq, maptopic=None):
         self.persistence_db = persistence_db
         self.mosq = mosq
+        self.maptopic = maptopic
+
         self.tlist = persist.PersistentDict(self.persistence_db, 'c', format='pickle')
         self.wplist = self.load_waypoints()
 
@@ -28,13 +31,29 @@ class WP(object):
                 lon     = float(w.lon)
                 meters  = int(w.rad)
                 desc    = w.waypoint
+                wptopic   = w.topic
+
+                if meters == 0:
+                    continue
 
                 onepoint = WayPoint(lat, lon, meters, desc)
-                #FIXME: pub to _map   self.mosq.publish('foo', str(onepoint), qos=0, retain=False)
                 wplist.append(onepoint)
+
+                if self.maptopic:
+                    fence_data = {
+                        '_type'    : 'fence',
+                        'lat'      : lat,
+                        'lon'      : lon,
+                        'radius'   : meters,
+                        'waypoint' : desc,
+                    }
+                try:
+                    fence_topic = self.maptopic + "/" + wptopic
+                    self.mosq.publish(fence_topic, json.dumps(fence_data), qos=0, retain=True)
+                except Exception, e:
+                    logging.warn("Cannot publish fence: %s" % (str(e)))
             except:
                 pass
-
 
         return wplist
 

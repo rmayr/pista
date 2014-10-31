@@ -704,7 +704,7 @@ for t in base_topics:
 # FIXME: I must keep record of ../status up/down and their times
 
 if cf.g('features', 'geofences', None) is not None:
-    wp = waypoints.WP(cf.g('features', 'geofences'), mqttc)
+    wp = waypoints.WP(cf.g('features', 'geofences'), mqttc, maptopic=maptopic)
 
 while True:
     try:

@@ -1,6 +1,13 @@
 ## o2s
 
 
+### `_map`
+
+#### Geo-fences
+
+_map/owntracks/jpm/5s/waypoints {"lat": 52.3773, "radius": 500, "_type": "fence", "lon": 9.74236, "waypoint": "Hannover HBF"}
+
+
 
 #### Reverse-Geo lookups
 
