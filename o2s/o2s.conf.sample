@@ -33,6 +33,11 @@ watcher = "_look"
 
 redis = True
 
+# Handle waypoints/geofences. If this is not None, it is the path to
+# a file which will contain a pickled list of current geofences.
+
+geofences = None
+
 # If rawdata is True, o2s will create a database table (rawdata) to
 # store off-the-wire publishes as the're seen. This is useful for
 # debugging

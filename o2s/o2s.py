@@ -34,6 +34,7 @@ geo = RevGeo(cf.config('revgeo'), storage=storage)
 redis = None
 if cf.g('features', 'redis', False) == True:
     redis = Wredis(cf.config('redis'))
+wp = None
 
 base_topics = []
 
@@ -611,9 +612,7 @@ def on_message(mosq, userdata, msg):
             })
 
 
-    # Republish to map.
-    if maptopic:
-        new_data = {
+    new_data = {
             'tid'     : tid,
             'lat'     : lat,
             'lon'     : lon,
@@ -628,12 +627,16 @@ def on_message(mosq, userdata, msg):
             'topic'   : topic,
             'tst'     : orig_tst,
         }
+    # Republish to map.
+    if maptopic:
         try:
             devices[topic].update(new_data)
         except KeyError:
             devices[topic] = new_data
         push_map(mosq, topic, devices[topic])
 
+    if wp:
+        wp.check(new_data)
 
 
     # FIXME: handle geofence events (see https://github.com/owntracks/gw/issues/73 )
@@ -698,7 +701,8 @@ for t in base_topics:
 
 # FIXME: I must keep record of ../status up/down and their times
 
-## waypoints.load_waypoints()
+if cf.g('features', 'geofences', None) is not None:
+    wp = waypoints.WP(cf.g('features', 'geofences'), mqttc)
 
 while True:
     try:
