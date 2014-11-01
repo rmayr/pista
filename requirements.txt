@@ -3,3 +3,4 @@ redis
 paho-mqtt
 peewee
 redis
+python-geohash

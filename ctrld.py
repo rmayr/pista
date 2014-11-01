@@ -6,7 +6,6 @@ __copyright__ = 'Copyright 2014 Jan-Piet Mens'
 
 import sys
 sys.path.insert(0, './lib')
-sys.path.insert(0, './../o2s/lib')
 import os
 import logging
 import bottle

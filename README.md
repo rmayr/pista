@@ -33,6 +33,79 @@ Upon startup, _o2s_ subscribes to the configured MQTT broker awaiting publishes
 from OwnTracks devices. Location publishes are comitted to storage as are Waypoint
 publishes.
 
+#### Reverse-Geo lookups
+
+Every time we receive a location update, we check whether this update is within
+reasonable distance from one we already know of, and if so, we use a previously
+cached reverse-geo information so as to not impose on online services. This caching
+is performed by storing the [geohash](http://en.wikipedia.org/wiki/Geohash) of
+the lat,lon pair using
+[python-geohash](https://code.google.com/p/python-geohash/), and truncating the
+result to six characters.
+
+Consider the following example which illustrates how a six character hash is
+equivalent to reducing precision on lat, lon:
+
+```python
+import geohash
+import sys
+
+lat = 47.488613
+lon = 13.187296
+
+print "Original lat,lon: ", lat, lon
+full = geohash.encode(float(lat), float(lon))
+print "Full geohash: ", full
+
+hashlen = 6
+
+print geohash.encode(47.488613,  13.187296)[:hashlen]
+print geohash.encode(47.48861,  13.18729)[:hashlen]
+print geohash.encode(47.4886,  13.1872)[:hashlen]
+print geohash.encode(47.488,  13.187)[:hashlen]
+```
+
+The program outputs:
+
+```
+Original lat,lon:  47.488613 13.187296
+Full geohash:  u23qhj49nr0d
+u23qhj
+u23qhj
+u23qhj
+u23qhh
+```
+
+See [geohash.org](http://geohash.org).
+
+
+#### Redis
+
+```
+redis 127.0.0.1:6379> keys *X1*
+1) "driving:X1"
+2) "lastloc:X1"
+3) "t:owntracks/gw/X1"
+4) "vbatt:owntracks/gw/X1"
+5) "vext:owntracks/gw/X1"
+redis 127.0.0.1:6379> hgetall driving:X1
+1) "tid"
+2) "X1"
+3) "tst"
+4) "1414238743"
+5) "vel"
+6) "91"
+7) "trip"
+8) "306878"
+redis 127.0.0.1:6379> hgetall lastloc:X1
+1) "lat"
+2) "46.70984"
+3) "tst"
+4) "1414238743"
+5) "lon"
+6) "8.607769"
+```
+
 #### `_map/`
 
 Other publishes from devices (e.g. `startup/`, `gpio/`, `voltage/` are gathered
@@ -100,6 +173,24 @@ _map/9e33dafec92ce71a34f3cf10b8d747b7834bda7e {"lat": 51.1694, "radius": 300, "_
 
 ### `pista`
 
+![Logo](static/images/pista/pista-logo.png)
+
+_pista_ (the Spanish word for _track_) is a Python Bottle app which works hand-in-hand with _o2s_ for displaying data, maps, tracks and information from that database.
+
+
+Ensure you've configured `o2s.conf` and that the environment variable
+`O2SCONFIG` points to that file so that _pista_ will be able to access _o2s_' database.
+
+Copy `pista.conf.sample` to `pista.conf`, adjust the settings therein as described in the comments, and configure the environment variable `PISTACONFIG` to point to that file.
+
+Run `./pista.py` and connect to it with a supported Web browser. By default, the address is `http://127.0.0.1:8080`.
+
+
+
+
+### Credits
+
+* Brand image from [openclipart](https://openclipart.org/detail/28088/Roadsign_slippery-by-Simarilius)
 
 ### `ctrld`
 

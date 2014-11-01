@@ -165,5 +165,63 @@ db = 0
 password = None
 unix_socket_path = None
 
+#        _        _     _ 
+#    ___| |_ _ __| | __| |
+#   / __| __| '__| |/ _` |
+#  | (__| |_| |  | | (_| |
+#   \___|\__|_|  |_|\__,_|
+#                         
+
 [ctrld]
 cacert_file = '/path/to/cacert.pem'
+
+#         _     _        
+#   _ __ (_)___| |_ __ _ 
+#  | '_ \| / __| __/ _` |
+#  | |_) | \__ \ || (_| |
+#  | .__/|_|___/\__\__,_|
+#  |_|                   
+
+[pista]
+
+# Which address:port should the Pista app listen on? Specify
+# listen_host="0.0.0.0" to have it listen on all interfaces
+
+listen_host = "localhost"
+listen_port = 8080
+
+# The following parameters are for the Websocket connections and
+# most of these are made available by ../config.js automatically.
+
+[websocket]
+host = "127.0.0.1"
+port = 9001
+reconnect_in = 5000 ; milliseconds
+usetls = False
+cleansession = True
+username = None
+password = None
+# username = "jjolie"
+# password = "sécret"
+
+; if apikey is set, it must be a key obtained for Mapbox use
+; (format: 'xxxxxx.AAAAAAAA')
+; if set to None, OSM is used as map provider
+apiKey = None
+
+; This is the MQTT topic the Console subscribes to.
+
+console_topic = "_look"
+
+; This is the MQTT topic the Map and Table subscribes to. It *must*
+; correspond to `maptopic' as configured for o2s, and it must not
+; end with a slash.
+
+maptopic = "_map"
+
+
+# TABLE:
+; Whether or not to show the topic name in Tables (can be toggled
+; on/off in the UI) by default.
+topic_visible = False
+

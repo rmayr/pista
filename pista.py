@@ -6,7 +6,6 @@ __copyright__ = 'Copyright 2014 Jan-Piet Mens'
 
 import sys
 sys.path.insert(0, './lib')
-sys.path.insert(0, './../o2s/lib')
 import bottle
 from bottle import response, template, static_file, request
 import json
@@ -27,15 +26,14 @@ from dbschema import Location, Waypoint, Geo, fn, sql_db, JOIN_LEFT_OUTER
 import time
 from wredis import Wredis
 
-cf = conf(os.getenv('PISTACONFIG', 'pista.conf'))
-oconf = conf(os.getenv('O2SCONFIG', 'o2s.conf'))
+cf = conf(os.getenv('O2SCONFIG', 'o2s.conf'))
 
 POINT_KM = 20
 
 app = application = bottle.Bottle()
 bottle.SimpleTemplate.defaults['get_url'] = app.get_url
 
-redis = Wredis(oconf.config('redis'))
+redis = Wredis(cf.config('redis'))
 
 # FIXME: load from dict     app.config.load_config('jjj.conf')
 

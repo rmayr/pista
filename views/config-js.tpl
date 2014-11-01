@@ -19,8 +19,6 @@ var config = {
 
    apikey:      {{ !apikey if apikey else "null" }},
 
-   geofences:    {{ !geofences if geofences else "null" }},
-
    // tables
    topic_visible : {{ !topic_visible }},
 

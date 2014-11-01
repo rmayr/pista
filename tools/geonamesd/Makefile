@@ -12,3 +12,9 @@ geonamesd: geonamesd.c $(kdlib) mongoose.o
 mongoose.o: mongoose/mongoose.c mongoose/mongoose.h
 	$(CC) $(CFLAGS) -c mongoose/mongoose.c -o mongoose.o
 
+clean:
+	rm -f *.o
+	rm -rf geonamesd.dSYM
+
+clobber: clean
+	rm -f geonamesd
