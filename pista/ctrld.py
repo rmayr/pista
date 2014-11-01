@@ -19,6 +19,7 @@ from dbschema import Location
 import hashing_passwords as hp
 import paho.mqtt.client as paho
 
+cf = conf(os.getenv('O2SCONFIG', 'o2s.conf'))
 
 SCRIPTNAME = os.path.splitext(os.path.basename(__file__))[0]
 LOGFILE    = os.getenv(SCRIPTNAME.upper() + 'LOG', SCRIPTNAME + '.log')
@@ -30,6 +31,11 @@ logging.basicConfig(filename=LOGFILE, level=LOGLEVEL, format=LOGFORMAT)
 logging.info("Starting %s" % SCRIPTNAME)
 logging.info("INFO MODE")
 logging.debug("DEBUG MODE")
+
+cacert_file = cf.get('ctrld', 'cacert_file')
+if not os.path.isfile(cacert_file) or not os.access(cacert_file, os.R_OK):
+    logging.error("Cannot open cacert_file ({0})".format(cacert_file))
+    sys.exit(2)
 
 app = application = bottle.Bottle()
 
@@ -165,13 +171,18 @@ def conf():
 
 @app.route('/ext/ctrl/cacert.pem', method='GET')
 def cacert():
-    ''' Return the PEM-encoded CA certificate for the connection
-        to the MQTT broker. '''
+    ''' Return the MQTT broker's PEM-encoded CA certificate '''
 
-    # FIXME
-    f = open('demo-8883.crt')
-    pem = f.read()
-    f.close()
+    pem = None
+    try:
+        f = open(cacert_file)
+        pem = f.read()
+        f.close()
+    except Exception, e:
+        logger.error("Cannot read PEM from {0}: {1}".format(cacert_file, str(e)))
+        response.status = 404
+        response.content_type = 'text/plain'
+        return "404 Cacert Not found"
 
 
     response.content_type = 'application/x-pem-file'

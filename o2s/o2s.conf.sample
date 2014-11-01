@@ -164,3 +164,6 @@ port = 6379
 db = 0
 password = None
 unix_socket_path = None
+
+[ctrld]
+cacert_file = '/path/to/cacert.pem'
