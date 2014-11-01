@@ -1,6 +1,6 @@
-## OwnTracks back-end
+## Pista
 
-The OwnTracks back-end are a set of components intended to work with the [owntracks.org](http://owntracks.org) apps for Android and iOS as well as the Greenwich, OwnTracks edition.
+The OwnTracks back-end is a set of components intended to work with the [owntracks.org](http://owntracks.org) apps for Android and iOS as well as the Greenwich, OwnTracks edition.
 
 This back-end superceeds what has so-far been known as `m2s`, but has, in all honesty, a focus on the OwnTracks Greenwich devices, so there are features here which will not be useful for app users. If you are an app user and wish to experiment with the OwnTracks back-end, read [Migration](#migration) before continuing.
 
@@ -11,7 +11,7 @@ The backend consists of a number of utilities:
 * [ctrld](#ctrld)
 
 
-![o2s and Pista architecture](pista/static/images/pista/o2s-pista-architecture.png)
+![o2s and Pista architecture](static/images/pista/o2s-pista-architecture.png)
 
 These components work hand-in-hand and consist of a number of _features_ which can be
 enabled/disabled through a configuration file. Although we have attempted to test different
