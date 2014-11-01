@@ -62,16 +62,15 @@ class WP(object):
                     # doesn't clobber the previous if both were originally to 
                     # same topic.
 
-                    unique = "%s-%s-%s" % (wptopic, lat, lon)
+                    unique = "{0}-{1}-{2}".format(wptopic, lat, lon)
                     hash_object = hashlib.sha1(unique)
                     unique_sha = hash_object.hexdigest()
 
                     try:
                         fence_topic = self.maptopic + "/" + unique_sha
-                        print fence_topic
                         self.mosq.publish(fence_topic, json.dumps(fence_data), qos=0, retain=True)
                     except Exception, e:
-                        logging.warn("Cannot publish fence: %s" % (str(e)))
+                        logging.warn("Cannot publish fence: {0}".format(str(e)))
             except:
                 pass
 
@@ -113,15 +112,16 @@ class WP(object):
         try:
             self.mosq.publish(self.alert_topic, json.dumps(payload, sort_keys=True), qos=0, retain=False)
         except Exception, e:
-            logging.warn("Cannot publish fence: %s" % (str(e)))
+            logging.warn("Cannot publish fence: {0}".format(str(e)))
 
         if self.watcher_topic is not None:
             message = "ALERT: {tid}: {event} {wpname} at {tstamp}. Distance: {meters}m".format(**payload)
+            logging.info(message)
             print message
             try:
                 self.mosq.publish(self.watcher_topic, message, qos=0, retain=False)
             except Exception, e:
-                logging.warn("Cannot publish fence: %s" % (str(e)))
+                logging.warn("Cannot publish fence: {0}".format(str(e)))
 
 
     def check(self, item):
@@ -141,7 +141,7 @@ class WP(object):
                 except:
                     pass
 
-                km = "%.2f" % float(meters / 1000.0)
+                km = "{:.2f}".format( float(meters / 1000.0) )
 
                 movement = {
                     'km' : km,

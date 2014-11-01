@@ -14,7 +14,8 @@ def alarmplugin(topic, item, mosq):
     
     # use lat, lon and do something
 
-    s = "***** ALARM FOR tid=%s (%s): lat=%s, lon=%s" % (item['tid'], topic, lat, lon)
+    s = "***** ALARM FOR tid={tid} ({topic}): lat={lat}, lon={lon}".format(
+        tid=item['tid'], topic=topic, lat=lat, lon=lon)
     print s
 
     ## mosq.publish("owntracks/gw/**ALARM", bytearray(s.encode('utf-8')), qos=0, retain=False)
