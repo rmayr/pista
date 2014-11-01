@@ -1,0 +1,60 @@
+
+TODO / need help
+
+
+all pages:
+	height of page (scrollbar is visible)
+	DONE: create mqttfunc() which subscribes (list of topics must be static to
+	      that function). It gets passed a handler function(topic, payload) which
+	      it invoked to handle incoming messages.
+
+	Ensure Table, Map, Status show connection status to Websocket broker
+
+console:
+	DONE: config.js: bring to other config.js' format and consolidate
+	DONE add small timestamp, if possible
+
+	add "clear" button
+
+map:
+	DONE: config.js
+	CSS for height of map
+	DONE remove code for loading geofences and geo-fences.json
+
+	add "follow this vehicle"
+	add possibility for user to "save" current bounding box (i.e. map display size,position) and return to that
+
+table:
+	DONE config.js
+
+tracks:
+	DONE homogenize maps (mapbox, vs. OSM, etc.) with map/
+	CSS, CSS, CSS, CSS!
+	DONE Localtime on points
+
+hw:
+	DONE p/status.json: has to be configurable filename and/or replaced entirely.
+
+status/bubbles:
+	DONE: page with bubbles of all vehicles (red/green/yellow) start in blue.
+	DONE click or hover for details of each
+	status = 0: start by making light red; the longer the GW is on status 0,
+	the darker the red gets.
+
+tools:
+	add manual note to a vehicle (e.g. is in repair); show in table
+	display TID -> IMEI, reboot, sw versions in table
+	geofence table / editor
+
+backend:
+	DONE collect /start info (IMEI, reboot time, sw version) for all GW.
+
+o2s:
+	Allow giving individual topics higher ghash precision
+
+	merge in o2db (fornax)
+	allow remapping of topic to TID
+		topic_tidmap = {
+			'/jpm/5s' : 'JP',
+		}
+	
