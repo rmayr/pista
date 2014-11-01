@@ -4,6 +4,7 @@
 import sys
 sys.path.insert(0, './lib')
 from wredis import Wredis
+import logging
 import time
 import datetime
 from revgeo import RevGeo
@@ -21,6 +22,17 @@ import imp
 import waypoints
 
 cf = conf(os.getenv('O2SCONFIG', 'o2s.conf'))
+
+SCRIPTNAME = os.path.splitext(os.path.basename(__file__))[0]
+LOGFILE    = os.getenv(SCRIPTNAME.upper() + 'LOG', SCRIPTNAME + '.log')
+#LOGLEVEL   = logging.INFO
+LOGLEVEL   = logging.DEBUG
+LOGFORMAT  = '%(asctime)-15s %(levelname)-5s [%(module)s] %(message)s'
+
+logging.basicConfig(filename=LOGFILE, level=LOGLEVEL, format=LOGFORMAT)
+logging.info("Starting %s" % SCRIPTNAME)
+logging.info("INFO MODE")
+logging.debug("DEBUG MODE")
 
 SEEN_DRIVING = 1200
 MAX_VOLTAGES = 10
@@ -43,7 +55,7 @@ if cf.g('features', 'alarm') is not None:
     try:
         alarm_plugin = imp.load_source('alarmplugin', cf.g('features', 'alarm'))
     except Exception, e:
-        # logging.info("Can't import storage_plugin %s: %s" % (storage_plugin, e))
+        logging.error("Can't import alarm_plugin {0}: {1}".format(storage_plugin, e))
         print e
         sys.exit(2)
 
@@ -59,17 +71,20 @@ def save_rawdata(topic, payload):
     if not storage or cf.g('features', 'rawdata', False) == False:
         return
 
-    rawdata = {
-        'topic'  : topic,
-        'tst'    : time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(int(time.time()))),
-        'payload' : payload,
-    }
-    rd = RAWdata(**rawdata)
-    rd.save()
+    try:
+        rawdata = {
+            'topic'  : topic,
+            'tst'    : time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(int(time.time()))),
+            'payload' : payload,
+        }
+        rd = RAWdata(**rawdata)
+        rd.save()
+    except Exception, e:
+        logging.error("Cannot store rawdata for topic {0}: {1}".format(topic, str(e)))
 
 def on_connect(mosq, userdata, rc):
     if rc != 0:
-        print "MQTT connect: %s" % rc
+        logging.error("Can't connect to MQTT. rc=={0}".format(rc))
         sys.exit(1)
 
     for t in base_topics:
@@ -95,7 +110,7 @@ def on_disconnect(mosq, userdata, rc):
        '4' : 'Connection Refused: bad user name or password',
        '5' : 'Connection Refused: not authorized',
     }
-    print "Disconnected: code=%s (%s)" % (rc, reasons.get(rc, 'unknown'))
+    logging.error("Disconnected: code={0} ({1})".format(rc, reasons.get(rc, 'unknown')))
 
 def on_cmd(mosq, userdata, msg):
     if msg.retain == 1 or len(msg.payload) == 0:
@@ -130,14 +145,14 @@ def push_map(mosq, device, device_data):
     '''
 
     if 'tid' not in device_data:
-        print "Object %s not yet complete." % device
+        logging.debug("Object {0} is not yet complete.".format(device))
         return
 
     device_data['_type'] = 'location'
     try:
         payload = json.dumps(device_data, sort_keys=True, separators=(',',':'))
     except Exception, e:
-        print "Cannot JSON ", str(e)
+        logging.error("Can't convert to JSON: {0}".format(str(e)))
         return
 
     topic = maptopic
@@ -190,7 +205,6 @@ def on_status(mosq, userdata, msg):
             except:
                 devices[device] = dict(status=-1)
         push_map(mosq, device, devices[device])
-
 
     if redis:
         redis.hmset(rkey("t", msg.topic, "/status"), dict(status=msg.payload))
@@ -250,15 +264,14 @@ def on_alarm(mosq, userdata, msg):
         try:
             alarm_plugin.alarmplugin(msg.topic, item, mosq)
         except Exception, e:
-            print "NOPLUG ", e
-            # logging.info("storage_plugin %s: %s" % (storage_plugin, e))
+            logging.error("Can't invoke alarm plugin with topic {0}: {1}".format(topic, str(e)))
 
 
 def on_start(mosq, userdata, msg):
     if (skip_retained and msg.retain == 1) or len(msg.payload) == 0:
         return
 
-    print "STARTUP ", msg.payload
+    logging.debug("_start: {0} {1}".format(msg.topic, msg.payload))
 
     save_rawdata(msg.topic, msg.payload)
     watcher(mosq, msg.topic, msg.payload)
@@ -276,13 +289,11 @@ def on_start(mosq, userdata, msg):
         redis.set("imei:" + imei, "t:" + device_name(msg.topic, "/start"))
 
 
-
-
 def on_gpio(mosq, userdata, msg):
     if (skip_retained and msg.retain == 1) or len(msg.payload) == 0:
         return
 
-    print "GPIO ", msg.payload
+    logging.debug("_gpio: {0} {1}".format(msg.topic, msg.payload))
 
     save_rawdata(msg.topic, msg.payload)
     watcher(mosq, msg.topic, msg.payload)
@@ -318,17 +329,9 @@ def on_operator(mosq, userdata, msg):
             op = Operators(**odata)
             op.save()
         except Exception, e:
-            print "OPERATORS: ", str(e)
+            logging.error("Can't store operators in DB: {0}".format(str(e)))
 
     save_rawdata(topic, payload)
-
-    #try:
-    #    f = open('operators.txt', 'a')
-    #    s = "%d %s %s\n" % (int(time.time()), str(topic), payload)
-    #    f.write(s)
-    #    f.close()
-    #except Exception, e:
-    #    print "Can't write to operators.txt: ", str(e)
 
     try:
         for code in payload.split():
@@ -353,7 +356,7 @@ def on_operator(mosq, userdata, msg):
                 s = "not found"
                 mosq.publish(topic + "/" + code, s, qos=0, retain=False)
     except Exception, e:
-        print "Cannot handle operators", str(e)
+        logging.error("Can't handle operators: {0}".format(str(e)))
 
 def payload2location(topic, payload):
 
@@ -387,9 +390,11 @@ def payload2location(topic, payload):
                     'trip'  : int(r.get('trip', 0)) * 1000,
                 }
                 # print (json.dumps(item, sort_keys=True))
-        except:
+        except Exception, e:
+            logging.error("CSV decoding fails for {0}: {1}".format(topic, str(e)))
             return None
     except:
+        logging.error("Payload decoding fails for {0}: {1}".format(topic, str(e)))
         return None
 
     if 'tid' not in item:
@@ -542,7 +547,8 @@ def on_message(mosq, userdata, msg):
         try:
             sql_db.connect()
         except Exception, e:
-            print str(e)
+            logging.error("Reconnect to DB: {0}".format(str(e)))
+            return
 
     if item['_type'] == 'waypoint':
         # FIXME: publish this as geofence for maps
@@ -558,7 +564,7 @@ def on_message(mosq, userdata, msg):
                           item['topic'], item['username'], item['device'], item['tid'], item['lat'],
                           item['lon'], tstamp, item['rad'], item['desc'],))
             except Exception, e:
-                print("Cannot upsert waypoint in DB: %s" % (str(e)))
+                logging.error("Cannot UPSERT waypoint into DB: {0}".format(str(e)))
 
             return
 
@@ -582,8 +588,11 @@ def on_message(mosq, userdata, msg):
 
 
     if storage:
-        loca = Location(**item)
-        loca.save()
+        try:
+            loca = Location(**item)
+            loca.save()
+        except Exception, e:
+            logging.error("Cannot INSERT location for {0} into DB: {1}".format(topic, str(e)))
 
     item['tst'] = orig_tst
     watcher(mosq, topic, item)
@@ -665,7 +674,7 @@ def on_message(mosq, userdata, msg):
 m = cf.config('mqtt')
 base_topics = list(m['base_topics'])
 
-clientid = m.get('client_id', 'o2s-%s' % os.getpid())
+clientid = m.get('client_id', 'o2s-{0}'.format(os.getpid()))
 mqttc = paho.Client(clientid, clean_session=True, userdata=None, protocol=paho.MQTTv31)
 mqttc.on_message = on_message
 mqttc.on_connect = on_connect
@@ -699,16 +708,17 @@ except Exception, e:
     sys.exit("Connect to `%s:%d': %s" % (host, port, str(e)))
 
 for t in base_topics:
-    mqttc.message_callback_add("%s/+/operators" % t, on_operator)
+    mqttc.message_callback_add("{0}/+/operators".format(t), on_operator)
     if cf.g('features', 'plmn', False) == True:
-        mqttc.message_callback_add("%s/+/operators/+" % t, on_operator_watch)
-    mqttc.message_callback_add("%s/+/cmd/#" % t, on_cmd)
-    mqttc.message_callback_add("%s/+/status" % t, on_status)
-    mqttc.message_callback_add("%s/+/info" % t, on_info)
-    mqttc.message_callback_add("%s/+/voltage/+" % t, on_voltage)
-    mqttc.message_callback_add("%s/+/gpio/+" % t, on_voltage)
-    mqttc.message_callback_add("%s/+/alarm" % t, on_alarm)
-    mqttc.message_callback_add("%s/+/start" % t, on_start)
+        mqttc.message_callback_add("{0}/+/operators/+".format(t), on_operator_watch)
+
+    mqttc.message_callback_add("{0}/+/cmd/#".format(t), on_cmd)
+    mqttc.message_callback_add("{0}/+/status".format(t), on_status)
+    mqttc.message_callback_add("{0}/+/info".format(t), on_info)
+    mqttc.message_callback_add("{0}/+/voltage/+".format(t), on_voltage)
+    mqttc.message_callback_add("{0}/+/gpio/+".format(t), on_voltage)
+    mqttc.message_callback_add("{0}/+/alarm".format(t), on_alarm)
+    mqttc.message_callback_add("{0}/+/start".format(t), on_start)
 
 
 # FIXME: I must keep record of ../status up/down and their times
