@@ -91,7 +91,7 @@ function handlerfunc(topic, payload) {
 		for (var n = 0; n < tlist.length; n++) {
 			sub.push(tlist[n] + "/" + '#');
 		}
-		mqtt_setup(sub, handlerfunc, errorfunc);
+		mqtt_setup("pista-MAP", sub, handlerfunc, errorfunc);
 		mqtt_connect();
     		$('#msg').val('starting');
     	});

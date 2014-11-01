@@ -26,7 +26,7 @@
 	    for (var n = 0; n < tlist.length; n++) {
 			sub.push(tlist[n]);
 	    }
-	    mqtt_setup(sub, handlerfunc, errorfunc);
+	    mqtt_setup("pista-CONSOLE", sub, handlerfunc, errorfunc);
 	    mqtt_connect();
 });
 </script>

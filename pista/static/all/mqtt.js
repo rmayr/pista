@@ -10,10 +10,12 @@ var mqtt;
  * and the error string from the library.
  */
 
-function mqtt_setup(topiclist, handlerfunc, errorfunc) {
+function mqtt_setup(clientid, topiclist, handlerfunc, errorfunc) {
         if (typeof mqtt_setup.topiclist == 'undefined') {
                 // initialize
                 mqtt_setup.topiclist = [];
+
+		mqtt_setup.clientid = clientid;
 		mqtt_setup.handlerfunc = handlerfunc;
 		mqtt_setup.errorfunc   = errorfunc;
 
@@ -27,7 +29,7 @@ function mqtt_setup(topiclist, handlerfunc, errorfunc) {
 function mqtt_connect()
 {
 	mqtt = new Messaging.Client(config.host, config.port,
-				"livetable-" + parseInt(Math.random() * 100, 10));
+				mqtt_setup.clientid + parseInt(Math.random() * 100, 10));
 
 	mqtt.onConnectionLost = function (responseObject) {
 		setTimeout(mqtt_connect, reconnectTimeout);

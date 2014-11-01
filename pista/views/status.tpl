@@ -167,7 +167,7 @@
 		sub.push(tlist[n] + "/" + '#');
 	}
 
-	mqtt_setup(sub, handlerfunc, errorfunc);
+	mqtt_setup("pista-STATUS", sub, handlerfunc, errorfunc);
         mqtt_connect();
 
     });
