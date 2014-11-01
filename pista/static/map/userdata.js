@@ -89,7 +89,11 @@ function friend_move(user, lat, lon)
 
 
 		/* Optional: set marker popup, with current rev geo */
-		user.marker.setPopupContent(getPopupText(user, lat, lon));
+		user.marker.bindPopup(getPopupText(user, lat, lon));
+		// user.marker.setPopupContent(getPopupText(user, lat, lon));
+		user.marker.on('mouseover', function(evt) {
+			evt.target.openPopup();
+		});
 	}
 
 	return user.marker;
