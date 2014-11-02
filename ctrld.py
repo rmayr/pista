@@ -31,7 +31,7 @@ logging.info("Starting %s" % SCRIPTNAME)
 logging.info("INFO MODE")
 logging.debug("DEBUG MODE")
 
-cacert_file = cf.get('ctrld', 'cacert_file')
+cacert_file = cf.g('ctrld', 'cacert_file')
 if not os.path.isfile(cacert_file) or not os.access(cacert_file, os.R_OK):
     logging.error("Cannot open cacert_file ({0})".format(cacert_file))
     sys.exit(2)
@@ -295,6 +295,11 @@ def ctrl_trackdump(user):
 #  ---------------------------------------------------------------
 
 if __name__ == '__main__':
+
+    ctrldconf = cf.config('ctrld')
+    bottle.debug(True)
     bottle.run(app,
-        host='127.0.0.1',
-        port=8809)
+        # server='python_server',
+        host=ctrldconf.get('listen_host', "127.0.0.1"),
+        port=ctrldconf.get('listen_port', 8809),
+        )

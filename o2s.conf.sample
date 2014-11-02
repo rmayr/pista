@@ -181,6 +181,13 @@ unix_socket_path = None
 
 cacert_file = '/path/to/cacert.pem'
 
+; Listen port and host for ctrld REST interface (if not running under an
+; HTTP server
+
+listen_host = '127.0.0.1'
+listen_port = 8809
+
+
 #         _     _        
 #   _ __ (_)___| |_ __ _ 
 #  | '_ \| / __| __/ _` |
