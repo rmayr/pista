@@ -1,5 +1,7 @@
 ## Pista
 
+![Logo](static/images/pista/pista-logo.png)
+
 The OwnTracks back-end is a set of components intended to work with the [owntracks.org](http://owntracks.org) apps for Android and iOS as well as the Greenwich, OwnTracks edition.
 
 This back-end superceeds what has so-far been known as `m2s`, but has, in all honesty, a focus on the OwnTracks Greenwich devices, so there are features here which will not be useful for app users. If you are an app user and wish to experiment with the OwnTracks back-end, read [Migration](#migration) before continuing.
@@ -33,83 +35,12 @@ Upon startup, _o2s_ subscribes to the configured MQTT broker awaiting publishes
 from OwnTracks devices. Location publishes are comitted to storage as are Waypoint
 publishes.
 
-#### Reverse-Geo lookups
 
-Every time we receive a location update, we check whether this update is within
-reasonable distance from one we already know of, and if so, we use a previously
-cached reverse-geo information so as to not impose on online services. This caching
-is performed by storing the [geohash](http://en.wikipedia.org/wiki/Geohash) of
-the lat,lon pair using
-[python-geohash](https://code.google.com/p/python-geohash/), and truncating the
-result to six characters.
-
-Consider the following example which illustrates how a six character hash is
-equivalent to reducing precision on lat, lon:
-
-```python
-import geohash
-import sys
-
-lat = 47.488613
-lon = 13.187296
-
-print "Original lat,lon: ", lat, lon
-full = geohash.encode(float(lat), float(lon))
-print "Full geohash: ", full
-
-hashlen = 6
-
-print geohash.encode(47.488613,  13.187296)[:hashlen]
-print geohash.encode(47.48861,  13.18729)[:hashlen]
-print geohash.encode(47.4886,  13.1872)[:hashlen]
-print geohash.encode(47.488,  13.187)[:hashlen]
-```
-
-The program outputs:
-
-```
-Original lat,lon:  47.488613 13.187296
-Full geohash:  u23qhj49nr0d
-u23qhj
-u23qhj
-u23qhj
-u23qhh
-```
-
-See [geohash.org](http://geohash.org).
-
-
-#### Redis
-
-```
-redis 127.0.0.1:6379> keys *X1*
-1) "driving:X1"
-2) "lastloc:X1"
-3) "t:owntracks/gw/X1"
-4) "vbatt:owntracks/gw/X1"
-5) "vext:owntracks/gw/X1"
-redis 127.0.0.1:6379> hgetall driving:X1
-1) "tid"
-2) "X1"
-3) "tst"
-4) "1414238743"
-5) "vel"
-6) "91"
-7) "trip"
-8) "306878"
-redis 127.0.0.1:6379> hgetall lastloc:X1
-1) "lat"
-2) "46.70984"
-3) "tst"
-4) "1414238743"
-5) "lon"
-6) "8.607769"
-```
 
 #### `_map/`
 
-Other publishes from devices (e.g. `startup/`, `gpio/`, `voltage/` are gathered
-together to form an "object" which is published to `_map/` when it changes. This object
+Non-Location publishes from devices (e.g. `startup/`, `gpio/`, `voltage/` are gathered
+together to form an "object" which, when complete, is published to `_map/` when it changes. This object
 is used by _pista_ to display information in its individual pages. An object published
 thusly might look like this:
 
@@ -173,7 +104,6 @@ _map/9e33dafec92ce71a34f3cf10b8d747b7834bda7e {"lat": 51.1694, "radius": 300, "_
 
 ### `pista`
 
-![Logo](static/images/pista/pista-logo.png)
 
 _pista_ (the Spanish word for _track_) is a Python Bottle app which works hand-in-hand with _o2s_ for displaying data, maps, tracks and information from that database.
 
@@ -223,3 +153,54 @@ In order to run the OwnTracks back-end you will need:
 ### Testing
 
 ### Migration from `m2s`
+
+### Reverse-Geo lookups
+
+Every time we receive a location update, we check whether this update is within
+reasonable distance from one we already know of, and if so, we use a previously
+cached reverse-geo information so as to not impose on online services. This caching
+is performed by storing the [geohash](http://en.wikipedia.org/wiki/Geohash) of
+the lat,lon pair using
+[python-geohash](https://code.google.com/p/python-geohash/), and truncating the
+result to six characters.
+
+Consider the following example which illustrates how a six character hash is
+equivalent to reducing precision on lat, lon:
+
+```python
+import geohash
+import sys
+
+lat = 47.488613
+lon = 13.187296
+
+print "Original lat,lon: ", lat, lon
+full = geohash.encode(float(lat), float(lon))
+print "Full geohash: ", full
+
+hashlen = 6
+
+print geohash.encode(47.488613,  13.187296)[:hashlen]
+print geohash.encode(47.48861,  13.18729)[:hashlen]
+print geohash.encode(47.4886,  13.1872)[:hashlen]
+print geohash.encode(47.488,  13.187)[:hashlen]
+```
+
+The program outputs:
+
+```
+Original lat,lon:  47.488613 13.187296
+Full geohash:  u23qhj49nr0d
+u23qhj
+u23qhj
+u23qhj
+u23qhh
+```
+
+See [geohash.org](http://geohash.org).
+
+### Redis
+
+_o2s_ and certain bits of _pista_ currently use a Redis key/value store as a
+fast lookup-table for data. In particular, the _Status_ and _Hardware_ tabs of _pista_
+require access to it.
