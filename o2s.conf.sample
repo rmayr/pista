@@ -54,7 +54,8 @@ alarm = "alarmhelper.py"
 
 t_ignore = [ 'p', ]
 
-# config helper for CTRL
+# Add support for `ctrld` in creating DB tables for it. This setting does
+# not automatically launch ctrld.
 
 ctrldauth = True
 
@@ -173,6 +174,11 @@ unix_socket_path = None
 #                         
 
 [ctrld]
+
+; This is the CA certificate file in PEM format which will be returned to
+; clients for them to connect to an MQTT broker. It is not necessarily
+; the same as in [mqtt] above.
+
 cacert_file = '/path/to/cacert.pem'
 
 #         _     _        
@@ -184,14 +190,16 @@ cacert_file = '/path/to/cacert.pem'
 
 [pista]
 
-# Which address:port should the Pista app listen on? Specify
-# listen_host="0.0.0.0" to have it listen on all interfaces
+# Which address:port should the Pista app listen on when started?
+# Specify listen_host="0.0.0.0" to have it listen on all interfaces
+# These settings are only valid when pista runs standalone.
 
 listen_host = "localhost"
 listen_port = 8080
 
 # The following parameters are for the Websocket connections and
-# most of these are made available by ../config.js automatically.
+# most of these are made available to Web apps via a GET request
+# to ../config.js.
 
 [websocket]
 host = "127.0.0.1"
@@ -204,9 +212,9 @@ password = None
 # username = "jjolie"
 # password = "sécret"
 
-; if apikey is set, it must be a key obtained for Mapbox use
-; (format: 'xxxxxx.AAAAAAAA')
-; if set to None, OSM is used as map provider
+; if apikey is set, it must be a key obtained for Mapbox use ; (format:
+; 'xxxxxx.AAAAAAAA') ; if set to None, OSM is used as map provider
+
 apiKey = None
 
 ; This is the MQTT topic the Console subscribes to.
@@ -221,7 +229,8 @@ maptopic = "_map"
 
 
 # TABLE:
-; Whether or not to show the topic name in Tables (can be toggled
+; Whether or not to show the topic name in Tables by default (can be toggled ;
 ; on/off in the UI) by default.
+
 topic_visible = False
 
