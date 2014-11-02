@@ -57,7 +57,7 @@ def auth(username, password, apns_token=None):
         u = User.get(User.username == username)
         pwhash = u.pwhash
     except User.DoesNotExist:
-        logging.debug("User ", username, " does not exist")
+        logging.debug("User {0} does not exist".format(username))
         return False
     except Exception, e:
         raise
