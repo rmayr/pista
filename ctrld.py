@@ -129,7 +129,7 @@ def conf():
             trackurl = params.trackurl
 
     except Exception, e:
-        logging.error("Get params for %s fails: %s" % (username, str(e)))
+        logging.info("There are no params for %s: %s" % (username, str(e)))
         pass
 
     topic_list = []
