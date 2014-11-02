@@ -101,6 +101,8 @@ def on_connect(mosq, userdata, rc):
         mqttc.subscribe("%s/+/voltage/+" % t, 0)
         mqttc.subscribe("%s/+/gpio/+" % t, 0)
 
+    logging.info("Connected to and subscribed to MQTT broker")
+
 def on_disconnect(mosq, userdata, rc):
     reasons = {
        '0' : 'Connection Accepted',
