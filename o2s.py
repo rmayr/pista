@@ -658,6 +658,7 @@ def on_message(mosq, userdata, msg):
             'status'  : 1,      # Safe to assume it's "online" if we get position
             'topic'   : topic,
             'tst'     : orig_tst,
+            't'       : item.get('t', '-'),
         }
     # Republish to map.
     if maptopic:

@@ -25,7 +25,7 @@ a:hover {
 th {
 }
 
-.topic, .status, .vehicle, .cog, .latlon, .tstamp, .cc, .location {
+.topic, .status, .vehicle, .cog, .latlon, .tstamp, .cc, .t, .location {
 	text-align: left;
 }
 
@@ -40,10 +40,10 @@ td.status {
 td.location {
 }
 
-td.alt, td.tstamp, td.cc, td.latlon {
+td.alt, td.tstamp, td.cc, td.t, td.latlon {
 	font-family: 'Andale Mono', 'Courier New', monospace;
 }
-td.cc {
+td.cc, td.t {
 	font-size: 80%;
 }
 
