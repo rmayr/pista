@@ -138,7 +138,7 @@ def conf():
     # won't understand. %c loses out -- that won't work, so no point returning
     # those.
     try:
-        for sub in Acl.select().where(Acl.username == username):
+        for sub in Acl.select().where(Acl.username == username, Acl.rw == 0):
             new_sub = sub.topic.replace('%u', username)
             if '%c' not in new_sub:
                 topic_list.append(new_sub)
