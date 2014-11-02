@@ -74,11 +74,11 @@ def auth(username, password, apns_token=None):
 
     return match
 
-@app.route('/ext/')
+@app.route('/')
 def show_index():
     return "Hola!"
 
-@app.route('/ext/conf', method='POST')
+@app.route('/conf', method='POST')
 def conf():
     resp = {}
     data = bottle.request.body.read()
@@ -100,8 +100,8 @@ def conf():
     mqtt_auth   = 1
     mqtt_username = username
     mqtt_password = password
-    certurl     = "https://demo.owntracks.de/ext/ctrl/cacert.pem"
-    trackurl    = 'https://demo.owntracks.de/ext/ctrl/tracks/%s' % username
+    certurl     = "https://demo.owntracks.de/ctrld/cacert.pem"
+    trackurl    = 'https://demo.owntracks.de/ctrld/tracks/%s' % username
 
     try:
         params = (Params
@@ -168,7 +168,7 @@ def conf():
     return json.dumps(resp, sort_keys=True, indent=2)
 
 
-@app.route('/ext/ctrl/cacert.pem', method='GET')
+@app.route('/cacert.pem', method='GET')
 def cacert():
     ''' Return the MQTT broker's PEM-encoded CA certificate '''
 
@@ -189,7 +189,7 @@ def cacert():
 
 
 # TRACKS ---------------------------------------------------------------
-@app.route('/ext/ctrl/tracks/<user>', method='POST')
+@app.route('/tracks/<user>', method='POST')
 def ctrl_trackdump(user):
     data = bottle.request.body.read()
 
