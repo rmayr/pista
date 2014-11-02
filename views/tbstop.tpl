@@ -56,17 +56,32 @@
         </div>
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
+%if 'about' in pistapages:
             <li class="{{ "active" if page == "about" else "xxxx" }}" ><a href="about">About</a></li>
+%end
+%if 'map' in pistapages:
             <li class="{{ "active" if page == "map" else "xxxx" }}" ><a href="map">Map</a></li>
+%end
+%if 'table' in pistapages:
             <li class="{{ "active" if page == "table" else "xxxx" }}" ><a href="table">Table</a></li>
+%end
+%if 'tracks' in pistapages:
             <li class="{{ "active" if page == "tracks" else "xxxx" }}" ><a href="tracks">Tracks</a></li>
+%end
+%if 'console' in pistapages:
             <li class="{{ "active" if page == "console" else "xxxx" }}" ><a href="console">Console</a></li>
+%end
+%if 'status' in pistapages:
             <li class="{{ "active" if page == "status" else "xxxx" }}" ><a href="status">Status</a></li>
+%end
           </ul>
           <ul class="nav navbar-nav navbar-right">
-            <li class="{{ "active" if page == "YYYYY" else "xxxx" }}" ><a href="#">Default</a></li>
+            <!-- 
+	      <li class="{{ "active" if page == "YYYYY" else "xxxx" }}" ><a href="#">Default</a></li>
+	      -->
+%if 'hw' in pistapages:
             <li class="{{ "active" if page == "hw" else "xxxx" }}" ><a href="hw">Hardware</a></li>
-            <li ><a href="#">Fixed top</a></li>
+%end
           </ul>
         </div><!--/.nav-collapse -->
       </div>

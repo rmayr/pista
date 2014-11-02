@@ -172,20 +172,20 @@ def enable_cors():
 
 @app.route('/index')
 def index():
-    return template('index')
+    return template('index', pistapages=cf.g('pista', 'pages'))
 
 @app.route('/about')
 def page_about():
 
-    return template('about')
+    return template('about', pistapages=cf.g('pista', 'pages'))
 
 @app.route('/console')
 def page_console():
-    return template('console')
+    return template('console', pistapages=cf.g('pista', 'pages'))
 
 @app.route('/map')
 def page_map():
-    return template('map')
+    return template('map', pistapages=cf.g('pista', 'pages'))
 
 @app.route('/hw')
 def page_hw():
@@ -221,21 +221,22 @@ def page_hw():
     device_list.sort(key=lambda x: x['tid'], reverse=False)
     params = {
             'devices' : device_list,
+            'pistapages' : cf.g('pista', 'pages'),
     }
 
     return template('hw', params)
 
 @app.route('/status')
 def page_console():
-    return template('status')
+    return template('status', pistapages=cf.g('pista', 'pages'))
 
 @app.route('/table')
 def page_table():
-    return template('table')
+    return template('table', pistapages=cf.g('pista', 'pages'))
 
 @app.route('/tracks')
 def page_tracks():
-    return template('tracks')
+    return template('tracks', pistapages=cf.g('pista', 'pages'))
 
 @app.route('/hello')
 def hello():

@@ -1,4 +1,5 @@
 % include('tbstop.tpl', page='console', page_title='OwnTracks Console')
+%if 'console' in pistapages:
 
 
     <script src="js/mqttws31.js" type="text/javascript"></script>
@@ -37,4 +38,5 @@
 	<ul id='ws'></ul>
 </div>
 
+#end
 % include('tbsbot.tpl')

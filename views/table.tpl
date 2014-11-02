@@ -1,4 +1,5 @@
 % include('tbstop.tpl', page='table', page_title='OwnTracks Table')
+%if 'table' in pistapages:
 
 
 
@@ -238,4 +239,5 @@ Toggle: <a href="#" class="toggle-vis" data-column="0">Topic</a> -
         </table>
 </div>
 
+%end
 % include('tbsbot.tpl')

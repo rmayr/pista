@@ -1,4 +1,5 @@
 % include('tbstop.tpl', page='status', page_title='OwnTracks Status')
+%if 'status' in pistapages:
 
 
     <script src="js/mqttws31.js" type="text/javascript"></script>
@@ -175,4 +176,5 @@
     </script>
 
 
+%end
 % include('tbsbot.tpl')

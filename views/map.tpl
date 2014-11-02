@@ -1,4 +1,5 @@
 % include('tbstop.tpl', page='map', page_title='OwnTracks LiveMap')
+%if 'map' in pistapages:
 
 
 
@@ -97,4 +98,5 @@ function handlerfunc(topic, payload) {
     	});
 </script>
 
+%end
 % include('tbsbot.tpl')

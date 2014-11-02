@@ -1,4 +1,5 @@
 % include('tbstop.tpl', page='hw', page_title='OwnTracks Hardware')
+%if 'hw' in pistapages:
 
 
     <script src="js/jquery.flot.min.js" type="text/javascript"></script>
@@ -91,4 +92,5 @@
 </table>
 
 
+%end
 % include('tbsbot.tpl')

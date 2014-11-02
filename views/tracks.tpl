@@ -1,4 +1,5 @@
 % include('tbstop.tpl', page='tracks', page_title='OwnTracks Tracks')
+%if 'tracks' in pistapages:
 
 
 	<link href="track/track-style.css" rel="stylesheet">
@@ -283,4 +284,5 @@
     </script>
 
 
+%end
 % include('tbsbot.tpl')

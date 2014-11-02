@@ -204,6 +204,12 @@ listen_port = 8809
 listen_host = "localhost"
 listen_port = 8080
 
+# Array of page names which should be visible from the pista menu.
+# Chose any from 
+#   ['about', 'map', 'table', 'tracks', 'console', 'status', 'hw' ]
+
+pages = ['about', 'map', 'table', 'tracks', 'console', 'status', 'hw' ]
+
 # The following parameters are for the Websocket connections and
 # most of these are made available to Web apps via a GET request
 # to ../config.js.
