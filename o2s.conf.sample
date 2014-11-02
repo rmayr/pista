@@ -56,7 +56,7 @@ t_ignore = [ 'p', ]
 
 # config helper for CTRL
 
-ctrlconfer = True
+ctrldauth = True
 
 #   __  __  ___ _____ _____ 
 #  |  \/  |/ _ \_   _|_   _|

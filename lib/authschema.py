@@ -68,7 +68,7 @@ class Params(ConferModel):
 if __name__ == '__main__':
     sql_db.connect()
 
-    if cf.g('features', 'ctrlconfer', False) == True:
+    if cf.g('features', 'ctrldauth', False) == True:
         try:
             User.create_table(fail_silently=True)
         except Exception, e:
