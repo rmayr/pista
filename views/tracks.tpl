@@ -62,7 +62,6 @@
 	    <div>download <a href='#' fmt='txt' class='download'>TXT</a></div>
 	    <div>download <a href='#' fmt='csv' class='download'>CSV</a></div>
 	    <div>download <a href='#' fmt='gpx' class='download'>GPX</a></div>
-	    <div>download <a href='#' fmt='ctrl' class='download'>CTRL</a></div>
 
 	</div> <!-- end navbar -->
 

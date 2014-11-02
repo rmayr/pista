@@ -318,7 +318,6 @@ def get_download():
         'csv':  'text/csv',
         'txt':  'text/plain',
         'gpx':  'application/gpx+xml',
-        'ctrl' : 'application/json',
     }
 
     userdev = request.params.get('userdev')
@@ -338,24 +337,6 @@ def get_download():
 
     sio = StringIO()
     s = codecs.getwriter('utf8')(sio)
-
-    if fmt == 'ctrl':
-        tlist = []
-        for tp in track:
-            try:
-                tlist.append({
-                    'tst' : tp['tst'].strftime('%s'),
-                    'lat' : tp.get('lat'),
-                    'lon' : tp.get('lon'),
-                    # 'vel' : int(tp.get('vel', 0)),
-                    # 't'   : tp.get('t', '-'),
-                })
-            except:
-                pass
-
-        message = "OK"  # or clear-text error shown to user
-        tstamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(int(time.time())))
-        s.write(json.dumps(dict(track=tlist, tstamp=tstamp, status=message), indent=2))
 
     if fmt == 'txt':
 
