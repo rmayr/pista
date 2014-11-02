@@ -52,11 +52,10 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#">OwnTracks</a>
+          <a class="navbar-brand" href="index">OwnTracks</a>
         </div>
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
-            <li class="{{ "active" if page == "index" else "xxxx" }}" ><a href="/">Home</a></li>
             <li class="{{ "active" if page == "about" else "xxxx" }}" ><a href="about">About</a></li>
             <li class="{{ "active" if page == "map" else "xxxx" }}" ><a href="map">Map</a></li>
             <li class="{{ "active" if page == "table" else "xxxx" }}" ><a href="table">Table</a></li>

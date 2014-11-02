@@ -170,9 +170,9 @@ def getDBwaypoints(username, device, lat_min, lat_max, lon_min, lon_max):
 def enable_cors():
     response.headers['Access-Control-Allow-Origin'] = '*'
 
-@app.route('/')
+@app.route('/index')
 def index():
-    return template('index', dict(name="JP M", age=69))
+    return template('index')
 
 @app.route('/about')
 def page_about():
