@@ -50,7 +50,7 @@ class Acl(ConferModel):
     class Meta:
         indexes = (
             # Create unique on username, topic
-            (('username', 'topic'), True),
+            (('username', 'topic', 'rw'), True),
         )
 
 class Params(ConferModel):
