@@ -201,8 +201,31 @@ $(document).ready( function () {
 			name: 't',
 			title: "T",
 			data: null,
-			render: 't',
                         "targets" : [9],
+			render : function(data, type, row) {
+				var t = data.t;
+				var desc = 'Unknown';
+				var descriptions = {
+				  "f": "First pub after reboot",
+				  "c": "Started by alarm clock",
+				  "a": "Alarm (accelerometer)",
+				  "k": "Transition to park",
+				  "L": "Last recorded before graceful shutdown",
+				  "l": "GPS signal lost",
+				  "m": "Manually requested",
+				  "t": "Device is moving",
+				  "T": "Stationary; maxInterval has elapsed",
+				  "v": "Transition from park to move",
+				};
+
+				try {
+					desc = descriptions[t];
+				} catch(err) {
+					desc = '???';
+				}
+
+				return '<acronym title="' + desc + '">' + t + '</acronym>';
+			}
                 },
 		{
 			className: 'location',
