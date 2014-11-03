@@ -138,10 +138,20 @@ def conf():
     # won't understand. %c loses out -- that won't work, so no point returning
     # those.
     try:
-        for sub in Acl.select().where(Acl.username == username, Acl.rw == 0):
+        for sub in Acl.select().where(Acl.username == username):
             new_sub = sub.topic.replace('%u', username)
             if '%c' not in new_sub:
-                topic_list.append(new_sub)
+                # Ensure that CTRL get's correct topics. In particular, not more
+                # than 3 'parts' ending in '#'
+
+                parts = new_sub.split('/')
+                nparts = len(parts)
+                if new_sub.startswith('/'):
+                    nparts = nparts - 1
+                new_topic = new_sub
+                if nparts > 3 and new_sub.endswith('/#'):
+                    new_topic = new_sub[0:-2]
+                topic_list.append(new_topic)
     except Exception, e:
         logging.error("Can't query ACL for topic list: %s" % (str(e)))
 
