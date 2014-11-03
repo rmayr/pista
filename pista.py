@@ -261,6 +261,8 @@ def config_js():
             newconf[key] = 'true' if newconf[key] else 'false';
         # print key, " = ", type(newconf[key]), " : ",  newconf[key]
 
+    newconf['configfile'] = os.getenv('O2SCONFIG', 'o2s.conf')
+
     response.content_type = 'text/javascript; charset: UTF-8'
     return template('config-js', newconf)
 
