@@ -157,13 +157,11 @@ def push_map(mosq, device, device_data):
         logging.error("Can't convert to JSON: {0}".format(str(e)))
         return
 
-    topic = maptopic
-    if topic.endswith('/'):
-        topic = topic + device
-    else:
-        topic = topic + "/" + device
-
-    mosq.publish(topic, payload, qos=0, retain=True)
+    try:
+        topic = maptopic.format(device)
+        mosq.publish(topic, payload, qos=0, retain=True)
+    except Exception, e:
+        logging.error("Cannot publish to maptopic at [{0}]: {1}".format(topic, str(e)))
 
 def on_info(mosq, userdata, msg):
     if (skip_retained and msg.retain == 1) or len(msg.payload) == 0:
@@ -422,6 +420,13 @@ def watcher(mosq, topic, data):
     if watcher_topic is None:
         return
 
+    try:
+        wt = watcher_topic.format(topic)
+    except Exception, e:
+        logging.error("Cannot format watcher_topic: {0}".format(str(e)))
+        return
+
+
     time_format = "%d.%m %H:%M:%S"
     tstamp = datetime.datetime.fromtimestamp(int(time.time())).strftime(time_format)
 
@@ -430,7 +435,7 @@ def watcher(mosq, topic, data):
     if type(data) is not dict:
         s = fmt % (tstamp, topic, data)
         bb = bytearray(s.encode('utf-8'))
-        mosq.publish(watcher_topic, bb, qos=0, retain=False)
+        mosq.publish(wt, bb, qos=0, retain=False)
         return
 
     time_str = None
@@ -456,10 +461,10 @@ def watcher(mosq, topic, data):
                 )
             s = fmt % (tstamp, topic, s)
             bb = bytearray(s.encode('utf-8'))
-            mosq.publish(watcher_topic, bb, qos=0, retain=False)
+            mosq.publish(wt, bb, qos=0, retain=False)
     else:
         s = fmt % (tstamp, topic, json.dumps(data))
-        mosq.publish(watcher_topic, s, qos=0, retain=False)
+        mosq.publish(wt, s, qos=0, retain=False)
 
 
 def on_message(mosq, userdata, msg):
