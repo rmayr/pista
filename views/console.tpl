@@ -38,5 +38,5 @@
 	<ul id='ws'></ul>
 </div>
 
-#end
+%end
 % include('tbsbot.tpl')
