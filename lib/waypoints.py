@@ -42,7 +42,7 @@ class WP(object):
                 lon     = float(w.lon)
                 meters  = int(w.rad)
                 desc    = w.waypoint
-                wptopic   = w.topic
+                wptopic   = w.topic.replace('/waypoints', '')
 
                 if meters == 0:
                     continue
@@ -67,7 +67,10 @@ class WP(object):
                     unique_sha = hash_object.hexdigest()
 
                     try:
-                        fence_topic = self.maptopic + "/" + unique_sha
+                        # fence_topic = self.maptopic + "/" + unique_sha
+                        fence_topic = self.maptopic.format(wptopic) + "/" + unique_sha
+                        print fence_topic
+
                         self.mosq.publish(fence_topic, json.dumps(fence_data), qos=0, retain=True)
                     except Exception, e:
                         logging.warn("Cannot publish fence: {0}".format(str(e)))
