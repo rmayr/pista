@@ -14,8 +14,8 @@ import json
 import time
 from cf import conf
 from dbschema import User, Acl, Params, fn, sql_db, Location
-import hashing_passwords as hp
 import paho.mqtt.client as paho
+from auth import PistaAuth
 
 cf = conf(os.getenv('O2SCONFIG', 'o2s.conf'))
 
@@ -35,43 +35,12 @@ if not os.path.isfile(cacert_file) or not os.access(cacert_file, os.R_OK):
     logging.error("Cannot open cacert_file ({0})".format(cacert_file))
     sys.exit(2)
 
+auth = PistaAuth()
+
 app = application = bottle.Bottle()
 
 def notauth(reason):
     return bottle.HTTPResponse(status=403, body=json.dumps({"message": reason}))
-
-def auth(username, password, apns_token=None):
-
-    if username is None or password is None:
-        return False
-
-    try:
-        sql_db.connect()
-    except Exception, e:
-        logging.error("%s" % str(e))
-        return False
-
-    pwhash = None
-    try:
-        u = User.get(User.username == username)
-        pwhash = u.pwhash
-    except User.DoesNotExist:
-        logging.debug("User {0} does not exist".format(username))
-        return False
-    except Exception, e:
-        raise
-
-
-
-    match = hp.check_hash(password, pwhash)
-    logging.debug('Hash match for %s (%s): %s' % (username, pwhash, match))
-
-    if match == True and apns_token is not None:
-        tstamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
-        q = User.update(token = apns_token, tstamp = tstamp).where(User.username == username)
-        q.execute()
-
-    return match
 
 @app.route('/')
 def show_index():
@@ -86,7 +55,7 @@ def conf():
     password = request.forms.get('password')
     apns_token = request.forms.get('token')
 
-    authorized = auth(username, password, apns_token)
+    authorized = auth.check(username, password, apns_token)
 
     logging.info("CONF: (username=%s, token=%s) authorized=%s" % (username, apns_token, authorized))
 
@@ -220,7 +189,7 @@ def ctrl_trackdump(user):
         nrecs = 10
     topic = request.forms.get('topic')
 
-    authorized = auth(username, password)
+    authorized = auth.check(username, password)
 
     logging.info("TRACK: (username=%s) authorized=%s" % (username, authorized))
 

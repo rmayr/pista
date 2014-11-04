@@ -27,8 +27,11 @@ from dbschema import Location, Waypoint, Geo, fn, sql_db, JOIN_LEFT_OUTER, User,
 import time
 from wredis import Wredis
 import paho.mqtt.client as paho
+from auth import PistaAuth
 
 cf = conf(os.getenv('O2SCONFIG', 'o2s.conf'))
+
+auth = PistaAuth()
 
 POINT_KM = 20
 
@@ -41,13 +44,7 @@ def notauth(reason):
     return bottle.HTTPResponse(status=403, body=reason)
 
 def check_auth(username, password):
-    print "*** auth({0}, {1})".format(username, password)
-    if username is None or password is None:
-        return False
-    if username == 'ben' and password == 'ooo':
-        return True
-
-    return False
+    return auth.check(username, password, apns_token=None)
 
 
 def db_reconnect():
