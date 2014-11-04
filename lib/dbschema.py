@@ -53,8 +53,8 @@ class Location(OwntracksModel):
     trip            = IntegerField(null=True)
     dist            = IntegerField(null=True)
     t               = CharField(null=True, max_length=1)
-#    ghash           = CharField(null=True, max_length=6)
-    ghash           = ForeignKeyField(Geo)
+    ghash           = CharField(null=True, max_length=6)
+#    ghash           = ForeignKeyField(Geo)
     cc              = CharField(null=True, max_length=2)
 
     class Meta:
