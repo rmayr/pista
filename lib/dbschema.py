@@ -96,19 +96,42 @@ class Geo(OwntracksModel):
     addr            = CharField(null=False)
 
 
+class User(OwntracksModel):
+    username        = CharField(null=False, unique=True)
+    pwhash          = CharField(null=False)
+    superuser       = IntegerField(null=False)
+    org             = IntegerField(null=True)
+    token           = CharField(null=True)
+    note            = CharField(null=True)
+    tstamp          = DateTimeField(default=datetime.datetime.now)
 
-#class Status(OwntracksModel):
-#    KEY tid             = CharField(null=False, max_length=2)
-#    l_id        location.id
-#    g_id        geo.id
-#    tstamp          = DateTimeField(default=datetime.datetime.now, index=True)
-#    status          = IntegerField(null=True)   # 0, 1, -1
-#
-#    class Meta:
-#        indexes = (
-#            # Create a unique index on tst
-#            # FIXME:    ----------- (('lat', 'lon', ), True),
-#        )
+
+class Acl(OwntracksModel):
+    username        = CharField(null=False)
+    topic           = CharField(null=False)
+    rw              = IntegerField(null=False)
+    note            = CharField(null=True)
+    tstamp          = DateTimeField(default=datetime.datetime.now)
+
+    class Meta:
+        indexes = (
+            # Create unique on username, topic
+            (('username', 'topic'), True),
+        )
+
+class Params(OwntracksModel):
+    org             = ForeignKeyField(User)
+    name            = CharField(null=True)
+    host            = CharField(null=True)
+    port            = IntegerField(null=True)
+    tls             = IntegerField(null=True)
+    auth            = IntegerField(null=True)
+    mqttuser        = CharField(null=True)
+    mqttpass        = CharField(null=True)
+    certurl         = CharField(null=True)
+    trackurl        = CharField(null=True)
+
+
 
 if __name__ == '__main__':
     sql_db.connect()
@@ -140,7 +163,17 @@ if __name__ == '__main__':
         except Exception, e:
             print str(e)
 
-#    try:
-#        Status.create_table(fail_silently=True)
-#    except Exception, e:
-#        print str(e)
+    try:
+        User.create_table(fail_silently=True)
+    except Exception, e:
+        print str(e)
+
+    try:
+        Acl.create_table(fail_silently=True)
+    except Exception, e:
+        print str(e)
+
+    try:
+        Params.create_table(fail_silently=True)
+    except Exception, e:
+        print str(e)
