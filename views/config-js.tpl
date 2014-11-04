@@ -1,4 +1,4 @@
-/* Generated from jjj.conf for JavaScript */
+/* Generated from {{ configfile }} for JavaScript */
 
 var config = {
 
