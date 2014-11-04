@@ -538,13 +538,6 @@ def on_message(mosq, userdata, msg):
         return
 
     item['topic'] = topic
-    try:
-        parts = topic.split('/')
-        item['username'] = parts[1]
-        item['device'] = parts[2]
-    except:
-        item['username'] = 'unknown'
-        item['device'] = 'unknown'
 
     orig_tst = tst
     tstamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(tst))
@@ -565,10 +558,10 @@ def on_message(mosq, userdata, msg):
             try:
                 sql_db.execute_sql("""
                       REPLACE INTO waypoint
-                      (topic, username, device, tid, lat, lon, tst, rad, waypoint)
-                      VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                      (topic, tid, lat, lon, tst, rad, waypoint)
+                      VALUES (%s, %s, %s, %s, %s, %s, %s)
                       """, (
-                          item['topic'], item['username'], item['device'], item['tid'], item['lat'],
+                          item['topic'], item['tid'], item['lat'],
                           item['lon'], tstamp, item['rad'], item['desc'],))
             except Exception, e:
                 logging.error("Cannot UPSERT waypoint into DB: {0}".format(str(e)))
