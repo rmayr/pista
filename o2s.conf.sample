@@ -55,11 +55,6 @@ alarm = "alarmhelper.py"
 
 t_ignore = [ 'p', ]
 
-# Add support for `ctrld` in creating DB tables for it. This setting does
-# not automatically launch ctrld.
-
-ctrldauth = True
-
 #   __  __  ___ _____ _____ 
 #  |  \/  |/ _ \_   _|_   _|
 #  | |\/| | | | || |   | |  
