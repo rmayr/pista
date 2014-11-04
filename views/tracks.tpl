@@ -22,19 +22,17 @@
       		<input type='hidden' id='todate' value='' />
 
 	<div>
-	    TID: <select id='usertid'></select>
-	    </div>
-
-	<div>
-		<!-- DATE -->
-	     <div id='datepick'></div>
-	     </div>
-
-	<div>
 	  <p class='description'>
 	  Select a <acronym title="Tracker-ID">TID</acronym> and a date or a range of dates. Then
 	  click one of the options below to show on map or download data.
 	  </p>
+	    TID: <select id='usertid'></select>
+	    </div>
+
+	<!-- DATE -->
+	<div id='datepick'></div>
+
+	<div>
 	    Mark every KM:
 	    <select id='spacing'>
 		<option>2</option>
@@ -48,9 +46,12 @@
 
 
 	    <div><a href='#' id='getmap'>Show on map</a></div>
-	    <div>download <a href='#' fmt='txt' class='download'>TXT</a></div>
-	    <div>download <a href='#' fmt='csv' class='download'>CSV</a></div>
-	    <div>download <a href='#' fmt='gpx' class='download'>GPX</a></div>
+	    <div>
+	      Download 
+		[<a href='#' fmt='txt' class='download'>TXT</a>]
+		[<a href='#' fmt='csv' class='download'>CSV</a>]
+		[<a href='#' fmt='gpx' class='download'>GPX</a>]
+	    </div>
 
 	</div> <!-- end navbar -->
 
