@@ -118,7 +118,28 @@ Run `./pista.py` and connect to it with a supported Web browser. By default, the
 
 ### Authentication / Authorization
 
-websockets > creds from basic auth unless configured otherwise
+We use pista in combination with mosquitto-auth-plug which allows us to use the
+same authentication database tables for both. In this model, a user logs on to
+pista with HTTP Basic authentication and we re-use these credentials to connect
+to the MQTT broker, thus ensuring that a user can only see what she or he is allowed
+to see. We thus configure the `[websocket]` section like this:
+
+```ini
+basic_auth = True
+username = None
+password = None
+```
+
+If your MQTT broker uses a different combination of usernames and passwords, then
+you'll have to configure the `[websocket]` section as
+
+```ini
+basic_auth = False
+username = "xxx"
+password = "secret"
+```
+
+but that may allow a user to "see" more than she's supposed to see.
 
 
 
