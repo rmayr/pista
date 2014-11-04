@@ -98,8 +98,10 @@
 		}
 		if (d.tid) {
 			var tid = d.tid;
-			var id = topic.replace(/\//g, '-');
+			/* Use topic in map data; not extended MQTT topic */
+			var id = d.topic.replace(/\//g, '-');
 			var box = $('#' + id);
+
 
 			if (box.length == 0) {
 				// TODO: I can put small text in the inside div (within span)
