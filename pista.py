@@ -23,8 +23,7 @@ from xml.etree.ElementTree import Element, SubElement, Comment, tostring
 from xml.etree import ElementTree as ET
 from ElementTree_pretty import prettify
 from cf import conf
-from dbschema import Location, Waypoint, Geo, fn, sql_db, JOIN_LEFT_OUTER
-from authschema import User, Acl
+from dbschema import Location, Waypoint, Geo, fn, sql_db, JOIN_LEFT_OUTER, User, Acl
 import time
 from wredis import Wredis
 import paho.mqtt.client as paho
