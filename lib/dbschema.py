@@ -29,6 +29,12 @@ class OwntracksModel(Model):
     class Meta:
         database = sql_db
 
+class Geo(OwntracksModel):
+    ghash           = CharField(null=False, max_length=6, unique=True)
+    src             = IntegerField(null=True)       # source of reverse geo
+    cc              = CharField(null=True, max_length=2)
+    addr            = CharField(null=False)
+
 class Location(OwntracksModel):
     topic           = BlobField(null=False)
     username        = CharField(null=False)
@@ -47,7 +53,8 @@ class Location(OwntracksModel):
     trip            = IntegerField(null=True)
     dist            = IntegerField(null=True)
     t               = CharField(null=True, max_length=1)
-    ghash           = CharField(null=True, max_length=6)
+#    ghash           = CharField(null=True, max_length=6)
+    ghash           = ForeignKeyField(Geo)
     cc              = CharField(null=True, max_length=2)
 
     class Meta:
@@ -89,12 +96,6 @@ class Waypoint(OwntracksModel):
             (('tst', ), True),
         )
 
-class Geo(OwntracksModel):
-    ghash           = CharField(null=False, max_length=6, unique=True)
-    src             = IntegerField(null=True)       # source of reverse geo
-    cc              = CharField(null=True, max_length=2)
-    addr            = CharField(null=False)
-
 
 class User(OwntracksModel):
     username        = CharField(null=False, unique=True)
@@ -120,7 +121,6 @@ class Acl(OwntracksModel):
         )
 
 class Params(OwntracksModel):
-    org             = ForeignKeyField(User)
     name            = CharField(null=True)
     host            = CharField(null=True)
     port            = IntegerField(null=True)
