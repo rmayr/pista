@@ -45,7 +45,7 @@ def check_auth(username, password):
     print "*** auth({0}, {1})".format(username, password)
     if username is None or password is None:
         return False
-    if username == 'x' and password == 'y':
+    if username == 'ben' and password == 'ooo':
         return True
 
     return False
@@ -71,14 +71,18 @@ def track_length(track):
 
     return kilometers
 
+def normalize_date(d):
+
+    if d == 'NaN-NaN-NaN' or d == "" or d is None:
+        d = time.strftime("%Y-%m-%d")
+    return d
+
 def getDBdata(usertid, from_date, to_date, spacing):
 
     track = []
 
-    if from_date == 'NaN-NaN-NaN' or from_date is None or from_date == "":
-        from_date = time.strftime("%Y-%m-%d")
-    if to_date is None or to_date == "" or to_date == 'NaN-NaN-NaN':
-        to_date = time.strftime("%Y-%m-%d")
+    from_date = normalize_date(from_date)
+    to_date   = normalize_date(to_date)
 
     to_date = "%s 23:59:59" % to_date
     print "FROM=%s, TO=%s" % (from_date, to_date)
@@ -387,8 +391,8 @@ def get_download():
     to_date = request.params.get('todate')
     fmt = request.params.get('format')
 
-# FIXME: make sure from_date / to_date are always**** correct 
-
+    from_date = normalize_date(from_date)
+    to_date   = normalize_date(to_date)
 
     # before allowing download check for usertid auth
     usertids = getusertids(current_user)
@@ -499,10 +503,8 @@ def get_geoJSON():
     to_date = data.get('todate')
     spacing = int(data.get('spacing', POINT_KM))
 
-    if from_date is None or from_date == "":
-        from_date = time.strftime("%Y-%m-%d")
-    if to_date is None or to_date == "":
-        to_date = time.strftime("%Y-%m-%d")
+    from_date = normalize_date(from_date)
+    to_date   = normalize_date(to_date)
 
     track = getDBdata(usertid, from_date, to_date, spacing)
 
