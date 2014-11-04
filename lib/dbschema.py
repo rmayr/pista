@@ -37,8 +37,6 @@ class Geo(OwntracksModel):
 
 class Location(OwntracksModel):
     topic           = BlobField(null=False)
-    username        = CharField(null=False)
-    device          = CharField(null=False)
     tid             = CharField(null=False, max_length=2)
     lat             = DecimalField(null=False, max_digits=10, decimal_places=7)
     lon             = DecimalField(null=False, max_digits=10, decimal_places=7)
@@ -59,9 +57,6 @@ class Location(OwntracksModel):
 
     class Meta:
         indexes = (
-            # Create non-unique on username, device
-            (('username', 'device'), False),
-
             # Create non-unique on tid
             (('tid', ), False),
             # (('topic', ), False),  # create index l_topic on location(topic (100));

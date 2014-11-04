@@ -20,6 +20,8 @@ ALTER TABLE location ADD t VARCHAR(1);
 ALTER TABLE location MODIFY batt DECIMAL(3,1) NOT NULL;
 ALTER TABLE location MODIFY acc DECIMAL(6,1) NOT NULL;
 
+ALTER TABLE location DROP username;
+ALTER TABLE location DROP device;
 ALTER TABLE location DROP weather;
 ALTER TABLE location DROP revgeo;
 ALTER TABLE location DROP waypoint;
