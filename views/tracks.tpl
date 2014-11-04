@@ -32,9 +32,8 @@
 
 	<div>
 	  <p class='description'>
-	  Select a user/device, and a date or a range of dates. Then
-	  click one of the options below to show on map or download
-	  the data.
+	  Select a <acronym title="Tracker-ID">TID</acronym> and a date or a range of dates. Then
+	  click one of the options below to show on map or download data.
 	  </p>
 	    Mark every KM:
 	    <select id='spacing'>
@@ -46,16 +45,6 @@
 		<option>100</option>
 	    </select>
 	    </div>
-
-
-	    <div>
-	    Color: 	<div id="colorPicker1">
-			    <a class="color"><div class="colorInner"></div></a>
-			    <div class="track"></div>
-			    <ul class="dropdown"><li></li></ul>
-			    <input type="hidden" class="colorInput"/>
-			</div>
-		</div>
 
 
 	    <div><a href='#' id='getmap'>Show on map</a></div>
@@ -258,12 +247,6 @@
 
 	$(document).ready(function() {
 
-
-		// FIXME: $("#colorPicker1").setColor(line_color);
-		$("#colorPicker1").tinycolorpicker();
-		$("#colorPicker1").bind("change", function() {
-			line_color = $(".colorInput").val();
-		});
 
 		$('#getmap').on('click', function (e) {
 			e.preventDefault();

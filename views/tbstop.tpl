@@ -26,14 +26,12 @@
     <link rel="stylesheet" href="css/track.css" />
     <link rel="stylesheet" href="css/leaflet.css" />
     <link rel="stylesheet" href="css/leaflet.label.css" />
-    <link rel="stylesheet" href="css/tinycolorpicker.css" type="text/css" media="screen"/>
 
     <script src="js/leaflet.js"></script>
     <!-- https://github.com/Leaflet/Leaflet.label -->
     <script src="js/leaflet.label.js"></script>
 
     <script type="text/javascript" charset="utf8" src="js/jquery.js"></script>
-    <script type="text/javascript" src="js/jquery.tinycolorpicker.min.js"></script>
 
     <!-- http://johnculviner.com/jquery-file-download-plugin-for-ajax-like-feature-rich-file-downloads/ -->
     <script type="text/javascript" src="js/jquery.fileDownload.js"></script>
