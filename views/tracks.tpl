@@ -22,7 +22,7 @@
       		<input type='hidden' id='todate' value='' />
 
 	<div>
-	    User/Device: <select id='userdev'></select>
+	    User/Device: <select id='usertid'></select>
 	    </div>
 
 	<div>
@@ -78,7 +78,7 @@
 	load_map(config.apikey);
 
 
-	var $select = $('#userdev');
+	var $select = $('#usertid');
                 $.ajax({
                         type: 'GET',
                         url: 'api/userlist',
@@ -160,7 +160,7 @@
 
 	function getGeoJSON() {
 		var params = {
-			userdev: $('#userdev').children(':selected').attr('id'),
+			usertid: $('#usertid').children(':selected').attr('id'),
 			fromdate: $('#fromdate').val(),
 			todate: $('#todate').val(),
 			spacing: $('#spacing').val(),
@@ -239,7 +239,7 @@
 
 	function download(format) {
 		var params = {
-			userdev: $('#userdev').children(':selected').attr('id'),
+			usertid: $('#usertid').children(':selected').attr('id'),
 			fromdate: $('#fromdate').val(),
 			todate: $('#todate').val(),
 			format: format,
