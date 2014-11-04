@@ -65,6 +65,17 @@ class Params(ConferModel):
     certurl         = CharField(null=True)
     trackurl        = CharField(null=True)
 
+#class Tidlist(ConferModel):
+#    user            = ForeignKeyField(User)
+#    tid             = CharField(null=False)
+#
+#    class Meta:
+#        indexes = (
+#            # Create unique on user, tid
+#            (('user', 'tid'), True),
+#        )
+
+
 if __name__ == '__main__':
     sql_db.connect()
 
@@ -83,3 +94,8 @@ if __name__ == '__main__':
             Params.create_table(fail_silently=True)
         except Exception, e:
             print str(e)
+
+#        try:
+#            Tidlist.create_table(fail_silently=True)
+#        except Exception, e:
+#            print str(e)
