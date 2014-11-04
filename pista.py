@@ -8,6 +8,7 @@ import sys
 sys.path.insert(0, './lib')
 import bottle
 from bottle import response, template, static_file, request
+from bottle import auth_basic, error
 import json
 from haversine import haversine
 try:
@@ -23,8 +24,10 @@ from xml.etree import ElementTree as ET
 from ElementTree_pretty import prettify
 from cf import conf
 from dbschema import Location, Waypoint, Geo, fn, sql_db, JOIN_LEFT_OUTER
+from authschema import User, Acl
 import time
 from wredis import Wredis
+import paho.mqtt.client as paho
 
 cf = conf(os.getenv('O2SCONFIG', 'o2s.conf'))
 
@@ -35,16 +38,17 @@ bottle.SimpleTemplate.defaults['get_url'] = app.get_url
 
 redis = Wredis(cf.config('redis'))
 
-# FIXME: load from dict     app.config.load_config('jjj.conf')
-
 def notauth(reason):
     return bottle.HTTPResponse(status=403, body=reason)
 
-def auth(username, password):
+def check_auth(username, password):
+    print "*** auth({0}, {1})".format(username, password)
     if username is None or password is None:
         return False
+    if username == 'x' and password == 'y':
+        return True
 
-    return True
+    return False
 
 
 def db_reconnect():
@@ -67,7 +71,7 @@ def track_length(track):
 
     return kilometers
 
-def getDBdata(username, device, from_date, to_date, spacing):
+def getDBdata(usertid, from_date, to_date, spacing):
 
     track = []
 
@@ -92,8 +96,9 @@ def getDBdata(username, device, from_date, to_date, spacing):
                 .select(Location, Geo.addr.alias('addr'))
                 .join(Geo, JOIN_LEFT_OUTER, on=(Location.ghash == Geo.ghash)).
                 where(
-                    (Location.username == username) &
-                    (Location.device == device) &
+                    # (Location.username == username) &
+                    # (Location.device == device) &
+                    (Location.tid == usertid) &
                     (Location.tst.between(from_date, to_date))
                 )
             )
@@ -127,7 +132,7 @@ def getDBdata(username, device, from_date, to_date, spacing):
 
     return track
 
-def getDBwaypoints(username, device, lat_min, lat_max, lon_min, lon_max):
+def getDBwaypoints(usertid, lat_min, lat_max, lon_min, lon_max):
 
     waypoints = []
 
@@ -165,12 +170,65 @@ def getDBwaypoints(username, device, lat_min, lat_max, lon_min, lon_max):
 
     return waypoints
 
+def getusertids(username):
+    ''' username is probably a logged-in user. Obtain a list of TIDs
+        that user is allowed to see '''
+
+    # First, get a list of ACL topics the user is authorized for. If the
+    # `username' is a superuser, add '#' to the subscription list, so
+    # that paho matches that as true in any case. (Superusers possibly
+    # don't have ACL entries in the database.)
+
+    sublist = []
+
+    superuser = False
+    try:
+        u = User.get(User.username == username)
+        superuser = u.superuser
+    except User.DoesNotExist:
+        # logging.debug("User {0} does not exist".format(username))
+        pass
+    except Exception, e:
+        raise
+
+    if not superuser:
+        query = (Acl.select(Acl). where(
+                    (Acl.username == username)
+                ))
+        for q in query.naive():
+            sublist.append(q.topic)
+    else:
+        sublist.append('#')
+
+    # Find distinct topic, tid combinations in Locations table and
+    # let Paho check if subscription matches
+
+    topiclist = []
+    tidlist = []
+
+    query = (Location.select(Location.tid, Location.topic)
+                    .distinct()
+                    .order_by(Location.tid)
+                    )
+    for q in query:
+        for sub in sublist:
+            if paho.topic_matches_sub(sub, q.topic):
+                tidlist.append(q.tid)
+                topiclist.append(q.topic)
+
+    print "User {0} gets tidlist={1}".format(username, ",".join(tidlist))
+
+    return tidlist
+
+
+#-----------------
 
 @app.hook('after_request')
 def enable_cors():
     response.headers['Access-Control-Allow-Origin'] = '*'
 
 @app.route('/index')
+@auth_basic(check_auth)
 def index():
     return template('index', pistapages=cf.g('pista', 'pages'))
 
@@ -180,15 +238,20 @@ def page_about():
     return template('about', pistapages=cf.g('pista', 'pages'))
 
 @app.route('/console')
+@auth_basic(check_auth)
 def page_console():
     return template('console', pistapages=cf.g('pista', 'pages'))
 
 @app.route('/map')
+@auth_basic(check_auth)
 def page_map():
     return template('map', pistapages=cf.g('pista', 'pages'))
 
 @app.route('/hw')
+@auth_basic(check_auth)
 def page_hw():
+
+    # FIXME: user auth
 
     device_list = []
 
@@ -227,14 +290,17 @@ def page_hw():
     return template('hw', params)
 
 @app.route('/status')
+@auth_basic(check_auth)
 def page_console():
     return template('status', pistapages=cf.g('pista', 'pages'))
 
 @app.route('/table')
+@auth_basic(check_auth)
 def page_table():
     return template('table', pistapages=cf.g('pista', 'pages'))
 
 @app.route('/tracks')
+@auth_basic(check_auth)
 def page_tracks():
     return template('tracks', pistapages=cf.g('pista', 'pages'))
 
@@ -242,17 +308,22 @@ def page_tracks():
 def hello():
     data = {
         'name' : "JP Mens",
-        'number' : 69,
+        'number' : 42,
     }
     return data
 
 @app.route('/config.js')
+@auth_basic(check_auth)
 def config_js():
     ''' Produce a `config.js' from the [websocket] section of our config
         file. We have to muck about a bit to convert None etc. to JavaScript
         types ... '''
 
     newconf = cf.config('websocket')
+    basic_auth = True
+    if 'basic_auth' in newconf and newconf['basic_auth'] == False:
+        basic_auth = False
+
     for key in newconf:
         if type(newconf[key]) == str:
             if newconf[key][0] != '"' and newconf[key][0] != '"':
@@ -263,58 +334,45 @@ def config_js():
 
     newconf['configfile'] = os.getenv('O2SCONFIG', 'o2s.conf')
 
+    if basic_auth == True:
+        u = request.auth[0]
+        u = u.replace("'", "\\'")
+
+        p = request.auth[1]
+        p = p.replace("'", "\\'")
+
+        newconf['username'] = "'{0}'".format(u)
+        newconf['password'] = "'{0}'".format(p)
+
     response.content_type = 'text/javascript; charset: UTF-8'
     return template('config-js', newconf)
 
-@app.route('/db')
-def f1():
-
-    username = 'jpm'
-    device = '5s'
-    from_date = '2014-08-25'
-    to_date = '2014-08-27'
-
-    list = []
-
-    query = Location.select().where(
-                (Location.username == username) &
-                (Location.device == device) &
-                (Location.tst.between(from_date, to_date))
-                )
-    query = query.order_by(Location.tst.asc())
-    for l in query:
-
-        topic   = l.topic
-
-        list.append( [ l.lat, l.lon] )
-        print topic
-
-    print list
-    return dict(names=list)
-
 @app.route('/api/userlist')
+@auth_basic(check_auth)
 def users():
     ''' Get list of username - device pairs to populate a select box
         the id in that select will be set to username|device '''
 
-    userlist = []
+    current_user = request.auth[0]
 
+    allowed_tids = []
 
     db_reconnect()
-    distinct_list = Location.select(Location.username, Location.device).distinct().order_by(Location.username, Location.device)
-    for u in distinct_list:
 
-        user = {
-            'id'    : "%s|%s" % (u.username, u.device),
-            'name'  : "%s - %s" % (u.username, u.device),
-        }
-        userlist.append(user)
+    usertids = getusertids(current_user)
 
-    return dict(userlist=userlist)
+    for t in usertids:
+        allowed_tids.append({
+            'id' : t,
+            'name' : t,
+        })
+
+    return dict(userlist=allowed_tids)
 
 
-# ?userdev=alx%7Cy300&fromdate=2014-08-19&todate=2014-08-20&format=tx
+# ?usertid=XX&fromdate=2014-08-19&todate=2014-08-20&format=txt
 @app.route('/api/download', method='GET')
+@auth_basic(check_auth)
 def get_download():
     mimetype = {
         'csv':  'text/csv',
@@ -322,18 +380,28 @@ def get_download():
         'gpx':  'application/gpx+xml',
     }
 
-    userdev = request.params.get('userdev')
+    current_user = request.auth[0]
+
+    usertid = request.params.get('usertid')
     from_date = request.params.get('fromdate')
     to_date = request.params.get('todate')
     fmt = request.params.get('format')
 
+# FIXME: make sure from_date / to_date are always**** correct 
+
+
+    # before allowing download check for usertid auth
+    usertids = getusertids(current_user)
+    if usertid not in usertids:
+        #FIXME logging.warn("User {0} is not authorized to download data for tid={1}".format(current_user, usertid))
+        return notauth(reason="Not authorized for this TID")
+
     if fmt not in mimetype:
         return { 'error' : "Unsupported download-type requested" }
 
-    username, device = userdev.split('|')
-    trackname = 'owntracks-%s-%s-%s-%s' % (username, device, from_date, to_date)
+    trackname = 'owntracks-%s-%s-%s' % (usertid, from_date, to_date)
 
-    track = getDBdata(username, device, from_date, to_date, None)
+    track = getDBdata(usertid, from_date, to_date, None)
 
     kilometers = track_length(track)
 
@@ -420,76 +488,13 @@ def get_download():
 
     return s.getvalue()
 
-@app.route('/api/tracktest', method='POST')
-def ctrl_trackdump():
-    data = bottle.request.body.read()
-
-    track = []
-    status = 200
-
-    username = request.forms.get('username')
-    password = request.forms.get('password')
-    tid = request.forms.get('tid')
-    nrecs = request.forms.get('nrecs')
-
-    if nrecs is None or int(nrecs) < 1:
-        nrecs = 50
-
-    print "user=[%s:%s] TID=[%s] nrecs=%s" % (username, password, tid, nrecs)
-
-    authorized = auth(username, password)
-    if authorized == False:
-        status = 403
-
-    if authorized:
-        db_reconnect()
-        message = "OK"
-
-        query = (Location
-                .select(Location, Geo.addr.alias('addr'))
-                .join(Geo, JOIN_LEFT_OUTER, on=(Location.ghash == Geo.ghash)).
-                where(
-                    (Location.tid == tid) 
-                    )
-                ).order_by(Location.tst.desc()).limit(nrecs)
-            
-        for l in query.naive():
-            lat     = float(l.lat)
-            lon     = float(l.lon)
-            dt      = l.tst
-
-            try:
-                tp = {
-                    'lat' : float(l.lat),
-                    'lon' : float(l.lon),
-                    'tst' : int(dt.strftime('%s')),
-                    # 't'   : l.t,
-                    # 'vel' : int(l.vel),
-                }
-                track.append(tp)
-            except:
-                pass
-    
-    response.content_type = 'application/json'
-
-    data = {
-        'tid'      : tid,
-        'message'  : message,
-        'tstamp'   : time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(int(time.time()))),
-        'track'    : track,
-    }
-    response.status = status
-    return json.dumps(data, sort_keys=True, separators=(',',':'))
-
-
 @app.route('/api/getGeoJSON', method='POST')
 def get_geoJSON():
     data = json.load(bottle.request.body)
 
     # needs LOTS of error handling
 
-    userdev = data.get('userdev')
-    username, device = userdev.split('|')
+    usertid = data.get('usertid')
     from_date = data.get('fromdate')
     to_date = data.get('todate')
     spacing = int(data.get('spacing', POINT_KM))
@@ -499,7 +504,7 @@ def get_geoJSON():
     if to_date is None or to_date == "":
         to_date = time.strftime("%Y-%m-%d")
 
-    track = getDBdata(username, device, from_date, to_date, spacing)
+    track = getDBdata(usertid, from_date, to_date, spacing)
 
     last_point = [None, None]
 
@@ -578,7 +583,7 @@ def get_geoJSON():
     # Experiment: geofences
     fences = []
 
-    for f in getDBwaypoints(username, device, lat_min, lat_max, lon_min, lon_max):
+    for f in getDBwaypoints(usertid, lat_min, lat_max, lon_min, lon_max):
         fence = {
                     'type'  : 'Feature',
                     'geometry' : {
