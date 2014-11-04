@@ -13,9 +13,7 @@ from bottle import response, template, static_file, request
 import json
 import time
 from cf import conf
-from authschema import User, Acl, Params, fn, sql_db
-from dbschema import Location
-from dbschema import sql_db as Lsql_db
+from dbschema import User, Acl, Params, fn, sql_db, Location
 import hashing_passwords as hp
 import paho.mqtt.client as paho
 
@@ -208,7 +206,7 @@ def ctrl_trackdump(user):
     status = 200
 
     try:
-        Lsql_db.connect()
+        sql_db.connect()
     except Exception, e:
         logging.error("%s" % str(e))
         return False
