@@ -22,7 +22,7 @@
       		<input type='hidden' id='todate' value='' />
 
 	<div>
-	    User/Device: <select id='usertid'></select>
+	    TID: <select id='usertid'></select>
 	    </div>
 
 	<div>
