@@ -28,6 +28,8 @@ function mqtt_setup(clientid, topiclist, handlerfunc, errorfunc) {
 
 function mqtt_connect()
 {
+	// Renamed in https://bugs.eclipse.org/bugs/show_bug.cgi?id=448136
+	// mqtt = new Paho.MQTT.Client(config.host, config.port,
 	mqtt = new Messaging.Client(config.host, config.port,
 				mqtt_setup.clientid + parseInt(Math.random() * 100, 10));
 
