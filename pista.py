@@ -136,7 +136,7 @@ def getDBwaypoints(usertid, lat_min, lat_max, lon_min, lon_max):
 
     waypoints = []
 
-    print lat_min, lat_max, lon_min, lon_max
+    # FIXME: this needs authorization
 
     lat_min = float(lat_min)
     lat_max = float(lat_max)
@@ -152,20 +152,18 @@ def getDBwaypoints(usertid, lat_min, lat_max, lon_min, lon_max):
                     (Waypoint.lon >= lon_min) &
                     (Waypoint.lon <= lon_max)
                 )
-    # print query.sql()
 
-    for w in query:
+    for q in query:
 
-        if w.rad is None:
+        if q.rad is None:
             continue
 
         wp = {
-            'lat'  : float(w.lat),
-            'lon'  : float(w.lon),
-            'name' : w.waypoint,
-            'rad'  : w.rad,
+            'lat'  : float(q.lat),
+            'lon'  : float(q.lon),
+            'name' : q.waypoint,
+            'rad'  : q.rad,
         }
-        print wp
         waypoints.append(wp)
 
     return waypoints
@@ -195,8 +193,7 @@ def getusertids(username):
         query = (Acl.select(Acl). where(
                     (Acl.username == username)
                 ))
-        for q in query.naive():
-            sublist.append(q.topic)
+        sublist = [ q.topic for q in query.naive() ]
     else:
         sublist.append('#')
 
