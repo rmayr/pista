@@ -116,6 +116,9 @@ Copy `pista.conf.sample` to `pista.conf`, adjust the settings therein as describ
 
 Run `./pista.py` and connect to it with a supported Web browser. By default, the address is `http://127.0.0.1:8080`.
 
+### Authentication / Authorization
+
+websockets > creds from basic auth unless configured otherwise
 
 
 
