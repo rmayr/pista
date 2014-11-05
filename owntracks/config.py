@@ -6,10 +6,16 @@ from ConfigParser import RawConfigParser, NoOptionError
 import codecs
 import ast
 import sys
+import logging
 
 class Config(RawConfigParser):
     def __init__(self, configuration_file):
         self.configfile = configuration_file
+        self.scriptname = os.path.splitext(os.path.basename(sys.argv[0]))[0]
+        self.logfile    = os.getenv(self.scriptname.upper() + 'LOG', self.scriptname + '.log')
+        self.loglevel   = logging.INFO
+        self.logformat  = '%(asctime)-15s %(levelname)-5s [%(module)s] %(message)s'
+
 
         self.dbengine   = 'mysql'
         self.dbname     = 'owntracks'

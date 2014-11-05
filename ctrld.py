@@ -16,15 +16,8 @@ from owntracks.dbschema import db, User, Acl, Params, fn, Location, createalltab
 import paho.mqtt.client as paho
 from owntracks.auth import PistaAuth
 
-
-SCRIPTNAME = os.path.splitext(os.path.basename(__file__))[0]
-LOGFILE    = os.getenv(SCRIPTNAME.upper() + 'LOG', SCRIPTNAME + '.log')
-#LOGLEVEL   = logging.INFO
-LOGLEVEL   = logging.DEBUG
-LOGFORMAT  = '%(asctime)-15s %(levelname)-5s [%(module)s] %(message)s'
-
-logging.basicConfig(filename=LOGFILE, level=LOGLEVEL, format=LOGFORMAT)
-logging.info("Starting %s" % SCRIPTNAME)
+logging.basicConfig(filename=cf.logfile, level=cf.loglevel, format=cf.logformat)
+logging.info("Starting %s" % __name__)
 logging.info("INFO MODE")
 logging.debug("DEBUG MODE")
 

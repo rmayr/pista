@@ -4,6 +4,7 @@
 __author__    = 'Jan-Piet Mens <jpmens()gmail.com>'
 __copyright__ = 'Copyright 2014 Jan-Piet Mens'
 
+import os
 import sys
 import logging
 import bottle
@@ -29,8 +30,7 @@ from owntracks.dbschema import db, Geo, Location, Waypoint, User, Acl, Inventory
 from owntracks.auth import PistaAuth
 from owntracks import haversine
 
-LOGFORMAT  = '%(asctime)-15s %(levelname)-5s [%(module)s] %(message)s'
-logging.basicConfig(filename="XXXX.log", level=logging.DEBUG, format=LOGFORMAT)
+logging.basicConfig(filename=cf.logfile, level=cf.loglevel, format=cf.logformat)
 logging.info("Starting %s" % __name__)
 logging.info("INFO MODE")
 logging.debug("DEBUG MODE")

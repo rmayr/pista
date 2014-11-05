@@ -2,8 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
-sys.path.insert(0, './lib')
-
+import os
 import logging
 import time
 import datetime
@@ -13,7 +12,6 @@ from owntracks.revgeo import RevGeo
 import paho.mqtt.client as paho
 import ssl
 import json
-import os
 import socket
 from owntracks import mobile_codes
 from owntracks.dbschema import db, Location, Waypoint, RAWdata, Operators, Inventory, createalltables
@@ -24,14 +22,8 @@ from owntracks import waypoints
 from owntracks.util import tsplit
 import dateutil.parser
 
-SCRIPTNAME = os.path.splitext(os.path.basename(__file__))[0]
-LOGFILE    = os.getenv(SCRIPTNAME.upper() + 'LOG', SCRIPTNAME + '.log')
-#LOGLEVEL   = logging.INFO
-LOGLEVEL   = logging.DEBUG
-LOGFORMAT  = '%(asctime)-15s %(levelname)-5s [%(module)s] %(message)s'
-
-logging.basicConfig(filename=LOGFILE, level=LOGLEVEL, format=LOGFORMAT)
-logging.info("Starting %s" % SCRIPTNAME)
+logging.basicConfig(filename=cf.logfile, level=cf.loglevel, format=cf.logformat)
+logging.info("Starting %s" % __name__)
 logging.info("INFO MODE")
 logging.debug("DEBUG MODE")
 
