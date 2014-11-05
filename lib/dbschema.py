@@ -8,6 +8,11 @@ import sys
 
 cf = conf(os.getenv('O2SCONFIG', 'o2s.conf'))
 
+# FIXME. Scrap all this ^^^^ and replace by
+#   sql_db = MySQLDatabase(app.config['DATABASE'])  ??
+#       probably needs Bottle app config ? I could set that from dict in o2s.conf!
+
+
 sql_db = None
 if (cf.g('database', 'dbengine', 'mysql') == 'postgresql'):
     # Use PostreSQL configuration
@@ -127,6 +132,18 @@ class Params(OwntracksModel):
     trackurl        = CharField(null=True)
 
 
+class Inventory(OwntracksModel):
+    imei            = CharField(null=False, max_length=15, unique=True)
+    tid             = CharField(null=True, max_length=2)
+    version         = CharField(null=True, max_length=10)
+    startup         = IntegerField(null=True)   # epoch
+    label           = CharField(null=True)
+    tstamp          = DateTimeField(default=datetime.datetime.now)
+
+    class Meta:
+        indexes = (
+        )
+
 
 if __name__ == '__main__':
     sql_db.connect()
@@ -165,6 +182,11 @@ if __name__ == '__main__':
 
     try:
         Acl.create_table(fail_silently=True)
+    except Exception, e:
+        print str(e)
+
+    try:
+        Inventory.create_table(fail_silently=True)
     except Exception, e:
         print str(e)
 
