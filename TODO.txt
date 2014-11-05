@@ -1,6 +1,9 @@
 
 TODO / need help
 
+Redis:
+	catch not-running!
+
 
 all pages:
 	height of page (scrollbar is visible)
