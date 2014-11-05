@@ -22,7 +22,7 @@ from owntracks import waypoints
 from owntracks.util import tsplit
 import dateutil.parser
 
-logging.basicConfig(filename=cf.logfile, level=cf.loglevel, format=cf.logformat)
+logging.basicConfig(filename=cf.logfile, level=cf.loglevelnumber, format=cf.logformat)
 logging.info("Starting %s" % __name__)
 logging.info("INFO MODE")
 logging.debug("DEBUG MODE")
@@ -292,8 +292,10 @@ def on_start(mosq, userdata, msg):
             inv.startup = startup_dt
             if basetopic in devices:
                 inv.tid = devices[basetopic]['tid']
+            inv.tstamp = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
             inv.save()
         except Exception, e:
+            raise
             logging.error("DB error on UPDATE Inventory: {0}".format(str(e)))
     except Inventory.DoesNotExist:
         try:

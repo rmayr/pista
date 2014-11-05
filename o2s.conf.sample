@@ -1,3 +1,13 @@
+[defaults]
+
+# logfile defaults to `<program>.log`. It can be overriden by setting
+# PROGRAMLOG=/path/to/file.log in the environment where PROGRAM is one
+# of CTRLD, PISTA, or O2S
+; logfile    =
+; loglevel   = INFO
+loglevel   = DEBUG
+
+;logformat  = '%(asctime)-15s %(levelname)-5s [%(module)s] %(message)s'
 
 #    __            _                       
 #   / _| ___  __ _| |_ _   _ _ __ ___  ___ 
