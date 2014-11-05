@@ -29,6 +29,10 @@ th {
 	text-align: left;
 }
 
+.trip {
+	text-align: right;
+}
+
 .kmh, .alt, .weather, .degrees {
 	text-align: right;
 }
@@ -40,10 +44,10 @@ td.status {
 td.location {
 }
 
-td.alt, td.tstamp, td.cc, td.t, td.latlon {
+td.alt, td.tstamp, td.cc, td.trip, td.t, td.latlon {
 	font-family: 'Andale Mono', 'Courier New', monospace;
 }
-td.cc, td.t {
+td.cc, td.trip, td.t {
 	font-size: 80%;
 }
 

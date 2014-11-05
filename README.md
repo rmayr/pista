@@ -61,7 +61,9 @@ thusly might look like this:
   "cog": 0,
   "compass": "N",
   "dstamp": "01/10:48:53",
-  "lat": 36.766928
+  "lat": 36.766928,
+  "dist": 1,
+  "trip":30700
 }
 ```
 

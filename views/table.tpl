@@ -55,6 +55,7 @@ function handlerfunc(topic, payload) {
 			tid:            tid,
 			cc:		d.cc,
 			t:		d.t,
+			trip:		d.trip,
 		};
 		upsert(o);
 	} catch (err) {
@@ -234,6 +235,19 @@ $(document).ready( function () {
 			data: null,
 			render: 'location',
                         "targets" : [10],
+                },
+		{
+			className: 'trip',
+			name: 'trip',
+			title: "Trip (Km)",
+			data: null,
+                        "targets" : [11],
+			render : function(data, type, row) {
+				trip = data.trip;
+				trip = trip / 1000;
+
+				return Math.round(trip);
+			}
                 },
         ],
 

@@ -667,6 +667,8 @@ def on_message(mosq, userdata, msg):
             'topic'   : topic,
             'tst'     : orig_tst,
             't'       : item.get('t', '-'),
+            'trip'    : item.get('trip'),
+            'dist'    : item.get('dist'),
         }
     # Republish to map.
     if maptopic:
