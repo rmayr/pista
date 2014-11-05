@@ -8,7 +8,7 @@ import sys
 import os
 import time
 import logging
-from dbschema import User, sql_db
+from owntracks.dbschema import User, db
 import hashing_passwords as hp
 
 class PistaAuth(object):
@@ -23,7 +23,7 @@ class PistaAuth(object):
             return False
     
         try:
-            sql_db.connect()
+            db.connect()
         except Exception, e:
             self.logging.error("%s" % str(e))
             return False
