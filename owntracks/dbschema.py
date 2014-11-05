@@ -136,53 +136,28 @@ class Inventory(OwntracksModel):
         indexes = (
         )
 
+def createalltables():
 
-if __name__ == '__main__':
+    silent = True
+
     db.connect()
+
+    Location.create_table(fail_silently=silent)
+    Waypoint.create_table(fail_silently=silent)
+    Geo.create_table(fail_silently=silent)
+    User.create_table(fail_silently=silent)
+    Acl.create_table(fail_silently=silent)
+    Inventory.create_table(fail_silently=silent)
+    Params.create_table(fail_silently=silent)
 
     if cf.g('features', 'plmn', False) == True:
         try:
-            Operators.create_table(fail_silently=True)
+            Operators.create_table(fail_silently=silent)
         except Exception, e:
             print str(e)
-
-    try:
-        Location.create_table(fail_silently=True)
-    except Exception, e:
-        print str(e)
-
-    try:
-        Waypoint.create_table(fail_silently=True)
-    except Exception, e:
-        print str(e)
-
-    try:
-        Geo.create_table(fail_silently=True)
-    except Exception, e:
-        print str(e)
 
     if cf.g('features', 'rawdata', False) == True:
         try:
-            RAWdata.create_table(fail_silently=True)
+            RAWdata.create_table(fail_silently=silent)
         except Exception, e:
             print str(e)
-
-    try:
-        User.create_table(fail_silently=True)
-    except Exception, e:
-        print str(e)
-
-    try:
-        Acl.create_table(fail_silently=True)
-    except Exception, e:
-        print str(e)
-
-    try:
-        Inventory.create_table(fail_silently=True)
-    except Exception, e:
-        print str(e)
-
-    try:
-        Params.create_table(fail_silently=True)
-    except Exception, e:
-        print str(e)

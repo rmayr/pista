@@ -16,7 +16,7 @@ import json
 import os
 import socket
 from owntracks import mobile_codes
-from owntracks.dbschema import db, Location, Waypoint, RAWdata, Operators
+from owntracks.dbschema import db, Location, Waypoint, RAWdata, Operators, createalltables
 import io
 import csv
 import imp
@@ -41,6 +41,8 @@ LASTLOC_EXPIRY = 3600
 storage = cf.g('features', 'storage', 'True')
 maptopic = None
 devices = {}
+
+createalltables()
 
 geo = RevGeo(cf.config('revgeo'), storage=storage)
 redis = None

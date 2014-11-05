@@ -25,7 +25,7 @@ import time
 from owntracks import cf
 from owntracks.wredis import Wredis
 import paho.mqtt.client as paho
-from owntracks.dbschema import db, Geo, Location, Waypoint, User, Acl, JOIN_LEFT_OUTER, fn
+from owntracks.dbschema import db, Geo, Location, Waypoint, User, Acl, JOIN_LEFT_OUTER, fn, createalltables
 from owntracks.auth import PistaAuth
 from owntracks import haversine
 
@@ -34,6 +34,8 @@ logging.basicConfig(filename="XXXX.log", level=logging.DEBUG, format=LOGFORMAT)
 logging.info("Starting %s" % __name__)
 logging.info("INFO MODE")
 logging.debug("DEBUG MODE")
+
+createalltables()
 
 auth = PistaAuth()
 
