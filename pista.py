@@ -27,7 +27,7 @@ from dbschema import Location, Waypoint, Geo, fn, sql_db, JOIN_LEFT_OUTER, User,
 import time
 from wredis import Wredis
 import paho.mqtt.client as paho
-from auth import PistaAuth
+from owntracks.auth import PistaAuth
 
 cf = conf(os.getenv('O2SCONFIG', 'o2s.conf'))
 

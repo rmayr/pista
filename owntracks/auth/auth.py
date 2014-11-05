@@ -18,6 +18,8 @@ class PistaAuth(object):
 
     def check(self, username, password, apns_token=None):
 
+        print "NEWAUTH: ", username, password
+
         if username is None or password is None:
             self.logging.error("Username {0} or password are None".format(username))
             return False
@@ -28,7 +30,6 @@ class PistaAuth(object):
             self.logging.error("%s" % str(e))
             return False
 
-        # FIXME: handle non-pbdkf2 passwords (i.e. plain)
     
         pwhash = None
         try:
@@ -40,8 +41,15 @@ class PistaAuth(object):
         except Exception, e:
             raise
 
-        match = hp.check_hash(password, pwhash)
-        self.logging.debug('Hash match for %s (%s): %s' % (username, pwhash, match))
+        match = False
+
+        # Is this a plain-text password in the database?!? OK, we'll do this ...
+        if not pwhash.startswith('PBKDF2$'):
+            match = pwhash == password
+            self.logging.debug('Plain-text password (bah!) match for %s (%s)' % (username, match))
+        else:
+            match = hp.check_hash(password, pwhash)
+            self.logging.debug('Hash match for %s (%s): %s' % (username, pwhash, match))
     
         if match == True and apns_token is not None:
             tstamp = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
