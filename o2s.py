@@ -16,12 +16,13 @@ import json
 import os
 import socket
 from owntracks import mobile_codes
-from owntracks.dbschema import db, Location, Waypoint, RAWdata, Operators, createalltables
+from owntracks.dbschema import db, Location, Waypoint, RAWdata, Operators, Inventory, createalltables
 import io
 import csv
 import imp
 from owntracks import waypoints
 from owntracks.util import tsplit
+import dateutil.parser
 
 SCRIPTNAME = os.path.splitext(os.path.basename(__file__))[0]
 LOGFILE    = os.getenv(SCRIPTNAME.upper() + 'LOG', SCRIPTNAME + '.log')
@@ -278,7 +279,41 @@ def on_start(mosq, userdata, msg):
     save_rawdata(msg.topic, msg.payload)
     watcher(mosq, msg.topic, msg.payload)
 
-    imei, version, tstamp = msg.payload.split(' ')
+    try:
+        imei, version, tstamp = msg.payload.split(' ')
+    except:
+        logging.error("Cannot split() on ../start")
+        return
+    startup_dt = dateutil.parser.parse(tstamp)
+
+    # Inventory must have base topic in it so that we can later associate TID
+    # with the IMEI
+
+    basetopic, suffix = tsplit(msg.topic, 3)
+
+
+    try:
+        inv = Inventory.get(Inventory.imei == imei)
+        try:
+            inv.topic = basetopic
+            inv.version = version
+            inv.startup = startup_dt
+            if basetopic in devices:
+                inv.tid = devices[basetopic]['tid']
+            inv.save()
+        except Exception, e:
+            logging.error("DB error on UPDATE Inventory: {0}".format(str(e)))
+    except Inventory.DoesNotExist:
+        try:
+            inv = Inventory(topic=basetopic, imei=imei, version=version, startup=startup_dt)
+            if basetopic in devices:
+                inv.tid = devices[basetopic]['tid']
+            inv.save()
+        except Exception, e:
+            logging.error("DB error on SAVE Inventory: {0}".format(str(e)))
+    except Exception, e:
+        logging.error("DB error on GET Inventory: {0}".format(str(e)))
+        return
 
     if redis:
         redis.hmset(rkey("t", msg.topic, "/start"), {
