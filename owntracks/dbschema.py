@@ -125,10 +125,11 @@ class Params(OwntracksModel):
 
 
 class Inventory(OwntracksModel):
+    topic           = BlobField(null=False)
     imei            = CharField(null=False, max_length=15, unique=True)
     tid             = CharField(null=True, max_length=2)
     version         = CharField(null=True, max_length=10)
-    startup         = IntegerField(null=True)   # epoch
+    startup         = DateTimeField(null=True)
     label           = CharField(null=True)
     tstamp          = DateTimeField(default=datetime.datetime.now)
 
