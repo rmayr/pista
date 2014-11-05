@@ -3,25 +3,24 @@
 
 import sys
 sys.path.insert(0, './lib')
-from wredis import Wredis
+
 import logging
 import time
 import datetime
-from revgeo import RevGeo
+from owntracks import cf
+from owntracks.wredis import Wredis
+from owntracks.revgeo import RevGeo
 import paho.mqtt.client as paho
 import ssl
 import json
 import os
-from cf import conf
 import socket
-import mobile_codes
-from dbschema import Location, Waypoint, RAWdata, Operators, sql_db
+from owntracks import mobile_codes
+from owntracks.dbschema import db, Location, Waypoint, RAWdata, Operators
 import io
 import csv
 import imp
-import waypoints
-
-cf = conf(os.getenv('O2SCONFIG', 'o2s.conf'))
+from owntracks import waypoints
 
 SCRIPTNAME = os.path.splitext(os.path.basename(__file__))[0]
 LOGFILE    = os.getenv(SCRIPTNAME.upper() + 'LOG', SCRIPTNAME + '.log')
@@ -555,7 +554,7 @@ def on_message(mosq, userdata, msg):
 
     if storage:
         try:
-            sql_db.connect()
+            db.connect()
         except Exception, e:
             logging.error("Reconnect to DB: {0}".format(str(e)))
             return
@@ -566,7 +565,7 @@ def on_message(mosq, userdata, msg):
         if storage:
             # Upsert
             try:
-                sql_db.execute_sql("""
+                db.execute_sql("""
                       REPLACE INTO waypoint
                       (topic, tid, lat, lon, tst, rad, waypoint)
                       VALUES (%s, %s, %s, %s, %s, %s, %s)
