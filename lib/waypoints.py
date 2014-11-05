@@ -17,8 +17,10 @@ import hashlib
 TRIGGER_ENTER   = 1
 TRIGGER_LEAVE   = 0
 
+
 class WP(object):
     def __init__(self, persistence_db, mosq, maptopic=None, alert_topic=None, alert_keys=None, watcher_topic=None):
+        self.logging = logging.getLogger(__name__)
         self.persistence_db = persistence_db
         self.mosq = mosq
         self.maptopic = maptopic
@@ -32,6 +34,8 @@ class WP(object):
 
         self.tlist = persist.PersistentDict(self.persistence_db, 'c', format='pickle')
         self.wplist = self.load_waypoints()
+
+        self.logging.debug("alert_keys: {0}".format(self.alert_keys))
 
     def load_waypoints(self):
 
@@ -49,6 +53,7 @@ class WP(object):
 
                 onepoint = WayPoint(lat, lon, meters, desc)
                 wplist.append(onepoint)
+                self.logging.debug("Loading {0}".format(onepoint))
 
                 if self.maptopic:
                     fence_data = {
@@ -72,7 +77,7 @@ class WP(object):
 
                         self.mosq.publish(fence_topic, json.dumps(fence_data), qos=0, retain=True)
                     except Exception, e:
-                        logging.warn("Cannot publish fence: {0}".format(str(e)))
+                        self.logging.warn("Cannot publish fence: {0}".format(str(e)))
             except:
                 pass
 
@@ -114,16 +119,16 @@ class WP(object):
         try:
             self.mosq.publish(self.alert_topic, json.dumps(payload, sort_keys=True), qos=0, retain=False)
         except Exception, e:
-            logging.warn("Cannot publish fence: {0}".format(str(e)))
+            self.logging.warn("Cannot publish fence: {0}".format(str(e)))
 
         if self.watcher_topic is not None:
             message = "ALERT: {tid}: {event} {wpname} at {tstamp}. Distance: {meters}m".format(**payload)
-            logging.info(message)
+            self.logging.info(message)
             print message
             try:
                 self.mosq.publish(self.watcher_topic, message, qos=0, retain=False)
             except Exception, e:
-                logging.warn("Cannot publish fence: {0}".format(str(e)))
+                self.logging.warn("Cannot publish fence: {0}".format(str(e)))
 
 
     def check(self, item):
