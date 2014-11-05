@@ -72,11 +72,9 @@
 	<th>IMEI</th>
 	<th>Version</th>
 	<th>Startup</th>
-	<th>nPUBs</th>
     </tr>
   </thead>
 <tbody>
-
 
 % for d in devices:
      <tr>
@@ -84,7 +82,6 @@
         <td>{{ d.get('imei') }}</td>
         <td>{{ d.get('version') }}</td>
         <td>{{ d.get('tstamp') }}</td>
-        <td align='right'>{{ d.get('npubs') }}</td>
        </tr>
 % end
 

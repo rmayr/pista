@@ -25,7 +25,7 @@ import time
 from owntracks import cf
 from owntracks.wredis import Wredis
 import paho.mqtt.client as paho
-from owntracks.dbschema import db, Geo, Location, Waypoint, User, Acl, JOIN_LEFT_OUTER, fn, createalltables
+from owntracks.dbschema import db, Geo, Location, Waypoint, User, Acl, Inventory, JOIN_LEFT_OUTER, fn, createalltables
 from owntracks.auth import PistaAuth
 from owntracks import haversine
 
@@ -220,7 +220,7 @@ def getusertids(username):
                 tidlist.append(q.tid)
                 topiclist.append(q.topic)
 
-    print "User {0} gets tidlist={1}".format(username, ",".join(tidlist))
+    logging.debug("User {0} gets tidlist={1}".format(username, ",".join(tidlist)))
 
     return tidlist
 
@@ -255,35 +255,37 @@ def page_map():
 @auth_basic(check_auth)
 def page_hw():
 
-    # FIXME: user auth
+    current_user = request.auth[0]
+    usertids = getusertids(current_user)
 
     device_list = []
 
-    # Find all devices in Redis and extract their info into a list
+    # Find all devices in Inventory and extract their info into a list
     # of objects. Ensure values of hash keys are None if unset or
     # the template will bail out.
 
-    for device in redis.keys("t:*"):
-        data = redis.hgetall(device)
-        tid     = data.get('tid', None)
-        imei    = data.get('imei', None)
-        version = data.get('version', None)
-        tstamp  = data.get('tstamp', None)
-
-        if tid is not None and imei is not None and version is not None and tstamp is not None:
-
+    try:
+        query = (Inventory
+                .select(Inventory)
+                .where(
+                    (Inventory.tid << usertids)
+                )
+            )
+        query = query.order_by(Inventory.tid.asc())
+        for q in query.naive():
             try:
                 device_list.append({
-                    'tid'       : tid,
-                    'status'    : int(data.get('status', -1)),
-                    'imei'      : imei,
-                    'version'   : version,
-                    'tstamp'    : tstamp,
-                    'npubs'     : data.get('npubs', None),
-                    'topic'     : device[2:],
+                    'tid'       : q.tid,
+                    'imei'      : q.imei,
+                    'version'   : q.version,
+                    'tstamp'    : q.startup,
+                    'topic'     : q.topic,
                     })
             except:
                 pass
+    except:
+        pass        # device_list will be empty => no data, which is OK here
+
 
     device_list.sort(key=lambda x: x['tid'], reverse=False)
     params = {
@@ -636,8 +638,11 @@ def onevehicle(tid):
     return template('onevehicle', params)
 
 @app.route("/api/flotbatt/<voltage>", method="GET")
+@auth_basic(check_auth)
 def flotbatt(voltage):
 
+    current_user = request.auth[0]
+    usertids = getusertids(current_user)
 
     battlevels = []
 
@@ -647,6 +652,8 @@ def flotbatt(voltage):
         data = redis.hgetall(device)
 
         tid = data.get('tid')
+        if tid not in usertids:
+            continue
         vbatt = data.get('vbatt')
 
         if tid is not None and vbatt is not None:
