@@ -5,12 +5,11 @@ __author__    = 'Jan-Piet Mens <jpmens()gmail.com>'
 __copyright__ = 'Copyright 2014 Jan-Piet Mens'
 
 import sys
-sys.path.insert(0, './lib')
+import logging
 import bottle
 from bottle import response, template, static_file, request
 from bottle import auth_basic, error
 import json
-from haversine import haversine
 try:
     from cStringIO import StringIO
 except:
@@ -21,15 +20,20 @@ from datetime import datetime
 from dateutil import tz
 from xml.etree.ElementTree import Element, SubElement, Comment, tostring
 from xml.etree import ElementTree as ET
-from ElementTree_pretty import prettify
-from cf import conf
-from dbschema import Location, Waypoint, Geo, fn, sql_db, JOIN_LEFT_OUTER, User, Acl
+from owntracks.ElementTree_pretty import prettify
 import time
-from wredis import Wredis
+from owntracks import cf
+from owntracks.wredis import Wredis
 import paho.mqtt.client as paho
+from owntracks.dbschema import db, Geo, Location, Waypoint, User, Acl, JOIN_LEFT_OUTER, fn
 from owntracks.auth import PistaAuth
+from owntracks import haversine
 
-cf = conf(os.getenv('O2SCONFIG', 'o2s.conf'))
+LOGFORMAT  = '%(asctime)-15s %(levelname)-5s [%(module)s] %(message)s'
+logging.basicConfig(filename="XXXX.log", level=logging.DEBUG, format=LOGFORMAT)
+logging.info("Starting %s" % __name__)
+logging.info("INFO MODE")
+logging.debug("DEBUG MODE")
 
 auth = PistaAuth()
 
@@ -50,7 +54,7 @@ def check_auth(username, password):
 def db_reconnect():
     # Attempt to connect if not already connected. For MySQL, take care of MySQL 2006
     try:
-        sql_db.connect()
+        db.connect()
     except Exception, e:
         logging.info("Cannot connect to database: %s" % (str(e)))
 
@@ -61,7 +65,7 @@ def track_length(track):
     kilometers = 0.0
     n = 1
     for tp in track[0:-1]:
-        distance = haversine(tp['lon'], tp['lat'], track[n]['lon'], track[n]['lat'])
+        distance = haversine.haversine(tp['lon'], tp['lat'], track[n]['lon'], track[n]['lat'])
         kilometers += distance
         n += 1
 
@@ -111,6 +115,7 @@ def getDBdata(usertid, from_date, to_date, spacing):
         dt      = l.tst
 
         # FIXME: add distance haversine to previous point
+        # FIXME: check values (vel, dist, trip...
 
         try:
             tp = {
@@ -329,7 +334,7 @@ def config_js():
             newconf[key] = 'true' if newconf[key] else 'false';
         # print key, " = ", type(newconf[key]), " : ",  newconf[key]
 
-    newconf['configfile'] = os.getenv('O2SCONFIG', 'o2s.conf')
+    newconf['configfile'] = cf.configfile
 
     if basic_auth == True:
         u = request.auth[0]
@@ -390,7 +395,7 @@ def get_download():
     # before allowing download check for usertid auth
     usertids = getusertids(current_user)
     if usertid not in usertids:
-        #FIXME logging.warn("User {0} is not authorized to download data for tid={1}".format(current_user, usertid))
+        logging.warn("User {0} is not authorized to download data for tid={1}".format(current_user, usertid))
         return notauth(reason="Not authorized for this TID")
 
     if fmt not in mimetype:
@@ -551,7 +556,7 @@ def get_geoJSON():
 
         distance = None
         if last_point[0] is not None:
-            distance = haversine(lon, lat, last_point[0], last_point[1])
+            distance = haversine.haversine(lon, lat, last_point[0], last_point[1])
 
         if last_point[0] is None or distance > spacing:
             last_point = [lon, lat]
