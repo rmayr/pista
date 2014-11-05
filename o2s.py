@@ -434,7 +434,7 @@ def watcher(mosq, topic, data):
         logging.error("Cannot format watcher_topic: {0}".format(str(e)))
         return
 
-    print "---: ", wt, " ==>", data
+    #FIXME print "---: ", wt, " ==>", data
 
 
     time_format = "%d.%m %H:%M:%S"
