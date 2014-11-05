@@ -18,8 +18,6 @@ class PistaAuth(object):
 
     def check(self, username, password, apns_token=None):
 
-        print "NEWAUTH: ", username, password
-
         if username is None or password is None:
             self.logging.error("Username {0} or password are None".format(username))
             return False
