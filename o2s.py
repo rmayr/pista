@@ -21,6 +21,7 @@ import io
 import csv
 import imp
 from owntracks import waypoints
+from owntracks.util import tsplit
 
 SCRIPTNAME = os.path.splitext(os.path.basename(__file__))[0]
 LOGFILE    = os.getenv(SCRIPTNAME.upper() + 'LOG', SCRIPTNAME + '.log')
@@ -420,21 +421,11 @@ def watcher(mosq, topic, data):
         return
 
     try:
-        parts = topic.split('/')
-        if len(parts) > 3:   # FIXME: leading slash! :-(
-            # Take the 3-part "owntracks/gw/XX" and whatever follows "/z/b/c"
-            # and turn that into
-            # ---:  owntracks/gw/XX/././_look/cmd  ==> gps
-            # ---:  owntracks/gw/XX/././_look/cmd/out  ==> 2014-11-04 16:39:03 UTC
-            wt = watcher_topic.format("/".join(parts[0:3])) + "/" + "/".join(parts[3:])
-        else:
-            wt = watcher_topic.format(topic)
+        prefix, suffix = tsplit(topic, 3)
+        wt = watcher_topic.format(prefix) + "/" + suffix
     except Exception, e:
         logging.error("Cannot format watcher_topic: {0}".format(str(e)))
         return
-
-    #FIXME print "---: ", wt, " ==>", data
-
 
     time_format = "%d.%m %H:%M:%S"
     tstamp = datetime.datetime.fromtimestamp(int(time.time())).strftime(time_format)
