@@ -5,19 +5,17 @@ __author__    = 'Jan-Piet Mens <jpmens()gmail.com>'
 __copyright__ = 'Copyright 2014 Jan-Piet Mens'
 
 import sys
-sys.path.insert(0, './lib')
 import os
 import logging
 import bottle
 from bottle import response, template, static_file, request
 import json
 import time
-from cf import conf
-from dbschema import User, Acl, Params, fn, sql_db, Location
+from owntracks import cf
+from owntracks.dbschema import db, User, Acl, Params, fn, Location, createalltables
 import paho.mqtt.client as paho
-from auth import PistaAuth
+from owntracks.auth import PistaAuth
 
-cf = conf(os.getenv('O2SCONFIG', 'o2s.conf'))
 
 SCRIPTNAME = os.path.splitext(os.path.basename(__file__))[0]
 LOGFILE    = os.getenv(SCRIPTNAME.upper() + 'LOG', SCRIPTNAME + '.log')
@@ -34,6 +32,8 @@ cacert_file = cf.g('ctrld', 'cacert_file')
 if not os.path.isfile(cacert_file) or not os.access(cacert_file, os.R_OK):
     logging.error("Cannot open cacert_file ({0})".format(cacert_file))
     sys.exit(2)
+
+createalltables()
 
 auth = PistaAuth()
 
@@ -175,7 +175,7 @@ def ctrl_trackdump(user):
     status = 200
 
     try:
-        sql_db.connect()
+        db.connect()
     except Exception, e:
         logging.error("%s" % str(e))
         return False
