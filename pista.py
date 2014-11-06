@@ -6,6 +6,7 @@ __copyright__ = 'Copyright 2014 Jan-Piet Mens'
 
 import os
 import sys
+import owntracks
 import logging
 import bottle
 from bottle import response, template, static_file, request
@@ -30,10 +31,7 @@ from owntracks.dbschema import db, Geo, Location, Waypoint, User, Acl, Inventory
 from owntracks.auth import PistaAuth
 from owntracks import haversine
 
-logging.basicConfig(filename=cf.logfile, level=cf.loglevelnumber, format=cf.logformat)
-logging.info("Starting %s" % __name__)
-logging.info("INFO MODE")
-logging.debug("DEBUG MODE")
+log = logging.getLogger(__name__)
 
 createalltables()
 
@@ -186,7 +184,7 @@ def getusertids(username):
         u = User.get(User.username == username)
         superuser = u.superuser
     except User.DoesNotExist:
-        # logging.debug("User {0} does not exist".format(username))
+        # log.debug("User {0} does not exist".format(username))
         pass
     except Exception, e:
         raise
@@ -215,7 +213,7 @@ def getusertids(username):
                 tidlist.append(q.tid)
                 topiclist.append(q.topic)
 
-    logging.debug("User {0} gets tidlist={1}".format(username, ",".join(tidlist)))
+    log.debug("User {0} gets tidlist={1}".format(username, ",".join(tidlist)))
 
     return sorted(set(tidlist))
 
@@ -367,7 +365,7 @@ def users():
             'name' : t,
         })
 
-    logging.debug("/api/userlist returns: {0}".format(json.dumps(allowed_tids)))
+    log.debug("/api/userlist returns: {0}".format(json.dumps(allowed_tids)))
     return dict(userlist=allowed_tids)
 
 
@@ -394,7 +392,7 @@ def get_download():
     # before allowing download check for usertid auth
     usertids = getusertids(current_user)
     if usertid not in usertids:
-        logging.warn("User {0} is not authorized to download data for tid={1}".format(current_user, usertid))
+        log.warn("User {0} is not authorized to download data for tid={1}".format(current_user, usertid))
         return notauth(reason="Not authorized for this TID")
 
     if fmt not in mimetype:

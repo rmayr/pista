@@ -14,6 +14,7 @@ class Config(RawConfigParser):
         self.scriptname = os.path.splitext(os.path.basename(sys.argv[0]))[0]
 
         self.topicparts = 3     # owntracks/gw/XX
+        self.o2smonitor = None
 
         # [defaults]
         self.logfile    = os.getenv(self.scriptname.upper() + 'LOG', self.scriptname + '.log')
@@ -43,6 +44,7 @@ class Config(RawConfigParser):
         self.__dict__.update(self.config('database'))
 
         self.loglevelnumber = getattr(logging, self.loglevel.upper())
+        self.o2smonitor     = self.g('features', 'o2smonitor')
 
 
     def g(self, section, key, default=None):

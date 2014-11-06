@@ -1,3 +1,5 @@
+import owntracks
+import logging
 try:
     import json
 except ImportError:
@@ -5,6 +7,8 @@ except ImportError:
 import urllib2
 import geohash # https://code.google.com/p/python-geohash/
 from owntracks.dbschema import db, Geo
+
+log = logging.getLogger(__name__)
 
 class RevGeo(object):
     def __init__(self, conf, storage=True, host='localhost', port=8081):
@@ -60,7 +64,7 @@ class RevGeo(object):
                 g = Geo(**data)
                 g.save()
             except Exception, e:
-                logging.warn("Cannot store GEO in DB: %s" % (str(e)))
+                log.warn("Cannot store GEO in DB: %s" % (str(e)))
 
         return dict(ghash=ghash, cc=data['cc'], addr=data['addr'], cached=0)
 

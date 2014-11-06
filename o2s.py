@@ -6,6 +6,7 @@ import os
 import logging
 import time
 import datetime
+import owntracks
 from owntracks import cf
 from owntracks.wredis import Wredis
 from owntracks.revgeo import RevGeo
@@ -22,11 +23,6 @@ from owntracks import waypoints
 from owntracks.util import tsplit
 import dateutil.parser
 import tempfile
-
-logging.basicConfig(filename=cf.logfile, level=cf.loglevelnumber, format=cf.logformat)
-logging.info("Starting %s" % __name__)
-logging.info("INFO MODE")
-logging.debug("DEBUG MODE")
 
 log = logging.getLogger(__name__)
 
@@ -741,6 +737,9 @@ def t_loglevel(rest, val):
     if newlevel is not None:
         cf.loglevelnumber = newlevel
         log.setLevel(cf.loglevelnumber)
+
+        pw = logging.getLogger('peewee')
+        pw.setLevel(cf.loglevelnumber)
 
     log.debug("t_loglevel: DEBUG")
     log.info("t_loglevel: INFO")

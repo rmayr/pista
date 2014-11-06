@@ -5,6 +5,9 @@ from owntracks import cf
 import datetime
 import os
 import sys
+import logging
+
+log = logging.getLogger(__name__)
 
 db = None
 if cf.dbengine == 'postgresql':
@@ -168,4 +171,4 @@ def dbconn():
     try:
         db.connect()
     except Exception, e:
-        logging.info("Cannot connect to database: %s" % (str(e)))
+        log.info("Cannot connect to database: %s" % (str(e)))

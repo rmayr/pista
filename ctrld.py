@@ -6,6 +6,7 @@ __copyright__ = 'Copyright 2014 Jan-Piet Mens'
 
 import sys
 import os
+import owntracks
 import logging
 import bottle
 from bottle import response, template, static_file, request
@@ -16,14 +17,11 @@ from owntracks.dbschema import db, User, Acl, Params, fn, Location, createalltab
 import paho.mqtt.client as paho
 from owntracks.auth import PistaAuth
 
-logging.basicConfig(filename=cf.logfile, level=cf.loglevelnumber, format=cf.logformat)
-logging.info("Starting %s" % __name__)
-logging.info("INFO MODE")
-logging.debug("DEBUG MODE")
+log = logging.getLogger(__name__)
 
 cacert_file = cf.g('ctrld', 'cacert_file')
 if not os.path.isfile(cacert_file) or not os.access(cacert_file, os.R_OK):
-    logging.error("Cannot open cacert_file ({0})".format(cacert_file))
+    log.error("Cannot open cacert_file ({0})".format(cacert_file))
     sys.exit(2)
 
 createalltables()
@@ -50,7 +48,7 @@ def conf():
 
     authorized = auth.check(username, password, apns_token)
 
-    logging.info("CONF: (username=%s, token=%s) authorized=%s" % (username, apns_token, authorized))
+    log.info("CONF: (username=%s, token=%s) authorized=%s" % (username, apns_token, authorized))
 
     if authorized == False:
         return notauth("Not authenticated")
@@ -90,7 +88,7 @@ def conf():
             trackurl = params.trackurl
 
     except Exception, e:
-        logging.info("There are no params for %s: %s" % (username, str(e)))
+        log.info("There are no params for %s: %s" % (username, str(e)))
         pass
 
     topic_list = []
@@ -114,7 +112,7 @@ def conf():
                     new_topic = new_sub[0:-2]
                 topic_list.append(new_topic)
     except Exception, e:
-        logging.error("Can't query ACL for topic list: %s" % (str(e)))
+        log.error("Can't query ACL for topic list: %s" % (str(e)))
 
     resp = {
             '_type'         : 'configuration',
@@ -149,7 +147,7 @@ def cacert():
         pem = f.read()
         f.close()
     except Exception, e:
-        logger.error("Cannot read PEM from {0}: {1}".format(cacert_file, str(e)))
+        log.error("Cannot read PEM from {0}: {1}".format(cacert_file, str(e)))
         response.status = 404
         response.content_type = 'text/plain'
         return "404 Cacert Not found"
@@ -170,7 +168,7 @@ def ctrl_trackdump(user):
     try:
         db.connect()
     except Exception, e:
-        logging.error("%s" % str(e))
+        log.error("%s" % str(e))
         return False
 
     username = request.forms.get('username')
@@ -184,7 +182,7 @@ def ctrl_trackdump(user):
 
     authorized = auth.check(username, password)
 
-    logging.info("TRACK: (username=%s) authorized=%s" % (username, authorized))
+    log.info("TRACK: (username=%s) authorized=%s" % (username, authorized))
 
     if authorized == False:
         return notauth("Not authenticated")
@@ -210,13 +208,13 @@ def ctrl_trackdump(user):
 
             new_sub = sub.replace('%u', username)
             matches = paho.topic_matches_sub(sub, topic)
-            logging.debug("sub %s (%s) => %s" % (sub, new_sub, matches))
+            log.debug("sub %s (%s) => %s" % (sub, new_sub, matches))
             if matches:
                 track_authorized = True
                 status = 200
                 break
     except Exception, e:
-        logging.error("Can't query ACL: %s" % (str(e)))
+        log.error("Can't query ACL: %s" % (str(e)))
 
 
 
@@ -254,7 +252,7 @@ def ctrl_trackdump(user):
             except:
                 pass
 
-    logging.info("TRACK: (username=%s, tid=%s, topic=%s) RETURN %s recs" % (username, tid, topic, len(track)))
+    log.info("TRACK: (username=%s, tid=%s, topic=%s) RETURN %s recs" % (username, tid, topic, len(track)))
 
     data = {
         'topic'    : topic,
