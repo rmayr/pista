@@ -35,7 +35,12 @@ plmn = True
 # If watcher is not None it is the name of a topic to which we publish
 # a string representation of incoming data; this is useful for monitoring.
 # These pubs are qos=0 and non-retained. {0} is replaced with the name
-# of the original topic (owntracks/gw/XX)
+# of the original topic (owntracks/gw/XX) and a suffix may be appended to
+# it, e.g.:
+#
+#	owntracks/gw/XX/cmd/out  -> owntracks/gw/XX/././_look/cmd/out
+#                                   ---------------           -------
+# Must not end with a slash
 
 watcher = "{0}/././_look"
 
@@ -53,7 +58,7 @@ geofences = None
 # store off-the-wire publishes as the're seen. This is useful for
 # debugging
 
-rawdata = True
+rawdata = False
 
 # If alarm is not None, it contains the path to a Python plugin which
 # will fire when an alarm is detecte.
@@ -96,7 +101,8 @@ base_topics = [ 'owntracks/gw', 'owntracks/jane']
 
 # If not None, maptopic is a format string used to publish objects to Pista's
 # Map, Status, and Tables pages. {0} is filled with the original location topic
-# If this is not defined (i.e. None) those pages will be empty.
+# If this is not defined (i.e. None) those pages will be empty. The same rules
+# as for `watcher' apply here.
 
 maptopic = "{0}/././_map"
 
@@ -212,7 +218,7 @@ listen_host = "localhost"
 listen_port = 8080
 
 # Array of page names which should be visible from the pista menu.
-# Chose any from 
+# Chose any from
 #   ['about', 'map', 'table', 'tracks', 'console', 'status', 'hw' ]
 
 pages = ['about', 'map', 'table', 'tracks', 'console', 'status', 'hw' ]
@@ -222,9 +228,19 @@ pages = ['about', 'map', 'table', 'tracks', 'console', 'status', 'hw' ]
 # to ../config.js.
 
 [websocket]
+
+# Host/port for Websockets must be reachable from the Web browsers.
+# It is quite possible that this will not work through HTTP-only
+# proxies
+
 host = "127.0.0.1"
 port = 9001
+
 reconnect_in = 5000 ; milliseconds
+
+# If you set usetls = True, it is most likely you'll have to serve the
+# Web pages from a TLS-enabled HTTP server.
+
 usetls = False
 cleansession = True
 
@@ -241,6 +257,7 @@ password = None
 
 ; if apikey is set, it must be a key obtained for Mapbox use ; (format:
 ; 'xxxxxx.AAAAAAAA') ; if set to None, OSM is used as map provider
+; Be warned that this apikey can leak out to Web browser clients!
 
 apiKey = None
 
