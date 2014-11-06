@@ -50,6 +50,9 @@ def notauth(reason):
     return bottle.HTTPResponse(status=403, body=reason)
 
 def check_auth(username, password):
+
+    # FIXME: use Params to connect to different broker for this user? No, not possible
+
     return auth.check(username, password, apns_token=None)
 
 
@@ -222,7 +225,7 @@ def getusertids(username):
 
     logging.debug("User {0} gets tidlist={1}".format(username, ",".join(tidlist)))
 
-    return tidlist
+    return sorted(set(tidlist))
 
 
 #-----------------
