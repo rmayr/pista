@@ -26,7 +26,7 @@ import time
 from owntracks import cf
 from owntracks.wredis import Wredis
 import paho.mqtt.client as paho
-from owntracks.dbschema import db, Geo, Location, Waypoint, User, Acl, Inventory, JOIN_LEFT_OUTER, fn, createalltables
+from owntracks.dbschema import db, Geo, Location, Waypoint, User, Acl, Inventory, JOIN_LEFT_OUTER, fn, createalltables, dbconn
 from owntracks.auth import PistaAuth
 from owntracks import haversine
 
@@ -54,14 +54,6 @@ def check_auth(username, password):
     # FIXME: use Params to connect to different broker for this user? No, not possible
 
     return auth.check(username, password, apns_token=None)
-
-
-def db_reconnect():
-    # Attempt to connect if not already connected. For MySQL, take care of MySQL 2006
-    try:
-        db.connect()
-    except Exception, e:
-        logging.info("Cannot connect to database: %s" % (str(e)))
 
 def track_length(track):
     ''' Run through the track, calculate distance in kilometers
@@ -92,7 +84,7 @@ def getDBdata(usertid, from_date, to_date, spacing):
     to_date = "%s 23:59:59" % to_date
     print "FROM=%s, TO=%s" % (from_date, to_date)
 
-    db_reconnect()
+    dbconn()
 
 # select tst, lat, lon, l.ghash, addr from location l left join geo g on l.ghash = g.ghash where tid = 'B2';
 
@@ -153,7 +145,7 @@ def getDBwaypoints(usertid, lat_min, lat_max, lon_min, lon_max):
     lon_min = float(lon_min)
     lon_max = float(lon_max)
 
-    db_reconnect()
+    dbconn()
     query = Waypoint.select().where(
                 # FIXME (Waypoint.username == username) &
                 # FIXME (Waypoint.device == device) &
@@ -364,18 +356,18 @@ def users():
 
     current_user = request.auth[0]
 
-    allowed_tids = []
-
-    db_reconnect()
+    dbconn()
 
     usertids = getusertids(current_user)
 
+    allowed_tids = []
     for t in usertids:
         allowed_tids.append({
             'id' : t,
             'name' : t,
         })
 
+    logging.debug("/api/userlist returns: {0}".format(json.dumps(allowed_tids)))
     return dict(userlist=allowed_tids)
 
 

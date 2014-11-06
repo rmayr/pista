@@ -162,3 +162,10 @@ def createalltables():
             RAWdata.create_table(fail_silently=silent)
         except Exception, e:
             print str(e)
+
+def dbconn():
+    # Attempt to connect if not already connected. For MySQL, take care of MySQL 2006
+    try:
+        db.connect()
+    except Exception, e:
+        logging.info("Cannot connect to database: %s" % (str(e)))
