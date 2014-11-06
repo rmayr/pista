@@ -72,6 +72,7 @@
                 $.ajax({
                         type: 'GET',
                         url: 'api/userlist',
+			// timeout: 30000,
                         async: false,
 			success: function(data) {
 
