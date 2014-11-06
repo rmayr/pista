@@ -711,9 +711,6 @@ def on_message(mosq, userdata, msg):
     if wp:
         wp.check(new_data)
 
-def t_tid2imei(rest, val):
-    ''' val must be a TID. Return IMEI '''
-    pass
 
 def t_ghash(rest, val):
     ''' val must be TID=width (eg J4=8 or K2=4). Set ghash width for this TID '''
@@ -761,7 +758,7 @@ def t_dump(rest, val):
         log.info("t_dump: devices dumped to {0}".format(filename))
         return filename
 
-    return "huh?"
+    return "NAK: unknown dump subcommand"
 
 
 def t_info(rest, val):
@@ -784,7 +781,7 @@ def t_imei(rest, val):
 
     try:
         inv = Inventory.get(Inventory.tid == tid)
-        resp = "IMEI={0} topic={1}".format(inv.imei, inv.topic)
+        resp = "TID={0} IMEI={1} topic={2}".format(inv.tid, inv.imei, inv.topic)
     except Inventory.DoesNotExist:
         log.warning("IMEI for TID={0} requested but not found".format(tid))
         pass
@@ -800,7 +797,6 @@ def on_tell(mosq, userdata, msg):
         return
 
     dispatch_table = {
-        'imei'      : t_tid2imei,   # _owntracks/o2s/imei     J4
         #FIXME 'ghash'     : t_ghash,      # _owntracks/o2s/ghash    K2=5
         'loglevel'  : t_loglevel,   # _owntracks/o2s/loglevel INFO
         'dump'      : t_dump,       # _owntracks/o2s/dump     devices
@@ -814,18 +810,17 @@ def on_tell(mosq, userdata, msg):
     topic, cmd = tsplit(msg.topic, 2)  # "_owntracks/o2s/+"
 
     if cmd in dispatch_table:
+        result = None
         try:
             result = dispatch_table[cmd]("xxx", payload)
-            bb = bytearray(result.encode('utf-8'))
-            mosq.publish(orig_topic + '/out', bb, qos=2, retain=False)
         except Exception, e:
-            log.error("Tell: cmd {0} with val {1} failed: {2}".format(cmd, payload, str(e)))
-            # FIXME: report to sender
-            return
+            result = "Tell: cmd {0} with val {1} failed: {2}".format(cmd, payload, str(e))
+            log.error(result)
+        bb = bytearray(result.encode('utf-8'))
+        mosq.publish(orig_topic + '/out', bb, qos=2, retain=False)
     else:
         log.info("Illegal cmd {0} received".format(cmd))
-        # FIXME: report to sender
-        return
+        mosq.publish(orig_topic + '/out', "NAK", qos=2, retain=False)
 
     return
 
