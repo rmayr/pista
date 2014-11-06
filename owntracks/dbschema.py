@@ -116,6 +116,7 @@ class Acl(OwntracksModel):
         )
 
 class Params(OwntracksModel):
+    org             = ForeignKeyField(User)
     name            = CharField(null=True)
     host            = CharField(null=True)
     port            = IntegerField(null=True)
