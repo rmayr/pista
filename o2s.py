@@ -14,18 +14,21 @@ import ssl
 import json
 import socket
 from owntracks import mobile_codes
-from owntracks.dbschema import db, Location, Waypoint, RAWdata, Operators, Inventory, createalltables
+from owntracks.dbschema import db, Location, Waypoint, RAWdata, Operators, Inventory, createalltables, dbconn
 import io
 import csv
 import imp
 from owntracks import waypoints
 from owntracks.util import tsplit
 import dateutil.parser
+import tempfile
 
 logging.basicConfig(filename=cf.logfile, level=cf.loglevelnumber, format=cf.logformat)
 logging.info("Starting %s" % __name__)
 logging.info("INFO MODE")
 logging.debug("DEBUG MODE")
+
+log = logging.getLogger(__name__)
 
 SEEN_DRIVING = 1200
 MAX_VOLTAGES = 10
@@ -50,7 +53,7 @@ if cf.g('features', 'alarm') is not None:
     try:
         alarm_plugin = imp.load_source('alarmplugin', cf.g('features', 'alarm'))
     except Exception, e:
-        logging.error("Can't import alarm_plugin {0}: {1}".format(storage_plugin, e))
+        log.error("Can't import alarm_plugin {0}: {1}".format(storage_plugin, e))
         print e
         sys.exit(2)
 
@@ -75,11 +78,11 @@ def save_rawdata(topic, payload):
         rd = RAWdata(**rawdata)
         rd.save()
     except Exception, e:
-        logging.error("Cannot store rawdata for topic {0}: {1}".format(topic, str(e)))
+        log.error("Cannot store rawdata for topic {0}: {1}".format(topic, str(e)))
 
 def on_connect(mosq, userdata, rc):
     if rc != 0:
-        logging.error("Can't connect to MQTT. rc=={0}".format(rc))
+        log.error("Can't connect to MQTT. rc=={0}".format(rc))
         sys.exit(1)
 
     for t in base_topics:
@@ -96,7 +99,10 @@ def on_connect(mosq, userdata, rc):
         mqttc.subscribe("%s/+/voltage/+" % t, 0)
         mqttc.subscribe("%s/+/gpio/+" % t, 0)
 
-    logging.info("Connected to and subscribed to MQTT broker")
+    if cf.o2smonitor:
+        mqttc.subscribe(cf.o2smonitor + "/+", 2)
+
+    log.info("Connected to and subscribed to MQTT broker")
 
 def on_disconnect(mosq, userdata, rc):
     reasons = {
@@ -107,7 +113,7 @@ def on_disconnect(mosq, userdata, rc):
        '4' : 'Connection Refused: bad user name or password',
        '5' : 'Connection Refused: not authorized',
     }
-    logging.error("Disconnected: code={0} ({1})".format(rc, reasons.get(rc, 'unknown')))
+    log.error("Disconnected: code={0} ({1})".format(rc, reasons.get(rc, 'unknown')))
 
 def on_cmd(mosq, userdata, msg):
     if msg.retain == 1 or len(msg.payload) == 0:
@@ -145,21 +151,21 @@ def push_map(mosq, device, device_data):
     '''
 
     if 'tid' not in device_data:
-        logging.debug("Object {0} is not yet complete.".format(device))
+        log.debug("Object {0} is not yet complete.".format(device))
         return
 
     device_data['_type'] = 'location'
     try:
         payload = json.dumps(device_data, sort_keys=True, separators=(',',':'))
     except Exception, e:
-        logging.error("Can't convert to JSON: {0}".format(str(e)))
+        log.error("Can't convert to JSON: {0}".format(str(e)))
         return
 
     try:
         topic = maptopic.format(device)
         mosq.publish(topic, payload, qos=0, retain=True)
     except Exception, e:
-        logging.error("Cannot publish to maptopic at [{0}]: {1}".format(topic, str(e)))
+        log.error("Cannot publish to maptopic at [{0}]: {1}".format(topic, str(e)))
 
 def on_info(mosq, userdata, msg):
     if (skip_retained and msg.retain == 1) or len(msg.payload) == 0:
@@ -262,14 +268,14 @@ def on_alarm(mosq, userdata, msg):
         try:
             alarm_plugin.alarmplugin(msg.topic, item, mosq)
         except Exception, e:
-            logging.error("Can't invoke alarm plugin with topic {0}: {1}".format(topic, str(e)))
+            log.error("Can't invoke alarm plugin with topic {0}: {1}".format(topic, str(e)))
 
 
 def on_start(mosq, userdata, msg):
     if (skip_retained and msg.retain == 1) or len(msg.payload) == 0:
         return
 
-    logging.debug("_start: {0} {1}".format(msg.topic, msg.payload))
+    log.debug("_start: {0} {1}".format(msg.topic, msg.payload))
 
     save_rawdata(msg.topic, msg.payload)
     watcher(mosq, msg.topic, msg.payload)
@@ -277,7 +283,7 @@ def on_start(mosq, userdata, msg):
     try:
         imei, version, tstamp = msg.payload.split(' ')
     except:
-        logging.error("Cannot split() on ../start")
+        log.error("Cannot split() on ../start")
         return
     startup_dt = dateutil.parser.parse(tstamp)
 
@@ -299,7 +305,7 @@ def on_start(mosq, userdata, msg):
             inv.save()
         except Exception, e:
             raise
-            logging.error("DB error on UPDATE Inventory: {0}".format(str(e)))
+            log.error("DB error on UPDATE Inventory: {0}".format(str(e)))
     except Inventory.DoesNotExist:
         try:
             inv = Inventory(topic=basetopic, imei=imei, version=version, startup=startup_dt)
@@ -307,9 +313,9 @@ def on_start(mosq, userdata, msg):
                 inv.tid = devices[basetopic]['tid']
             inv.save()
         except Exception, e:
-            logging.error("DB error on SAVE Inventory: {0}".format(str(e)))
+            log.error("DB error on SAVE Inventory: {0}".format(str(e)))
     except Exception, e:
-        logging.error("DB error on GET Inventory: {0}".format(str(e)))
+        log.error("DB error on GET Inventory: {0}".format(str(e)))
         return
 
     if redis:
@@ -327,7 +333,7 @@ def on_gpio(mosq, userdata, msg):
     if (skip_retained and msg.retain == 1) or len(msg.payload) == 0:
         return
 
-    logging.debug("_gpio: {0} {1}".format(msg.topic, msg.payload))
+    log.debug("_gpio: {0} {1}".format(msg.topic, msg.payload))
 
     save_rawdata(msg.topic, msg.payload)
     watcher(mosq, msg.topic, msg.payload)
@@ -363,7 +369,7 @@ def on_operator(mosq, userdata, msg):
             op = Operators(**odata)
             op.save()
         except Exception, e:
-            logging.error("Can't store operators in DB: {0}".format(str(e)))
+            log.error("Can't store operators in DB: {0}".format(str(e)))
 
     save_rawdata(topic, payload)
 
@@ -390,7 +396,7 @@ def on_operator(mosq, userdata, msg):
                 s = "not found"
                 mosq.publish(topic + "/" + code, s, qos=0, retain=False)
     except Exception, e:
-        logging.error("Can't handle operators: {0}".format(str(e)))
+        log.error("Can't handle operators: {0}".format(str(e)))
 
 def payload2location(topic, payload):
 
@@ -425,10 +431,10 @@ def payload2location(topic, payload):
                 }
                 # print (json.dumps(item, sort_keys=True))
         except Exception, e:
-            logging.error("CSV decoding fails for {0}: {1}".format(topic, str(e)))
+            log.error("CSV decoding fails for {0}: {1}".format(topic, str(e)))
             return None
     except:
-        logging.error("Payload decoding fails for {0}: {1}".format(topic, str(e)))
+        log.error("Payload decoding fails for {0}: {1}".format(topic, str(e)))
         return None
 
     if 'tid' not in item:
@@ -459,7 +465,7 @@ def watcher(mosq, topic, data):
         prefix, suffix = tsplit(topic)
         wt = watcher_topic.format(prefix) + "/" + suffix
     except Exception, e:
-        logging.error("Cannot format watcher_topic: {0}".format(str(e)))
+        log.error("Cannot format watcher_topic: {0}".format(str(e)))
         return
 
     time_format = "%d.%m %H:%M:%S"
@@ -582,9 +588,9 @@ def on_message(mosq, userdata, msg):
 
     if storage:
         try:
-            db.connect()
+            dbconn()
         except Exception, e:
-            logging.error("Reconnect to DB: {0}".format(str(e)))
+            log.error("Reconnect to DB: {0}".format(str(e)))
             return
 
     if item['_type'] == 'waypoint':
@@ -601,7 +607,7 @@ def on_message(mosq, userdata, msg):
                           item['topic'], item['tid'], item['lat'],
                           item['lon'], tstamp, item['rad'], item['desc'],))
             except Exception, e:
-                logging.error("Cannot UPSERT waypoint into DB: {0}".format(str(e)))
+                log.error("Cannot UPSERT waypoint into DB: {0}".format(str(e)))
 
             return
 
@@ -629,7 +635,7 @@ def on_message(mosq, userdata, msg):
             loca = Location(**item)
             loca.save()
         except Exception, e:
-            logging.error("Cannot INSERT location for {0} into DB: {1}".format(topic, str(e)))
+            log.error("Cannot INSERT location for {0} into DB: {1}".format(topic, str(e)))
 
     item['tst'] = orig_tst
     watcher(mosq, topic, item)
@@ -709,6 +715,98 @@ def on_message(mosq, userdata, msg):
     if wp:
         wp.check(new_data)
 
+def t_tid2imei(rest, val):
+    ''' val must be a TID. Return IMEI '''
+    pass
+
+def t_ghash(rest, val):
+    ''' val must be TID=width (eg J4=8 or K2=4). Set ghash width for this TID '''
+    pass
+
+def t_loglevel(rest, val):
+    ''' val is "INFO" or "DEBUG". Setting logging accordingly '''
+    
+    return "thanks"
+
+def t_dump(rest, val):
+    ''' val is string of what to dump. Write to file, return tmp filename '''
+
+    if val == 'devices':
+        s = json.dumps(devices, indent=2)
+
+        f = tempfile.NamedTemporaryFile(prefix="o2s-devicedump-", suffix=".json", delete=False)
+        filename = f.name
+        f.write(s)
+        f.close()
+
+        log.info("t_dump: devices dumped to {0}".format(filename))
+        return filename
+
+    return "huh?"
+
+
+def t_info(rest, val):
+    ''' val is a tid. Show information of this TID from list of devices '''
+    
+    resp = ''
+
+    tid = val
+    for dev in devices:
+        if 'tid' in devices[dev] and devices[dev]['tid'] == tid:
+            return json.dumps(devices[dev])
+
+    return "TID {0} not found".format(tid)
+
+
+
+def on_tell(mosq, userdata, msg):
+    if msg.retain == 1 or len(msg.payload) == 0:
+        return
+
+    dispatch_table = {
+        'imei'      : t_tid2imei,   # _owntracks/o2s/imei     J4
+        'ghash'     : t_ghash,      # _owntracks/o2s/ghash    K2=5
+        'loglevel'  : t_loglevel,   # _owntracks/o2s/loglevel INFO
+        'dump'      : t_dump,       # _owntracks/o2s/dump     devices
+        'info'      : t_info,       # _owntracks/o2s/info     tid
+        }
+
+    payload = msg.payload
+
+    orig_topic = msg.topic
+    topic, cmd = tsplit(msg.topic, 2)  # "_owntracks/o2s/+"
+
+    if cmd in dispatch_table:
+        try:
+            result = dispatch_table[cmd]("xxx", payload)
+            bb = bytearray(result.encode('utf-8'))
+            mosq.publish(orig_topic + '/out', bb, qos=2, retain=False)
+        except Exception, e:
+            log.error("Tell: cmd {0} with val {1} failed: {2}".format(cmd, payload, str(e)))
+            # FIXME: report to sender
+            return
+    else:
+        log.info("Illegal cmd {0} received".format(cmd))
+        # FIXME: report to sender
+        return
+
+    return
+
+
+    print "TELL: ", cmd, payload
+    log.debug("PRETELL: DEbuG!!")
+    log.info("PRETELL: INFoooo!!")
+
+    if cmd == 'logging':
+        if payload == 'DEBUG':
+            cf.loglevelnumber = logging.DEBUG
+            log.setLevel(cf.loglevelnumber)
+            mosq.publish(topic + '/out', "Loglevel: DEBUG", qos=2, retain=False)
+        else:
+            cf.loglevelnumber = logging.INFO
+            log.setLevel(cf.loglevelnumber)
+            mosq.publish(topic + '/out', "Loglevel: INFO", qos=2, retain=False)
+
 
 
 m = cf.config('mqtt')
@@ -759,6 +857,9 @@ for t in base_topics:
     mqttc.message_callback_add("{0}/+/gpio/+".format(t), on_voltage)
     mqttc.message_callback_add("{0}/+/alarm".format(t), on_alarm)
     mqttc.message_callback_add("{0}/+/start".format(t), on_start)
+
+    if cf.o2smonitor:
+        mqttc.message_callback_add(cf.o2smonitor + "/+", on_tell)
 
 
 # FIXME: I must keep record of ../status up/down and their times
