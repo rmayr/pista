@@ -28,7 +28,7 @@ class OwntracksModel(Model):
         database = db
 
 class Geo(OwntracksModel):
-    ghash           = CharField(null=False, max_length=6, unique=True)
+    ghash           = CharField(null=False, max_length=8, unique=True)
     src             = IntegerField(null=True)       # source of reverse geo
     cc              = CharField(null=True, max_length=2)
     addr            = CharField(null=False)
@@ -49,7 +49,7 @@ class Location(OwntracksModel):
     trip            = IntegerField(null=True)
     dist            = IntegerField(null=True)
     t               = CharField(null=True, max_length=1)
-    ghash           = CharField(null=True, max_length=6)
+    ghash           = CharField(null=True, max_length=8)
     cc              = CharField(null=True, max_length=2)
 
     class Meta:
