@@ -122,11 +122,14 @@ def device_name(topic, subtopic=None):
         return 'owntracks/gw/JP'
         '''
 
-    device = topic
-    if subtopic is not None:
-        if device.endswith(subtopic):
-            device = device[:-len(subtopic)]
-    return device
+    base_topic, suffix = tsplit(topic)
+    return base_topic
+
+    #device = topic
+    #if subtopic is not None:
+    #    if device.endswith(subtopic):
+    #        device = device[:-len(subtopic)]
+    #return device
 
 def rkey(prefix, topic, subtopic=None):
     ''' construct a Redis key '''
@@ -281,7 +284,7 @@ def on_start(mosq, userdata, msg):
     # Inventory must have base topic in it so that we can later associate TID
     # with the IMEI
 
-    basetopic, suffix = tsplit(msg.topic, 3)
+    basetopic, suffix = tsplit(msg.topic)
 
 
     try:
@@ -445,6 +448,7 @@ def payload2location(topic, payload):
 
     return item
 
+# WATCHER
 def watcher(mosq, topic, data):
 
     watcher_topic = cf.g('features', 'watcher', None)
@@ -452,7 +456,7 @@ def watcher(mosq, topic, data):
         return
 
     try:
-        prefix, suffix = tsplit(topic, 3)
+        prefix, suffix = tsplit(topic)
         wt = watcher_topic.format(prefix) + "/" + suffix
     except Exception, e:
         logging.error("Cannot format watcher_topic: {0}".format(str(e)))
@@ -470,6 +474,8 @@ def watcher(mosq, topic, data):
         return
 
     time_str = None
+
+    # FIXME: support waypoint, alarm and alert
     if '_type' in data:
         if data['_type'] == 'location':
             if 'tst' in data:
