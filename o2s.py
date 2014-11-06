@@ -726,6 +726,26 @@ def t_ghash(rest, val):
 def t_loglevel(rest, val):
     ''' val is "INFO" or "DEBUG". Setting logging accordingly '''
     
+    log.debug("t_loglevel: debug")
+    log.info("t_loglevel: info")
+    log.warning("t_loglevel: warning")
+
+    newlevel = None
+    try:
+        newlevel = getattr(logging, val.upper())
+        if not isinstance(newlevel, int):
+            raise ValueError("Invalid log level")
+    except:
+        return "Unchanged"
+
+    if newlevel is not None:
+        cf.loglevelnumber = newlevel
+        log.setLevel(cf.loglevelnumber)
+
+    log.debug("t_loglevel: DEBUG")
+    log.info("t_loglevel: INFO")
+    log.warning("t_loglevel: WARNING")
+
     return "thanks"
 
 def t_dump(rest, val):
@@ -757,6 +777,23 @@ def t_info(rest, val):
 
     return "TID {0} not found".format(tid)
 
+def t_imei(rest, val):
+    ''' val is a TID. Return IMEI from Inventory '''
+
+    tid = val
+    resp = 'unknown TID=%s' % tid
+
+    try:
+        inv = Inventory.get(Inventory.tid == tid)
+        resp = "IMEI={0} topic={1}".format(inv.imei, inv.topic)
+    except Inventory.DoesNotExist:
+        log.warning("IMEI for TID={0} requested but not found".format(tid))
+        pass
+    except Exception, e:
+        log.error("DB error on GET Inventory: {0}".format(str(e)))
+        pass
+
+    return resp
 
 
 def on_tell(mosq, userdata, msg):
@@ -765,10 +802,11 @@ def on_tell(mosq, userdata, msg):
 
     dispatch_table = {
         'imei'      : t_tid2imei,   # _owntracks/o2s/imei     J4
-        'ghash'     : t_ghash,      # _owntracks/o2s/ghash    K2=5
+        #FIXME 'ghash'     : t_ghash,      # _owntracks/o2s/ghash    K2=5
         'loglevel'  : t_loglevel,   # _owntracks/o2s/loglevel INFO
         'dump'      : t_dump,       # _owntracks/o2s/dump     devices
         'info'      : t_info,       # _owntracks/o2s/info     tid
+        'imei'      : t_imei,       # _owntracks/o2s/imei     tid
         }
 
     payload = msg.payload
@@ -791,22 +829,6 @@ def on_tell(mosq, userdata, msg):
         return
 
     return
-
-
-    print "TELL: ", cmd, payload
-    log.debug("PRETELL: DEbuG!!")
-    log.info("PRETELL: INFoooo!!")
-
-    if cmd == 'logging':
-        if payload == 'DEBUG':
-            cf.loglevelnumber = logging.DEBUG
-            log.setLevel(cf.loglevelnumber)
-            mosq.publish(topic + '/out', "Loglevel: DEBUG", qos=2, retain=False)
-        else:
-            cf.loglevelnumber = logging.INFO
-            log.setLevel(cf.loglevelnumber)
-            mosq.publish(topic + '/out', "Loglevel: INFO", qos=2, retain=False)
-
 
 
 m = cf.config('mqtt')
