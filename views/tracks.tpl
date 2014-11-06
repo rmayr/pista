@@ -73,7 +73,7 @@
                         type: 'GET',
                         url: 'api/userlist',
 			// timeout: 30000,
-                        async: false,
+                        async: true,
 			success: function(data) {
 
 				// clear current content of select
