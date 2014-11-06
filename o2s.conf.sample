@@ -70,6 +70,13 @@ alarm = "alarmhelper.py"
 
 t_ignore = [ 'p', ]
 
+# If not None, defines a topic to which o2s subscribes with QoS=2. It will
+# not process retained messages, irrespective of `skip_retained' below.
+# o2s will subscribe to <o2smonitor>/+ to receive commands, and it will
+# publish the result of those commands to <o2smonitor>/<cmd>/out
+
+o2smonitor = "_owntracks/o2s"
+
 #   __  __  ___ _____ _____ 
 #  |  \/  |/ _ \_   _|_   _|
 #  | |\/| | | | || |   | |  
