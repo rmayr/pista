@@ -121,7 +121,7 @@
 					$.ajax({
 						url: 'api/onevehicle/' + tid,
 						type: 'GET',
-						async: false,
+						async: true,
 						dataType: 'text',
 						success: function(data) {
 							text = data;

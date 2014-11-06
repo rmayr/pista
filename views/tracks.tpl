@@ -162,7 +162,7 @@
 		$.ajax({
 			type: 'POST',
                         url: 'api/getGeoJSON',
-			async: false,
+			async: true,
 			data: JSON.stringify(params),
 			dataType: 'json',
 			success: function(data) {
