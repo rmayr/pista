@@ -13,6 +13,8 @@ class Config(RawConfigParser):
         self.configfile = configuration_file
         self.scriptname = os.path.splitext(os.path.basename(sys.argv[0]))[0]
 
+        self.topicparts = 3     # owntracks/gw/XX
+
         # [defaults]
         self.logfile    = os.getenv(self.scriptname.upper() + 'LOG', self.scriptname + '.log')
         self.loglevel   = 'INFO'

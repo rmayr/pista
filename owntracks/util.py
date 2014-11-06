@@ -1,5 +1,6 @@
+from owntracks import cf
 
-def tsplit(topic, nparts):
+def tsplit(topic, nparts=cf.topicparts):
     ''' split a slash-separated topic into a prefix and a suffix,
         putting `nparts' of the topic into prefix, rest in suffix.
         Handle the case where topic begins with a slash.
