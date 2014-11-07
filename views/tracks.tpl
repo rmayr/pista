@@ -97,7 +97,7 @@
 	    weekStart: 1, 	// 0=Sunday
 	    multidate: 2,
 	    multidateSeparator: ',',
-	    todayHighlight: false,
+	    todayHighlight: true,
 	}).on('changeDate', function(e){
 		console.log( "UTC=" + JSON.stringify($('#datepick').datepicker('getUTCDates' ))  );
 		d = $('#datepick').datepicker('getUTCDates' );
