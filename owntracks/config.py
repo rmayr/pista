@@ -20,6 +20,7 @@ class Config(RawConfigParser):
         self.logfile    = os.getenv(self.scriptname.upper() + 'LOG', self.scriptname + '.log')
         self.loglevel   = 'INFO'
         self.logformat  = '%(asctime)-15s %(levelname)-5s [%(module)s] %(message)s'
+        self.logconfig  = 'logging.conf'
 
 
         # [database]
