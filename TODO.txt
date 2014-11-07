@@ -56,13 +56,12 @@ backend:
 	DONE collect /start info (IMEI, reboot time, sw version) for all GW.
 
 o2s:
-	special MQTT topic (/o2s) to talk to o2s (configure):
-		logging debug/info
-
-		owntracks/_o2s
-		owntracks/_pista
-
+	DONE special MQTT topic (/o2s) to talk to o2s (configure):
 	Allow giving individual topics higher ghash precision
+	Ideas for monitor:
+		nagios quiet tid
+		track tid		-> track tid & write JSON to file (persist.py)
+		untrack tid
 
 	merge in o2db (fornax)
 	allow remapping of topic to TID
