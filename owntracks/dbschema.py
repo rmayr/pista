@@ -67,6 +67,11 @@ class RAWdata(OwntracksModel):
     tst             = DateTimeField(default=datetime.datetime.now, index=True)
     payload         = TextField(null=True)
 
+class Obd2(OwntracksModel):
+    topic           = BlobField(null=False)
+    tst             = DateTimeField(default=datetime.datetime.now, index=True)
+    payload         = TextField(null=True)
+
 # Optional: operators. Useful for Greenwich only
 class Operators(OwntracksModel):
     topic           = BlobField(null=False)
@@ -154,6 +159,7 @@ def createalltables():
     Acl.create_table(fail_silently=silent)
     Inventory.create_table(fail_silently=silent)
     Params.create_table(fail_silently=silent)
+    Obd2.create_table(fail_silently=silent)
 
     if cf.g('features', 'plmn', False) == True:
         try:

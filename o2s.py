@@ -15,7 +15,7 @@ import ssl
 import json
 import socket
 from owntracks import mobile_codes
-from owntracks.dbschema import db, Location, Waypoint, RAWdata, Operators, Inventory, createalltables, dbconn
+from owntracks.dbschema import db, Location, Waypoint, RAWdata, Operators, Inventory, Obd2, createalltables, dbconn
 import io
 import csv
 import imp
@@ -83,6 +83,7 @@ def on_connect(mosq, userdata, rc):
 
     for t in base_topics:
         mqttc.subscribe("%s/+" % t, 0)
+        mqttc.subscribe("%s/+/obd2/#" % t, 0)
         mqttc.subscribe("%s/+/waypoints" % t, 0)
         if cf.g('features', 'plmn', False) == True:
             mqttc.subscribe("%s/+/operators" % t, 0)
@@ -265,6 +266,24 @@ def on_alarm(mosq, userdata, msg):
             alarm_plugin.alarmplugin(msg.topic, item, mosq)
         except Exception, e:
             log.error("Can't invoke alarm plugin with topic {0}: {1}".format(topic, str(e)))
+
+
+def on_obd2(mosq, userdata, msg):
+    if (skip_retained and msg.retain == 1) or len(msg.payload) == 0:
+        return
+
+    print msg.topic, msg.payload
+    log.debug("_obd2: {0} {1}".format(msg.topic, msg.payload))
+    try:
+        data = {
+            'topic'  : msg.topic,
+            'tst'    : time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(int(time.time()))),
+            'payload' : msg.payload,
+        }
+        ob = Obd2(**data)
+        ob.save()
+    except Exception, e:
+        log.error("Cannot store OBD2 for topic {0}: {1}".format(msg.topic, str(e)))
 
 
 def on_start(mosq, userdata, msg):
@@ -873,6 +892,7 @@ for t in base_topics:
     mqttc.message_callback_add("{0}/+/gpio/+".format(t), on_voltage)
     mqttc.message_callback_add("{0}/+/alarm".format(t), on_alarm)
     mqttc.message_callback_add("{0}/+/start".format(t), on_start)
+    mqttc.message_callback_add("{0}/+/obd2/#".format(t), on_obd2)
 
     if cf.o2smonitor:
         mqttc.message_callback_add(cf.o2smonitor + "/+", on_tell)
