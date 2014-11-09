@@ -295,6 +295,7 @@ def on_start(mosq, userdata, msg):
     save_rawdata(msg.topic, msg.payload)
     watcher(mosq, msg.topic, msg.payload)
 
+    imei = version = ""
     try:
         imei, version, tstamp = msg.payload.split(' ')
     except:
@@ -312,6 +313,8 @@ def on_start(mosq, userdata, msg):
     try:
         inv = Inventory.get(Inventory.imei == imei)
         odo = int(inv.odo)
+        imei = inv.imei
+        version = inv.version
 
         try:
             inv.topic = basetopic
@@ -339,12 +342,12 @@ def on_start(mosq, userdata, msg):
 
     if maptopic:
         if basetopic in devices:
-            devices[basetopic].update(dict(odo=odo))
+            devices[basetopic].update(dict(odo=odo, imei=imei, version=version))
         else:
             try:
-                devices[basetopic] = dict(odo=odo)
+                devices[basetopic] = dict(odo=odo, imei=imei, version=version)
             except:
-                devices[basetopic] = dict(odo=odo)
+                devices[basetopic] = dict(odo=odo, imei=imei, version=version)
         push_map(mosq, basetopic, devices[basetopic])
 
     if redis:
