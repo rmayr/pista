@@ -39,6 +39,7 @@ function handlerfunc(topic, payload) {
 		var addr = d.addr;
 		var compass = d.compass;
 		var tid = d.tid;
+		var odo = d.odo ? d.odo : 0;
 	
 		var mapslink = '<a href="http://maps.google.com/?q=' + latlon + '">' + addr + '</a>';
 		var o = {
@@ -56,6 +57,7 @@ function handlerfunc(topic, payload) {
 			cc:		d.cc,
 			t:		d.t,
 			trip:		d.trip,
+			odo:		odo,
 		};
 		upsert(o);
 	} catch (err) {
@@ -239,14 +241,17 @@ $(document).ready( function () {
 		{
 			className: 'trip',
 			name: 'trip',
-			title: "Trip (Km)",
+			title: "Trip/Odo",
 			data: null,
                         "targets" : [11],
 			render : function(data, type, row) {
 				trip = data.trip;
-				trip = trip / 1000;
+				odo = data.odo;
+				trip = Math.round(trip / 1000);
 
-				return Math.round(trip);
+				realodo = odo + trip;
+
+				return '<acronym title="' + realodo + '">' + trip + '</acronym>';
 			}
                 },
         ],

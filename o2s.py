@@ -33,6 +33,7 @@ LASTLOC_EXPIRY = 3600
 storage = cf.g('features', 'storage', 'True')
 maptopic = None
 devices = {}
+imeilist = {}
 
 createalltables()
 
@@ -272,7 +273,6 @@ def on_obd2(mosq, userdata, msg):
     if (skip_retained and msg.retain == 1) or len(msg.payload) == 0:
         return
 
-    print msg.topic, msg.payload
     log.debug("_obd2: {0} {1}".format(msg.topic, msg.payload))
     try:
         data = {
@@ -308,8 +308,11 @@ def on_start(mosq, userdata, msg):
     basetopic, suffix = tsplit(msg.topic)
 
 
+    odo = 0
     try:
         inv = Inventory.get(Inventory.imei == imei)
+        odo = int(inv.odo)
+
         try:
             inv.topic = basetopic
             inv.version = version
@@ -330,8 +333,19 @@ def on_start(mosq, userdata, msg):
         except Exception, e:
             log.error("DB error on SAVE Inventory: {0}".format(str(e)))
     except Exception, e:
+        raise
         log.error("DB error on GET Inventory: {0}".format(str(e)))
         return
+
+    if maptopic:
+        if basetopic in devices:
+            devices[basetopic].update(dict(odo=odo))
+        else:
+            try:
+                devices[basetopic] = dict(odo=odo)
+            except:
+                devices[basetopic] = dict(odo=odo)
+        push_map(mosq, basetopic, devices[basetopic])
 
     if redis:
         redis.hmset(rkey("t", msg.topic, "/start"), {
