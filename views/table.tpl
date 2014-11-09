@@ -58,6 +58,7 @@ function handlerfunc(topic, payload) {
 			t:		d.t,
 			trip:		d.trip,
 			odo:		odo,
+			imei:		d.imei ? d.imei : "",
 		};
 		upsert(o);
 	} catch (err) {
@@ -145,10 +146,14 @@ $(document).ready( function () {
 		{
 			className: 'vehicle',
 			name: 'vehicle',
-			title: "Vehicle",
+			title: "TID/IMEI",
 			data: null,
 			render: 'vehicle',
                         "targets" : [2],
+			render : function(data, type, row) {
+
+				return '<acronym title="' + data.imei + '">' + data.tid + '</acronym>';
+			}
 		},
 		{
 			className: 'kmh',

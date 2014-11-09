@@ -115,6 +115,9 @@ base_topics = [ 'owntracks/gw', 'owntracks/jane']
 # If this is not defined (i.e. None) those pages will be empty. The same rules
 # as for `watcher' apply here.
 
+# FIXME: 	_owntracks/_map/<fulltopic>
+# FIXME: 	_owntracks/_map/owntracks/echle/BB/status
+
 maptopic = "{0}/././_map"
 
 
