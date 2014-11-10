@@ -188,10 +188,93 @@ In order to run the OwnTracks back-end you will need:
 
 ### Installation
 
+##### Install Mosquitto 1.4
+
+##### Configure Mosquitto
+
+The broker we'll be connecting to from _o2s_ and _pista_ is a local Mosquitto 1.4
+which is configured to _bridge in_ all `owntracks/#` topics.
+
+```
+autosave_interval 1800
+persistence true
+persistence_file mosquitto.db
+persistence_location /tmp/
+connection_messages true
+log_timestamp true
+log_dest stderr
+log_type debug
+
+listener 1883
+
+listener 9001
+protocol websockets
+
+connection deb-local140
+address 172.16.153.1:1889
+username debridge
+cleansession true
+clientid br-deb-local140
+start_type automatic
+topic # in 0 owntracks/ owntracks/
+notifications true
+try_private true
+```
+
+##### Create a database
+
+```
+$ mysqladmin -u root -p create owntracks
+$ mysql -u root -p owntracks
+mysql> GRANT ALL ON owntracks.* TO 'jane'@'localhost' IDENTIFIED BY 'secret';
+```
+
+#### Create and activate a virtualenv
+
+```
+$ virtualenv --no-site-packages pista
+$ cd pista
+$ source bin/activate
+```
+
+##### Clone the _pista_ repository
+
+
+```
+$ git clone https://github.com/owntracks/pista.git
+$ pip install -r requirements.txt
+```
+
+Edit and adjust the configuration file, for example:
+
+```ini
+```
+
+
+##### Launch _o2s_
+
+check tables
+
+
+##### Create user for _pista_
+
+mysql> INSERT INTO user (username, pwhash, superuser) VALUES ('ttt', 'secret', 1);
+
+
+
+#### Visit _pista_
+
+http:/..../index
+
 
 #### uWSGI
 
 ### Testing
+
+* From within the browser, obtain `http://.../config.js` and verify its content. This
+  file is created from a template intermixed with values from `o2s.conf`. In particular
+  the MQTT parameters must be those of the Websocket-enabled MQTT broker, and please
+  note: *the Websocket connection is as seen from your Web browser!*.
 
 ### Migration from `m2s`
 
