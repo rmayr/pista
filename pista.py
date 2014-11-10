@@ -621,10 +621,13 @@ def onevehicle(tid):
     key = "tid:%s" % tid
     tidkey = redis.get(key)
 
-    data = redis.hgetall(tidkey)
-    for k in params:
-        if k in data:
-            params[k] = data[k]
+    try:
+        data = redis.hgetall(tidkey)
+        for k in params:
+            if k in data:
+                params[k] = data[k]
+    except:
+        pass
 
 
     response.content_type = 'text/plain; charset: UTF-8'
