@@ -70,6 +70,9 @@ class RAWdata(OwntracksModel):
 class Obd2(OwntracksModel):
     topic           = BlobField(null=False)
     tst             = DateTimeField(default=datetime.datetime.now, index=True)
+    canid           = CharField(null=True) # CAN ID
+    mode            = CharField(null=True)
+    pid             = CharField(null=True) # Parameter ID
     payload         = TextField(null=True)
 
 # Optional: operators. Useful for Greenwich only

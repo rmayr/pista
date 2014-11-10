@@ -281,12 +281,25 @@ def on_obd2(mosq, userdata, msg):
     if (skip_retained and msg.retain == 1) or len(msg.payload) == 0:
         return
 
+    basetopic, suffix = tsplit(msg.topic)
+
+    args = suffix.split('/')    # ['obd2', '000007e8', '01', '49']
+
+    canid = args[1]
+    mode  = args[2]
+    pid   = None
+    if len(args) > 3:
+        pid = args[3]
+
     log.debug("_obd2: {0} {1}".format(msg.topic, msg.payload))
     try:
         data = {
             'topic'  : msg.topic,
             'tst'    : time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(int(time.time()))),
             'payload' : msg.payload,
+            'canid'   : canid,
+            'mode'    : mode,
+            'pid'     : pid,
         }
         ob = Obd2(**data)
         ob.save()
