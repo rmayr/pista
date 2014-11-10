@@ -5,9 +5,9 @@
 # of CTRLD, PISTA, or O2S	#FIXME
 ; logfile    =	#FIXME
 ; loglevel   = INFO	#FIXME
-loglevel   = DEBUG	#FIXME
+loglevel   = DEBUG
 
-logformat  = '%(asctime)-15s %(levelname)-5s [%(module)s] %(message)s'	#FIXME
+logformat  = '%(asctime)-15s %(levelname)-5s [%(module)s] %(message)s'
 
 # logconfig points to the Python logging configuration file
 
