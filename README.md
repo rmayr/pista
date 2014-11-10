@@ -22,26 +22,46 @@ environment uses all features, and this documentation discusses these.
 
 Keep a copy of the extensively documented configuration file `o2s.conf.sample` handy for reference.
 
+We typically use a double-broker approach: our main broker is the endpoint for devices, and
+we run a secondary broker which bridges _in_ the `owntracks/#` topics. It is to *this* broker
+that we connect `o2s` and `pista`, and the latter requires a broker with Websocket support (e.g.
+Mosquitto 1.4 or higher).
+
+### Database
+
+Upon launching one of the utilities, the database schema is created:
+
+* `acl` defines access control for [mosquitto-auth-plug].
+* `geo` stores reverse geo data, indexed by _ghash_.
+* `inventory` contains a list of Greenwich devices, indexed by IMEI.
+* `location` stores location publishes
+* `obd2` holds OBD2 (CAN-BUS) data
+* `operators` used if the `plmn` feature is enabled to store mobile operator codes
+* `params` for _ctrld_
+* `rawdata` raw incoming data
+* `user` authenticates users in [mosquitto-auth-plug] and in _pista_.
+* `waypoint` waypoints table. This is also the basis for drawing geo fences on the map.
+
 ### `o2s`
 
 _o2s_ (OwnTracks to Storage) is responsible for subscribing to MQTT for the OwnTracks topics and comitting these to storage (i.e. to a database). In particular, _o2s_ also provides support for
 
 * Republishing formatted debugging strings to the `_look` topic
 * Republishing whole "objects" to the `_map/` topic
-* Recording statistics in Redis
 * Handling geo-fences from waypoints (enter/leave)
+* Storing OBD2 data
+* etc.
 
 Upon startup, _o2s_ subscribes to the configured MQTT broker awaiting publishes
-from OwnTracks devices. Location publishes are comitted to storage as are Waypoint
-publishes.
-
+from OwnTracks devices. Location and Waypoint publishes are comitted to storage.
 
 
 #### `_map/`
 
-Non-Location publishes from devices (e.g. `startup/`, `gpio/`, `voltage/` are gathered
-together to form an "object" which, when complete, is published to `_map/` when it changes. This object
-is used by _pista_ to display information in its individual pages. An object published
+Location and other publishes from devices (e.g. `startup/`, `gpio/`,
+`voltage/`) are gathered together to form an "object" which, when complete, is
+published to `_map/` when it changes. This object is used by _pista_ to display
+information in its individual pages. An object published
 thusly might look like this:
 
 ```json
@@ -104,25 +124,20 @@ _map/9e33dafec92ce71a34f3cf10b8d747b7834bda7e {"lat": 51.1694, "radius": 300, "_
 }
 ```
 
-
 ### `pista`
-
 
 _pista_ (the Spanish word for _track_) is a Python Bottle app which works hand-in-hand with _o2s_ for displaying data, maps, tracks and information from that database.
 
-
 Ensure you've configured `o2s.conf` and that the environment variable
 `O2SCONFIG` points to that file so that _pista_ will be able to access _o2s_' database.
-
-Copy `pista.conf.sample` to `pista.conf`, adjust the settings therein as described in the comments, and configure the environment variable `PISTACONFIG` to point to that file.
 
 Run `./pista.py` and connect to it with a supported Web browser. By default, the address is `http://127.0.0.1:8080`.
 
 ### Authentication / Authorization
 
-We use pista in combination with mosquitto-auth-plug which allows us to use the
+We use pista in combination with [mosquitto-auth-plug] which allows us to use the
 same authentication database tables for both. In this model, a user logs on to
-pista with HTTP Basic authentication and we re-use these credentials to connect
+_pista_ with HTTP Basic authentication and we re-use these credentials to connect
 to the MQTT broker, thus ensuring that a user can only see what she or he is allowed
 to see. We thus configure the `[websocket]` section like this:
 
@@ -165,7 +180,6 @@ In order to run the OwnTracks back-end you will need:
 
 * An MQTT broker with Websockets capabilities. This could be, say, Mosquitto (version 1.4 or higher) or HiveMQ.
 * A database supported by `o2s`; this is currently one of SQLite, PostgreSQL or MySQL, whereby we test only with the latter.
-* Optionally (and highly recommended), access to a Redis key/value store.
 * A Linux host
 * Python 2.7.x
 * An optional HTTP server (Apache or nginx)
@@ -226,8 +240,6 @@ u23qhh
 
 See [geohash.org](http://geohash.org).
 
-### Redis
 
-_o2s_ and certain bits of _pista_ currently use a Redis key/value store as a
-fast lookup-table for data. In particular, the _Status_ and _Hardware_ tabs of _pista_
-require access to it.
+
+  [mosquitto-auth-plug]: https://github.com/jpmens/mosquitto-auth-plug
