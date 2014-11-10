@@ -25,7 +25,6 @@ from xml.etree import ElementTree as ET
 from owntracks.ElementTree_pretty import prettify
 import time
 from owntracks import cf
-from owntracks.wredis import Wredis
 import paho.mqtt.client as paho
 from owntracks.dbschema import db, Geo, Location, Waypoint, User, Acl, Inventory, JOIN_LEFT_OUTER, fn, createalltables, dbconn
 from owntracks.auth import PistaAuth
@@ -41,8 +40,6 @@ POINT_KM = 20
 
 app = application = bottle.Bottle()
 bottle.SimpleTemplate.defaults['get_url'] = app.get_url
-
-redis = Wredis(cf.config('redis'))
 
 def notauth(reason):
     return bottle.HTTPResponse(status=403, body=reason)
@@ -619,9 +616,9 @@ def onevehicle(tid):
     }
 
     key = "tid:%s" % tid
-    tidkey = redis.get(key)
 
     try:
+        tidkey = redis.get(key)
         data = redis.hgetall(tidkey)
         for k in params:
             if k in data:
@@ -642,6 +639,7 @@ def flotbatt(voltage):
 
     battlevels = []
 
+    ''' FIXME
     # Find all devices in Redis and add their vbatt into a list
 
     for device in redis.keys("t:*"):
@@ -656,6 +654,7 @@ def flotbatt(voltage):
             vbatt = float(vbatt)
 
             battlevels.append( [tid, vbatt] )
+    '''
 
     flot = {
         'label' : 'Batt',

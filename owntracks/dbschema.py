@@ -140,6 +140,8 @@ class Inventory(OwntracksModel):
     version         = CharField(null=True, max_length=10)
     startup         = DateTimeField(null=True)
     odo             = DecimalField(null=False, max_digits=7, decimal_places=0, default=0)
+    vbatt           = DecimalField(null=True, max_digits=4, decimal_places=1, default=0)
+    vext            = DecimalField(null=True, max_digits=4, decimal_places=1, default=0)
     label           = CharField(null=True)
     tstamp          = DateTimeField(default=datetime.datetime.now)
 

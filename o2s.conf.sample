@@ -23,8 +23,7 @@ logformat  = '%(asctime)-15s %(levelname)-5s [%(module)s] %(message)s'	#FIXME
 [features]
 
 # If storage is False, no data will be written to the relational database
-# store. This is useful *only* if redis is True, but is for special
-# installations.
+# store. 
 
 storage = True
 
@@ -47,11 +46,6 @@ plmn = True
 # Must not end with a slash
 
 watcher = "_owntracks/_look/{0}"
-
-# If the `redis' feature is True, o2s will update a number of keys
-# in Redis for the Web interface
-
-redis = True
 
 # Handle waypoints/geofences. If this is not None, it is the path to
 # a file which will contain a pickled list of current geofences.
@@ -184,14 +178,6 @@ ghashlen = 5  ; default=5
 # somewhere in the US.) We set map language to the same value.
 # https://developers.google.com/maps/documentation/geocoding/?csw=1#RegionCodes
 region_bias = "de"
-
-[redis]
-enabled = True
-host = 'localhost'
-port = 6379
-db = 0
-password = None
-unix_socket_path = None
 
 #        _        _     _ 
 #    ___| |_ _ __| | __| |

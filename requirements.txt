@@ -2,7 +2,6 @@ paho-mqtt
 redis
 paho-mqtt
 peewee
-redis
 python-geohash
 python-dateutil
 bottle

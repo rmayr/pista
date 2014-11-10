@@ -8,7 +8,6 @@ import time
 import datetime
 import owntracks
 from owntracks import cf
-from owntracks.wredis import Wredis
 from owntracks.revgeo import RevGeo
 import paho.mqtt.client as paho
 import ssl
@@ -38,9 +37,6 @@ imeilist = {}
 createalltables()
 
 geo = RevGeo(cf.config('revgeo'), storage=storage)
-redis = None
-if cf.g('features', 'redis', False) == True:
-    redis = Wredis(cf.config('redis'))
 wp = None
 
 base_topics = []
@@ -135,10 +131,6 @@ def device_name(topic, subtopic=None):
     #        device = device[:-len(subtopic)]
     #return device
 
-def rkey(prefix, topic, subtopic=None):
-    ''' construct a Redis key '''
-
-    return "%s:%s" % (prefix, device_name(topic, subtopic))
 
 def push_map(mosq, device, device_data):
     ''' device is the original topic to which an update was published.
@@ -208,8 +200,6 @@ def on_status(mosq, userdata, msg):
                 devices[device] = dict(status=-1)
         push_map(mosq, device, devices[device])
 
-    if redis:
-        redis.hmset(rkey("t", msg.topic, "/status"), dict(status=msg.payload))
 
 def on_voltage(mosq, userdata, msg):
     if (skip_retained and msg.retain == 1) or len(msg.payload) == 0:
@@ -218,26 +208,44 @@ def on_voltage(mosq, userdata, msg):
     save_rawdata(msg.topic, msg.payload)
     watcher(mosq, msg.topic, msg.payload)
 
-    if redis is None:
+    basetopic, suffix = tsplit(msg.topic)
+    imei = basetopic.split('/')[-1]
+
+    vext = vbatt = None
+    if suffix.endswith('voltage/ext'):
+        try:
+            vext = float(msg.payload)
+            if basetopic in devices:
+                devices[basetopic].update(dict(vext=vext))
+        except:
+            return
+
+    if suffix.endswith('voltage/batt'):
+        try:
+            vbatt = float(msg.payload)
+            if basetopic in devices:
+                devices[basetopic].update(dict(vbatt=vbatt))
+        except:
+            return
+
+    try:
+        inv = Inventory.get(Inventory.imei == imei)
+        try:
+            if vext is not None:
+                inv.vext = vext
+            if vbatt is not None:
+                inv.vbatt = vbatt
+            inv.tstamp = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
+            inv.save()
+        except Exception, e:
+            raise
+            log.error("DB error on UPDATE Inventory in voltage: {0}".format(str(e)))
+    except Inventory.DoesNotExist:
+            pass
+    except Exception, e:
+        raise
+        log.error("DB error on GET Inventory: {0}".format(str(e)))
         return
-
-    device = msg.topic
-    payload = msg.payload
-
-    if device.endswith('/voltage/batt'):
-        voltage = 'batt'
-        device = device[:-len("/voltage/batt")]
-        redis.hmset("t:" + device, dict(vbatt=payload))
-
-        redis.lpush("vbatt:" + device, payload)
-        redis.ltrim("vbatt:" + device, 0, MAX_VOLTAGES)
-    else:
-        voltage = 'ext'
-        device = device[:-len("/voltage/ext")]
-        redis.hmset("t:" + device, dict(vext=payload))
-
-        redis.lpush("vext:" + device, payload)
-        redis.ltrim("vext:" + device, 0, MAX_VOLTAGES)
 
 
 def on_alarm(mosq, userdata, msg):
@@ -349,17 +357,6 @@ def on_start(mosq, userdata, msg):
             except:
                 devices[basetopic] = dict(odo=odo, imei=imei, version=version)
         push_map(mosq, basetopic, devices[basetopic])
-
-    if redis:
-        redis.hmset(rkey("t", msg.topic, "/start"), {
-                        'imei' : imei,
-                        'version' : version,
-                        'tstamp' : tstamp,
-                        })
-
-        # Register IMEI for lookups in otap.jad
-        redis.set("imei:" + imei, "t:" + device_name(msg.topic, "/start"))
-
 
 def on_gpio(mosq, userdata, msg):
     if (skip_retained and msg.retain == 1) or len(msg.payload) == 0:
@@ -551,26 +548,9 @@ def on_message(mosq, userdata, msg):
 
     if len(msg.payload) == 0:
         '''
-        Clear out everthing we know of this vehicle in Redis.
+        Clear out everthing we know of this vehicle?
         We cannot delete our own MQTT topics, because that'll result in a loop.
         '''
-
-        # 1) "t:owntracks/gw/B2"
-        # 2) "vbatt:owntracks/gw/B2"
-        # 3) "lastloc:B2"
-        # 4) "tid:B2"
-        # 5) "vext:owntracks/gw/B2"
-
-        if redis:
-            data = redis.hgetall("t:" + topic)
-            if data is not None and 'tid' in data:
-                tid = data['tid']
-                if tid is not None:
-                    redis.delete("lastloc:%s" % tid)
-                    redis.delete("tid:%s" % tid)
-                redis.delete("t:%s" % topic)
-                redis.delete("vbatt:%s" % topic)
-                redis.delete("vext:%s" % topic)
 
         # FIXME: we should subscribe to topic/# to find 'em all...
         # for s in ['status', 'start', 'gpio', 'voltage', 'operators', 'info']:
@@ -678,43 +658,6 @@ def on_message(mosq, userdata, msg):
         cog = int(item.get('cog', 0))
         idx = int(cog / 45)
         compass = points[idx]
-
-    # TID to Topic (tid:J4 -> t:owntracks/gw/J4)
-    if redis:
-        redis.set("tid:%s" % tid, "t:%s" % topic)
-
-    # If this is a 'driving' report, add a key to Redis with expiry
-    if redis and item.get('t') == 't':
-        redis.hmset("driving:" + tid, {
-                                        'tid'  : tid,
-                                        'tst'  : tst,
-                                        'trip' : trip,
-                                        'vel'  : vel,
-                                      }, SEEN_DRIVING)
-
-
-    # Set position key in Redis to drive a map
-    if redis:
-        redis.hmset("lastloc:" + tid, {
-                                    'lat' : lat,
-                                    'lon' : lon,
-                                    'tst' : orig_tst,
-                                    }, LASTLOC_EXPIRY)
-
-    # Record number of PUBs as metric
-    if redis:
-        redis.hincrby(rkey("t", msg.topic), "npubs", 1)
-        redis.hmset(rkey("t", msg.topic), {
-                        'tid'       : tid,
-                        'cc'        : item.get('cc'),
-                        'addr'      : item.get('addr'),
-                        'lat'       : lat,
-                        'lon'       : lon,
-                        'modif'     : time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(int(time.time()))),
-                        'compass'   : compass,
-
-            })
-
 
     new_data = {
             'tid'     : tid,
@@ -906,7 +849,7 @@ for t in base_topics:
     mqttc.message_callback_add("{0}/+/status".format(t), on_status)
     mqttc.message_callback_add("{0}/+/info".format(t), on_info)
     mqttc.message_callback_add("{0}/+/voltage/+".format(t), on_voltage)
-    mqttc.message_callback_add("{0}/+/gpio/+".format(t), on_voltage)
+    mqttc.message_callback_add("{0}/+/gpio/+".format(t), on_gpio)
     mqttc.message_callback_add("{0}/+/alarm".format(t), on_alarm)
     mqttc.message_callback_add("{0}/+/start".format(t), on_start)
     mqttc.message_callback_add("{0}/+/obd2/#".format(t), on_obd2)
