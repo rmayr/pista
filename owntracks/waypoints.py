@@ -76,8 +76,8 @@ class WP(object):
                     try:
                         # fence_topic = self.maptopic + "/" + unique_sha
                         fence_topic = self.maptopic.format(wptopic) + "/" + unique_sha
-
                         self.mosq.publish(fence_topic, json.dumps(fence_data), qos=0, retain=True)
+                        log.debug("FENCE: {0} -> {1}".format(fence_topic, json.dumps(fence_data)))
                     except Exception, e:
                         log.warn("Cannot publish fence: {0}".format(str(e)))
             except:
