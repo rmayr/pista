@@ -1,6 +1,4 @@
 paho-mqtt
-redis
-paho-mqtt
 peewee
 python-geohash
 python-dateutil
