@@ -248,6 +248,63 @@ $ pip install -r requirements.txt
 Edit and adjust the configuration file, for example:
 
 ```ini
+[defaults]
+loglevel   = DEBUG
+logformat  = '%(asctime)-15s %(levelname)-5s [%(module)s] %(message)s'
+
+[features]
+storage = True
+plmn = False
+watcher = "_owntracks/_look/{0}"
+geofences = 'db.geofences.pickle'
+rawdata = False
+alarm = "alarmhelper.py"
+t_ignore = [ 'p', ]
+o2smonitor = "_owntracks/o2s"
+
+[mqtt]
+host = localhost
+port = 1883
+username = None
+password = None
+client_id = 'yyyx01'
+ca_certs = None
+skip_retained = False
+base_topics = [ 'owntracks/gw', 'owntracks/jane']
+maptopic = "_owntracks/_map/{0}"
+alert_topic = "_alerts"
+alert_keys = None
+
+[database]
+dbengine = mysql
+dbhost = 'localhost'
+dbname = 'owntracks'
+dbuser = 'jane'
+dbpasswd = 'secret'
+
+[revgeo]
+enabled = True
+ghashlen = 5  ; default=5
+region_bias = "de"
+
+[pista]
+listen_host = "172.16.153.112"
+listen_port = 8080
+pages = ['map', 'table', 'tracks', 'console', 'status', 'hw' ]
+
+[websocket]
+host = "172.16.153.112"
+port = 9001
+reconnect_in = 5000 ; milliseconds
+usetls = False
+cleansession = True
+basic_auth = True
+username = None
+password = None
+apiKey = None
+console_topic = "_owntracks/_look/#"
+maptopic = "_owntracks/_map/+/+/+"
+topic_visible = False
 ```
 
 
