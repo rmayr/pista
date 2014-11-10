@@ -1,4 +1,5 @@
 paho-mqtt
+MySQL-python
 peewee
 python-geohash
 python-dateutil
