@@ -22,6 +22,9 @@ from owntracks import waypoints
 from owntracks.util import tsplit
 import dateutil.parser
 import tempfile
+import codecs
+
+sys.stdout = codecs.getwriter("utf-8")(sys.__stdout__) 
 
 log = logging.getLogger(__name__)
 
@@ -658,7 +661,8 @@ def on_message(mosq, userdata, msg):
         if 'addr' in g:
             event_desc = g.get('addr')
             item['addr'] = g.get('addr')
-        print "%s %-2s %5d %s [%s] %s,%s" % (g.get('cached', -1), tid, vel, g.get('addr', ''), item.get('ghash'), item.get('lat'), item.get('lon'))
+            addr = g.get('addr')
+        print "%s %-2s %5d %s [%s] %s,%s" % (g.get('cached', -1), tid, vel, addr, item.get('ghash'), item.get('lat'), item.get('lon'))
     else:
         print "  %-2s" % tid
 
