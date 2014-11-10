@@ -212,7 +212,7 @@ def on_voltage(mosq, userdata, msg):
     watcher(mosq, msg.topic, msg.payload)
 
     basetopic, suffix = tsplit(msg.topic)
-    imei = basetopic.split('/')[-1]
+    key = basetopic.split('/')[-1]      # IMEI or TID
 
     vext = vbatt = None
     if suffix.endswith('voltage/ext'):
@@ -232,7 +232,9 @@ def on_voltage(mosq, userdata, msg):
             return
 
     try:
-        inv = Inventory.get(Inventory.imei == imei)
+        inv = Inventory.select().where(
+                (Inventory.imei == key) | (Inventory.tid == key)
+           ).get()
         try:
             if vext is not None:
                 inv.vext = vext
