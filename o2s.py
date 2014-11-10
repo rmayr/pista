@@ -205,6 +205,9 @@ def on_voltage(mosq, userdata, msg):
     if (skip_retained and msg.retain == 1) or len(msg.payload) == 0:
         return
 
+    if not storage:
+        return
+
     save_rawdata(msg.topic, msg.payload)
     watcher(mosq, msg.topic, msg.payload)
 
@@ -279,6 +282,9 @@ def on_alarm(mosq, userdata, msg):
 
 def on_obd2(mosq, userdata, msg):
     if (skip_retained and msg.retain == 1) or len(msg.payload) == 0:
+        return
+
+    if not storage:
         return
 
     basetopic, suffix = tsplit(msg.topic)
