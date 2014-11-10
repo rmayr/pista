@@ -12,7 +12,8 @@ function getPopupText(user, lat, lon) {
 	var template = "\
 		<table id='infopopup'>\
 			<tr><td>TID</td><td>{{tid}}</td></tr>\
-			<tr><td>Info</td><td>{{info}}</td></tr>\
+			<tr><td>IMEI</td><td>{{imei}}</td></tr>\
+			<tr><td>Info</td><td><b>{{info}}</b></td></tr>\
 			<tr><td>Addr</td><td>{{addr}}</td>\
 			<tr><td>Location</td><td>{{lat}}, {{lon}}</td></tr>\
 			<tr><td>Speed</td><td>{{vel}}</td></tr>\

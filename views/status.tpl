@@ -5,6 +5,8 @@
     <script src="js/mqttws31.js" type="text/javascript"></script>
     <script src="config.js" type="text/javascript"></script>
     <script src="all/mqtt.js" type="text/javascript"></script>
+    <script src="map/mustache.js" type="text/javascript"></script>
+    <script src="status/getpopup.js" type="text/javascript"></script>
 
     <style>
 	.fixed-size-square {
@@ -118,6 +120,7 @@
 
 					var text = "not there";
 
+					/*
 					$.ajax({
 						url: 'api/onevehicle/' + tid,
 						type: 'GET',
@@ -127,6 +130,9 @@
 							text = data;
 						},
 					});
+					*/
+
+					text = getPopupText(d);
 
 				        $('div:hidden #servertext').text(text);
 					$('#hiddenDiv').show();
@@ -167,7 +173,8 @@
 	var sub = [];
 
 	for (var n = 0; n < tlist.length; n++) {
-		sub.push(tlist[n] + "/" + '#');
+		// sub.push(tlist[n] + "/" + '#');
+		sub.push(tlist[n]);
 	}
 
 	mqtt_setup("pista-STATUS", sub, handlerfunc, errorfunc);
