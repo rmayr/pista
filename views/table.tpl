@@ -275,7 +275,7 @@ $(document).ready( function () {
     var sub = [];
 
     for (var n = 0; n < tlist.length; n++) {
-		sub.push(tlist[n] + "/" + '#');
+		sub.push(tlist[n]);
     }
     mqtt_setup("pista-TABLE", sub, handlerfunc, errorfunc);
     mqtt_connect();

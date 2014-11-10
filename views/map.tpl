@@ -90,7 +90,8 @@ function handlerfunc(topic, payload) {
     		load_map(config.apikey);
 
 		for (var n = 0; n < tlist.length; n++) {
-			sub.push(tlist[n] + "/" + '#');
+			// sub.push(tlist[n] + "/" + '#');
+			sub.push(tlist[n]);
 		}
 		mqtt_setup("pista-MAP", sub, handlerfunc, errorfunc);
 		mqtt_connect();

@@ -46,7 +46,7 @@ plmn = True
 #                                   ---------------           -------
 # Must not end with a slash
 
-watcher = "{0}/././_look"
+watcher = "_owntracks/_look/{0}"
 
 # If the `redis' feature is True, o2s will update a number of keys
 # in Redis for the Web interface
@@ -115,10 +115,10 @@ base_topics = [ 'owntracks/gw', 'owntracks/jane']
 # If this is not defined (i.e. None) those pages will be empty. The same rules
 # as for `watcher' apply here.
 
-# FIXME: 	_owntracks/_map/<fulltopic>
-# FIXME: 	_owntracks/_map/owntracks/echle/BB/status
+# _owntracks/_map/<fulltopic>
+# _owntracks/_map/owntracks/echle/BB/status
 
-maptopic = "{0}/././_map"
+maptopic = "_owntracks/_map/{0}"
 
 
 # If the `geofences' feature is enabled and alert_topic is not None, it is an
@@ -277,13 +277,13 @@ apiKey = None
 
 ; This is the MQTT topic the Console subscribes to. (See `watcher' above)
 
-console_topic = "owntracks/+/+/././_look/#"
+console_topic = "_owntracks/_look/#"
 
 ; This is the MQTT topic the Map and Table subscribes to. It *must*
 ; correspond to `maptopic' as configured for o2s, and it must not
 ; end with a slash.
 
-maptopic = "owntracks/+/+/././_map"
+maptopic = "_owntracks/_map/+/+/+"
 
 
 # TABLE:
