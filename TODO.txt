@@ -1,9 +1,4 @@
 
-TODO / need help
-
-Redis:
-	catch not-running!
-
 Utilities:
 	populate user , Acl for pista
 
@@ -63,7 +58,6 @@ o2s:
 		track tid		-> track tid & write JSON to file (persist.py)
 		untrack tid
 
-	merge in o2db (fornax)
 	allow remapping of topic to TID
 		topic_tidmap = {
 			'/jpm/5s' : 'JP',
