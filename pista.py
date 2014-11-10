@@ -634,27 +634,29 @@ def onevehicle(tid):
 @auth_basic(check_auth)
 def flotbatt(voltage):
 
+    ''' Find all user's devices and add vbatt levels into list
+        for HW page '''
+
     current_user = request.auth[0]
     usertids = getusertids(current_user)
 
     battlevels = []
 
-    ''' FIXME
-    # Find all devices in Redis and add their vbatt into a list
-
-    for device in redis.keys("t:*"):
-        data = redis.hgetall(device)
-
-        tid = data.get('tid')
-        if tid not in usertids:
-            continue
-        vbatt = data.get('vbatt')
-
-        if tid is not None and vbatt is not None:
-            vbatt = float(vbatt)
-
-            battlevels.append( [tid, vbatt] )
-    '''
+    try:
+        query = (Inventory
+                .select(Inventory)
+                .where(
+                    (Inventory.tid << usertids)
+                )
+            )
+        for q in query.naive():
+            try:
+                battlevels.append( [q.tid, float(q.vbatt)] )
+            except:
+                pass
+    except Exception, e:
+        log.warn("User {0} failed Inventory query on flotbatt: {1}".format(current_user, str(e)))
+        pass
 
     flot = {
         'label' : 'Batt',
