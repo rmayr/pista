@@ -333,6 +333,14 @@ http:/..../index
   the MQTT parameters must be those of the Websocket-enabled MQTT broker, and please
   note: *the Websocket connection is as seen from your Web browser!*.
 
+* Publish a test location message to your broker, and verify that the `location` and `geo`
+  database tables are being populated. Simultaneously, you should see an entry on _Table_,
+  on _Map_, and on _Status_. (See `tools/test-pub.sh`.)
+
+```bash
+mosquitto_pub -t owntracks/gw/jjolie -m '{"cog":-1,"batt":"79","lon":"2.295134","acc":"10","vel":0,"vac":3,"lat":"48.858334","t":"t","tst":"1415719099","alt":171,"_type":"location","tid":"jj"}'
+```
+
 ### Migration from `m2s`
 
 ### Reverse-Geo lookups
