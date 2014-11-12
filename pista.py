@@ -47,8 +47,6 @@ def notauth(reason):
 
 def check_auth(username, password):
 
-    # FIXME: use Params to connect to different broker for this user? No, not possible
-
     return auth.check(username, password, apns_token=None)
 
 def track_length(track):
@@ -93,7 +91,6 @@ def utc_to_localtime(dt, tzname='UTC'):
     utc = pytz.utc
     local_zone = pytz.timezone(tzname)
 
-    # dt1 = datetime.strptime(s, "%Y-%m-%d %H:%M:%S")
     utc_time = utc.localize(dt)
     local_time = utc_time.astimezone(local_zone)
 
@@ -115,23 +112,16 @@ def getDBdata(usertid, from_date, to_date, spacing, tzname='UTC'):
     from_date = utc_time(from_date, tzname)
     to_date = utc_time(to_date, tzname)
 
-    print "FROM=%s, TO=%s" % (from_date, to_date)
+    log.debug("getDBdata: FROM={0}, TO={1}".format(from_date, to_date))
 
     dbconn()
 
 # select tst, lat, lon, l.ghash, addr from location l left join geo g on l.ghash = g.ghash where tid = 'B2';
 
-    #query = Location.select().join(Geo, JOIN_LEFT_OUTER, on=Geo.ghash).where(
-    #            (Location.username == username) &
-    #            (Location.device == device) &
-    #            (Location.tst.between(from_date, to_date))
-    #            )
     query = (Location
                 .select(Location, Geo.addr.alias('addr'))
                 .join(Geo, JOIN_LEFT_OUTER, on=(Location.ghash == Geo.ghash)).
                 where(
-                    # (Location.username == username) &
-                    # (Location.device == device) &
                     (Location.tid == usertid) &
                     (Location.tst.between(from_date, to_date))
                 )
@@ -170,8 +160,6 @@ def getDBdata(usertid, from_date, to_date, spacing, tzname='UTC'):
 def getDBwaypoints(usertid, lat_min, lat_max, lon_min, lon_max):
 
     waypoints = []
-
-    # FIXME: this needs authorization
 
     lat_min = float(lat_min)
     lat_max = float(lat_max)
@@ -219,8 +207,8 @@ def getusertids(username):
         u = User.get(User.username == username)
         superuser = u.superuser
     except User.DoesNotExist:
-        # log.debug("User {0} does not exist".format(username))
-        pass
+        log.debug("User {0} does not exist".format(username))
+        return []
     except Exception, e:
         raise
 
@@ -527,6 +515,7 @@ def get_download():
     return s.getvalue()
 
 @app.route('/api/getGeoJSON', method='POST')
+@auth_basic(check_auth)
 def get_geoJSON():
     data = json.load(bottle.request.body)
 
@@ -537,9 +526,6 @@ def get_geoJSON():
     to_date = data.get('todate')
     spacing = int(data.get('spacing', POINT_KM))
     tzname = data.get('tzname', 'UTC')
-
-    from_date = normalize_date(from_date)
-    to_date   = normalize_date(to_date)
 
     track = getDBdata(usertid, from_date, to_date, spacing, tzname)
 
