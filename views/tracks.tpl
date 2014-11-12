@@ -8,6 +8,7 @@
 	<script src="js/bootstrap-datepicker.js" type="text/javascript"></script>
 
 
+	<script src="track/jstz.min.js" type="text/javascript"></script>
 	<script src="config.js" type="text/javascript"></script>
 	<script src='map/mapbox.js' type="text/javascript"></script>
 	<link href='map/mapbox.css' rel='stylesheet' />
@@ -67,6 +68,8 @@
 
 	load_map(config.apikey);
 
+	var tz = jstz.determine();
+	var tzname = tz.name();
 
 	var $select = $('#usertid');
                 $.ajax({
@@ -155,6 +158,7 @@
 			fromdate: $('#fromdate').val(),
 			todate: $('#todate').val(),
 			spacing: $('#spacing').val(),
+			tzname: tzname,
 		};
 
 		// console.log(JSON.stringify(params));
@@ -234,6 +238,7 @@
 			fromdate: $('#fromdate').val(),
 			todate: $('#todate').val(),
 			format: format,
+			tzname: tzname,
 		};
 
 		$.fileDownload('api/download', {

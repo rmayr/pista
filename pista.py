@@ -73,24 +73,23 @@ def normalize_date(d):
 
     return d
 
-def utc_time(s):
+def utc_time(s, tzname='UTC'):
     ''' Convert time string 's' which is in "local time" to UTC
         and return that as a string.
-        FIXME: This needs to be ripped out! TZ info *must* come from Web browser.
         '''
 
     utc = pytz.utc
-    local_zone = pytz.timezone(cf.timezone)
+    local_zone = pytz.timezone(tzname)
 
     dt1 = datetime.strptime(s, "%Y-%m-%d %H:%M:%S")
     local_time = local_zone.localize(dt1)
     utc_time = local_time.astimezone(utc)
 
     new_s = utc_time.strftime("%Y-%m-%d %H:%M:%S")
-    log.debug("utc_time: TZ={0}: {1} => {2}".format(cf.timezone, s, new_s))
+    log.debug("utc_time: TZ={0}: {1} => {2}".format(tzname, s, new_s))
     return new_s
 
-def getDBdata(usertid, from_date, to_date, spacing):
+def getDBdata(usertid, from_date, to_date, spacing, tzname='UTC'):
 
     track = []
 
@@ -100,8 +99,8 @@ def getDBdata(usertid, from_date, to_date, spacing):
     from_date = "%s 00:00:00" % from_date
     to_date = "%s 23:59:59" % to_date
 
-    from_date = utc_time(from_date)
-    to_date = utc_time(to_date)
+    from_date = utc_time(from_date, tzname)
+    to_date = utc_time(to_date, tzname)
 
     print "FROM=%s, TO=%s" % (from_date, to_date)
 
@@ -408,6 +407,7 @@ def get_download():
     from_date = request.params.get('fromdate')
     to_date = request.params.get('todate')
     fmt = request.params.get('format')
+    tzname = request.params.get('tzname')
 
     from_date = normalize_date(from_date)
     to_date   = normalize_date(to_date)
@@ -423,7 +423,7 @@ def get_download():
 
     trackname = 'owntracks-%s-%s-%s' % (usertid, from_date, to_date)
 
-    track = getDBdata(usertid, from_date, to_date, None)
+    track = getDBdata(usertid, from_date, to_date, None, tzname)
 
     kilometers = track_length(track)
 
@@ -520,11 +520,12 @@ def get_geoJSON():
     from_date = data.get('fromdate')
     to_date = data.get('todate')
     spacing = int(data.get('spacing', POINT_KM))
+    tzname = data.get('tzname', 'UTC')
 
     from_date = normalize_date(from_date)
     to_date   = normalize_date(to_date)
 
-    track = getDBdata(usertid, from_date, to_date, spacing)
+    track = getDBdata(usertid, from_date, to_date, spacing, tzname)
 
     last_point = [None, None]
 
