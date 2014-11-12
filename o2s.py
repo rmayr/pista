@@ -155,6 +155,8 @@ def push_map(mosq, device, device_data):
         return
 
     try:
+        if device.startswith('/'):
+            device = device[1:]     # for Ben
         topic = maptopic.format(device)
         mosq.publish(topic, payload, qos=0, retain=True)
     except Exception, e:
