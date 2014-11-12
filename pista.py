@@ -67,6 +67,9 @@ def normalize_date(d):
 
     if d == 'NaN-NaN-NaN' or d == "" or d is None:
         d = time.strftime("%Y-%m-%d")
+
+    log.debug("Normalize date to {0}".format(d))
+
     return d
 
 def getDBdata(usertid, from_date, to_date, spacing):
