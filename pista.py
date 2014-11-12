@@ -75,7 +75,9 @@ def normalize_date(d):
 
 def utc_time(s):
     ''' Convert time string 's' which is in "local time" to UTC
-        and return that as a string '''
+        and return that as a string.
+        FIXME: This needs to be ripped out! TZ info *must* come from Web browser.
+        '''
 
     utc = pytz.utc
     local_zone = pytz.timezone(cf.timezone)
