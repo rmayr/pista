@@ -21,6 +21,7 @@ class Config(RawConfigParser):
         self.loglevel   = 'INFO'
         self.logformat  = '%(asctime)-15s %(levelname)-5s [%(module)s] %(message)s'
         self.logconfig  = 'logging.conf'
+        self.timezone   = 'UTC'
 
 
         # [database]

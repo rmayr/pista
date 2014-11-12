@@ -29,6 +29,7 @@ import paho.mqtt.client as paho
 from owntracks.dbschema import db, Geo, Location, Waypoint, User, Acl, Inventory, JOIN_LEFT_OUTER, fn, createalltables, dbconn
 from owntracks.auth import PistaAuth
 from owntracks import haversine
+import pytz
 
 log = logging.getLogger(__name__)
 
@@ -72,6 +73,21 @@ def normalize_date(d):
 
     return d
 
+def utc_time(s):
+    ''' Convert time string 's' which is in "local time" to UTC
+        and return that as a string '''
+
+    utc = pytz.utc
+    local_zone = pytz.timezone(cf.timezone)
+
+    dt1 = datetime.strptime(s, "%Y-%m-%d %H:%M:%S")
+    local_time = local_zone.localize(dt1)
+    utc_time = local_time.astimezone(utc)
+
+    new_s = utc_time.strftime("%Y-%m-%d %H:%M:%S")
+    log.debug("utc_time: TZ={0}: {1} => {2}".format(cf.timezone, s, new_s))
+    return new_s
+
 def getDBdata(usertid, from_date, to_date, spacing):
 
     track = []
@@ -79,7 +95,12 @@ def getDBdata(usertid, from_date, to_date, spacing):
     from_date = normalize_date(from_date)
     to_date   = normalize_date(to_date)
 
+    from_date = "%s 00:00:00" % from_date
     to_date = "%s 23:59:59" % to_date
+
+    from_date = utc_time(from_date)
+    to_date = utc_time(to_date)
+
     print "FROM=%s, TO=%s" % (from_date, to_date)
 
     dbconn()
