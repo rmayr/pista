@@ -69,8 +69,6 @@ def normalize_date(d):
     if d == 'NaN-NaN-NaN' or d == "" or d is None:
         d = time.strftime("%Y-%m-%d")
 
-    log.debug("Normalize date to {0}".format(d))
-
     return d
 
 def utc_time(s, tzname='UTC'):
@@ -88,6 +86,21 @@ def utc_time(s, tzname='UTC'):
     new_s = utc_time.strftime("%Y-%m-%d %H:%M:%S")
     log.debug("utc_time: TZ={0}: {1} => {2}".format(tzname, s, new_s))
     return new_s
+
+def utc_to_localtime(dt, tzname='UTC'):
+    ''' Convert datetime 'dt' which is in UTC to the timezone specified as 'tzname' '''
+
+    utc = pytz.utc
+    local_zone = pytz.timezone(tzname)
+
+    # dt1 = datetime.strptime(s, "%Y-%m-%d %H:%M:%S")
+    utc_time = utc.localize(dt)
+    local_time = utc_time.astimezone(local_zone)
+
+    new_s = local_time.strftime("%Y-%m-%d %H:%M:%S")
+    # log.debug("utc_time: TZ={0}: {1} => {2}".format(tzname, dt, new_s))
+    return new_s
+
 
 def getDBdata(usertid, from_date, to_date, spacing, tzname='UTC'):
 
@@ -407,7 +420,7 @@ def get_download():
     from_date = request.params.get('fromdate')
     to_date = request.params.get('todate')
     fmt = request.params.get('format')
-    tzname = request.params.get('tzname')
+    tzname = request.params.get('tzname', 'UTC')
 
     from_date = normalize_date(from_date)
     to_date   = normalize_date(to_date)
@@ -432,7 +445,8 @@ def get_download():
 
     if fmt == 'txt':
 
-        s.write("%-10s %-10s %s %s\n" % ("Latitude", "Longitude", "Timestamp (UTC)", "Location"))
+        info = "Timestamp({0})".format(tzname)
+        s.write("%-10s %-10s %s %s\n" % ("Latitude", "Longitude", info, "Location"))
 
         for tp in track:
 
@@ -441,7 +455,7 @@ def get_download():
             s.write(u'%-10s %-10s %s %-14s %s\n' % \
                 (tp.get('lat'),
                 tp.get('lon'),
-                tp.get('tst'),
+                utc_to_localtime(tp.get('tst'), tzname),
                 tp.get('addr', ""),
                 revgeo))
         s.write("\nTrip: %.2f kilometers" % (kilometers))
@@ -458,6 +472,8 @@ def get_download():
         for tp in track:
             line = ""
             for key in tp:
+                if key == 'tst':
+                    tp['tst'] = utc_to_localtime(tp.get('tst'), tzname)
                 line = line + u'"%s";' % tp[key]
 
             s.write(u'%s\n' % line)
