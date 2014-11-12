@@ -172,11 +172,28 @@ dbpasswd = 'secret'
 
 [revgeo]
 enabled = True
+
+# Specify the precision for the reverse-geo cache (geo database table).
+# Default is 5 which is approximately a 5x5 km area.
+#
+# http://www.movable-type.co.uk/scripts/geohash.html
+# Length	Cell width	Cell height
+#  1	≤ 5,000km	×	5,000km
+#  2	≤ 1,250km	×	625km
+#  3	≤ 156km	×	156km
+#  4	≤ 39.1km	×	19.5km
+#  5	≤ 4.89km	×	4.89km
+#  6	≤ 1.22km	×	0.61km
+#  7	≤ 153m	×	153m
+#  8	≤ 38.2m	×	19.1m
+
 ghashlen = 5  ; default=5
+
 # The region_bias is a ccTLD country code which attempts to bias
 # the type of data returned. (Compare "Toledo" in Spain with Toledo
 # somewhere in the US.) We set map language to the same value.
 # https://developers.google.com/maps/documentation/geocoding/?csw=1#RegionCodes
+
 region_bias = "de"
 
 
