@@ -30,6 +30,7 @@ class Config(RawConfigParser):
         self.dbpasswd   = None
         self.dbhost     = 'localhost'
         self.dbport     = 3306
+        self.dbpath     = '/tmp/owntracks.db'
 
 
         RawConfigParser.__init__(self)

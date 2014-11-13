@@ -164,11 +164,18 @@ alert_keys = None
 #               
 
 [database]
+
+# Which DB driver to use. One of `sqlite', `mysql', or `postgresql'
+#
+# mysql:      dbhost, dbname, dbuser, dbpasswd
+# postgresql: dbhost, dbname, dbuser, dbpasswd
+# sqlite:     dbpath
 dbengine = mysql
 dbhost = 'localhost'
 dbname = 'owntracks'
 dbuser = 'jane'
 dbpasswd = 'secret'
+dbpath = "/path/to/owntracks-sqlite.db"
 
 [revgeo]
 enabled = True

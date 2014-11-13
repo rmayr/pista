@@ -10,19 +10,26 @@ import logging
 log = logging.getLogger(__name__)
 
 db = None
-if cf.dbengine == 'postgresql':
-    # Use PostreSQL configuration
-    db = PostgresqlDatabase(cf.dbname,
-        user=cf.dbuser,
-        port=cf.dbport,
-        threadlocals=True)
+
+engines = {
+    'postgresql' : PostgresqlDatabase(cf.dbname,
+                        user=cf.dbuser,
+                        port=cf.dbport,
+                        threadlocals=True),
+    'mysql'      : MySQLDatabase(cf.dbname,
+                        user=cf.dbuser,
+                        passwd=cf.dbpasswd,
+                        host=cf.dbhost,
+                        port=cf.dbport,
+                        threadlocals=True),
+    'sqlite'     : SqliteDatabase(cf.dbpath,
+                        threadlocals=True),
+}
+
+if cf.dbengine in engines:
+    db = engines[cf.dbengine]
 else:
-    db = MySQLDatabase(cf.dbname,
-        user=cf.dbuser,
-        passwd=cf.dbpasswd,
-        host=cf.dbhost,
-        port=cf.dbport,
-        threadlocals=True)
+    raise ValueError("Configuration error: there is no database engine called `{0}'".format(cf.dbengine))
 
 
 class OwntracksModel(Model):
@@ -42,10 +49,6 @@ class Location(OwntracksModel):
     lat             = DecimalField(null=False, max_digits=10, decimal_places=7)
     lon             = DecimalField(null=False, max_digits=10, decimal_places=7)
     tst             = DateTimeField(default=datetime.datetime.now, index=True)
-    # acc             = DecimalField(null=True, max_digits=6, decimal_places=1)
-    # batt            = DecimalField(null=True, max_digits=3, decimal_places=1)
-    # waypoint        = TextField(null=True)  # desc in JSON, but desc is reserved SQL word
-    # event           = CharField(null=True)
     vel             = IntegerField(null=True)
     alt             = IntegerField(null=True)
     cog             = IntegerField(null=True)
