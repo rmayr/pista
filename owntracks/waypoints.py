@@ -124,6 +124,7 @@ class WP(object):
             log.warn("Cannot publish fence: {0}".format(str(e)))
 
         if self.watcher_topic is not None:
+            # NOTE `tstamp' is UTC
             message = "ALERT: {tid}: {event} {wpname} at {tstamp}. Distance: {meters}m".format(**payload)
             log.info(message)
             print message
