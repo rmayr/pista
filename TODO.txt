@@ -27,6 +27,7 @@ map:
 
 table:
 	DONE config.js
+	DONE Local timestamps:
 
 tracks:
 	DONE homogenize maps (mapbox, vs. OSM, etc.) with map/

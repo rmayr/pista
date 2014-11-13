@@ -15,6 +15,7 @@
     <script type="text/javascript" src="config.js"></script>
     <script type="text/javascript" src="js/mqttws31.js"></script>
     <script src="all/mqtt.js" type="text/javascript"></script>
+    <script src="js/moment.min.js" type="text/javascript"></script>
 
 <script type="text/javascript">
 function errorfunc(status, reason) {
@@ -59,6 +60,7 @@ function handlerfunc(topic, payload) {
 			trip:		d.trip,
 			odo:		odo,
 			imei:		d.imei ? d.imei : "",
+			tst:		d.tst,
 		};
 		upsert(o);
 	} catch (err) {
@@ -193,8 +195,34 @@ $(document).ready( function () {
 			name: 'tstamp',
 			title: "Time",
 			data: null,
-			render: 'tstamp',
                         "targets" : [7],
+			render : function(data, type, row) {
+
+				/* tst is seconds in UTC. Convert to local time
+				 * using moment(). Check if day differs from 'today'
+				 * and if so, mark the day specifically. This returns
+				 * a string. Either:
+				 *	HH:MM:SS
+				 * or
+				 * 	dd<HH:MM:SS
+				 */
+				var utcSeconds = data.tst * 1000;
+				var d = moment.utc(utcSeconds).local();
+
+				var daystring = d.format("DD");
+				var timestring = d.format("HH:mm:ss");
+
+				var output = "";
+				var now = moment();
+				if ((now.get('year') == d.get('year')) &&
+					(now.get('month') == d.get('month')) &&
+					(now.get('date') != d.get('date'))) {
+					output = daystring + "&lsaquo;";
+				}
+				output = output + timestring;
+
+				return output;
+			}
 		},
 		{
 			className: 'cc',

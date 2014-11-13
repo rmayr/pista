@@ -25,8 +25,12 @@ a:hover {
 th {
 }
 
-.topic, .status, .vehicle, .cog, .latlon, .tstamp, .cc, .t, .location {
+.topic, .status, .vehicle, .cog, .latlon, .cc, .t, .location {
 	text-align: left;
+}
+
+.tstamp {
+	text-align: right;
 }
 
 .trip {
