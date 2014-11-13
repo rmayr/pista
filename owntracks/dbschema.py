@@ -37,7 +37,7 @@ class Geo(OwntracksModel):
     addr            = CharField(null=False)
 
 class Location(OwntracksModel):
-    topic           = BlobField(null=False)
+    topic           = CharField(null=False)
     tid             = CharField(null=False, max_length=2)
     lat             = DecimalField(null=False, max_digits=10, decimal_places=7)
     lon             = DecimalField(null=False, max_digits=10, decimal_places=7)
@@ -59,16 +59,16 @@ class Location(OwntracksModel):
         indexes = (
             # Create non-unique on tid
             (('tid', ), False),
-            # (('topic', ), False),  # create index l_topic on location(topic (100));
+            (('topic', ), False),  # create index l_topic on location(topic (100));
         )
 
 class RAWdata(OwntracksModel):
-    topic           = BlobField(null=False)
+    topic           = CharField(null=False)
     tst             = DateTimeField(default=datetime.datetime.now, index=True)
     payload         = TextField(null=True)
 
 class Obd2(OwntracksModel):
-    topic           = BlobField(null=False)
+    topic           = CharField(null=False)
     tst             = DateTimeField(default=datetime.datetime.now, index=True)
     canid           = CharField(null=True) # CAN ID
     mode            = CharField(null=True)
@@ -77,13 +77,13 @@ class Obd2(OwntracksModel):
 
 # Optional: operators. Useful for Greenwich only
 class Operators(OwntracksModel):
-    topic           = BlobField(null=False)
+    topic           = CharField(null=False)
     tst             = DateTimeField(default=datetime.datetime.now, index=True)
     plmn            = CharField(null=True, max_length=8)
     extended        = CharField(null=True)
 
 class Waypoint(OwntracksModel):
-    topic           = BlobField(null=False)
+    topic           = CharField(null=False)
     username        = CharField(null=False)
     device          = CharField(null=False)
     tid             = CharField(null=False, max_length=2)
@@ -137,7 +137,7 @@ class Params(OwntracksModel):
 
 
 class Inventory(OwntracksModel):
-    topic           = BlobField(null=False)
+    topic           = CharField(null=False)
     imei            = CharField(null=False, max_length=15, unique=True)
     tid             = CharField(null=True, max_length=2)
     version         = CharField(null=True, max_length=10)
