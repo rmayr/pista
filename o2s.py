@@ -342,13 +342,10 @@ def on_start(mosq, userdata, msg):
 
     basetopic, suffix = tsplit(msg.topic)
 
-
     odo = 0
     try:
         inv = Inventory.get(Inventory.imei == imei)
         odo = int(inv.odo)
-        imei = inv.imei
-        version = inv.version
 
         try:
             inv.topic = basetopic
