@@ -351,8 +351,11 @@ def on_start(mosq, userdata, msg):
             inv.topic = basetopic
             inv.version = version
             inv.startup = startup_dt
-            if basetopic in devices:
-                inv.tid = devices[basetopic]['tid']
+            try:
+                if basetopic in devices:
+                    inv.tid = devices[basetopic]['tid']
+            except:
+                pass
             inv.tstamp = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
             inv.save()
         except Exception, e:
