@@ -440,10 +440,11 @@ def get_download():
 
             revgeo = tp.get('revgeo', "")
 
-            s.write(u'%-10s %-10s %s %-14s %s\n' % \
+            s.write(u'%-10s %-10s %s %-14s %6s %s\n' % \
                 (tp.get('lat'),
                 tp.get('lon'),
                 utc_to_localtime(tp.get('tst'), tzname),
+                tp.get('vel', ''),
                 tp.get('addr', ""),
                 revgeo))
         s.write("\nTrip: %.2f kilometers" % (kilometers))
