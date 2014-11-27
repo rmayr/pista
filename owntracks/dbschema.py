@@ -78,6 +78,11 @@ class Obd2(OwntracksModel):
     pid             = CharField(null=True) # Parameter ID
     payload         = TextField(null=True)
 
+class Fms(OwntracksModel):
+    topic           = CharField(null=False)
+    tst             = DateTimeField(default=datetime.datetime.now, index=True)
+    payload         = TextField(null=True)
+
 # Optional: operators. Useful for Greenwich only
 class Operators(OwntracksModel):
     topic           = CharField(null=False)
@@ -169,6 +174,7 @@ def createalltables():
     Inventory.create_table(fail_silently=silent)
     Params.create_table(fail_silently=silent)
     Obd2.create_table(fail_silently=silent)
+    Fms.create_table(fail_silently=silent)
 
     if cf.g('features', 'plmn', False) == True:
         try:

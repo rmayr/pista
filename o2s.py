@@ -14,7 +14,7 @@ import ssl
 import json
 import socket
 from owntracks import mobile_codes
-from owntracks.dbschema import db, Location, Waypoint, RAWdata, Operators, Inventory, Obd2, createalltables, dbconn
+from owntracks.dbschema import db, Location, Waypoint, RAWdata, Operators, Inventory, Obd2, Fms, createalltables, dbconn
 import io
 import csv
 import imp
@@ -84,6 +84,7 @@ def on_connect(mosq, userdata, rc):
     for t in base_topics:
         mqttc.subscribe("%s/+" % t, 0)
         mqttc.subscribe("%s/+/obd2/#" % t, 0)
+        mqttc.subscribe("%s/+/fms/#" % t, 0)
         mqttc.subscribe("%s/+/waypoints" % t, 0)
         if cf.g('features', 'plmn', False) == True:
             mqttc.subscribe("%s/+/operators" % t, 0)
@@ -318,6 +319,27 @@ def on_obd2(mosq, userdata, msg):
         ob.save()
     except Exception, e:
         log.error("Cannot store OBD2 for topic {0}: {1}".format(msg.topic, str(e)))
+
+def on_fms(mosq, userdata, msg):
+    if (skip_retained and msg.retain == 1) or len(msg.payload) == 0:
+        return
+
+    if not storage:
+        return
+
+    basetopic, suffix = tsplit(msg.topic)
+
+    log.debug("_fms: {0} {1}".format(msg.topic, msg.payload))
+    try:
+        data = {
+            'topic'  : msg.topic,
+            'tst'    : time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(int(time.time()))),
+            'payload' : msg.payload,
+        }
+        fm = Fms(**data)
+        fm.save()
+    except Exception, e:
+        log.error("Cannot store FMS for topic {0}: {1}".format(msg.topic, str(e)))
 
 
 def on_start(mosq, userdata, msg):
@@ -880,6 +902,7 @@ for t in base_topics:
     mqttc.message_callback_add("{0}/+/alarm".format(t), on_alarm)
     mqttc.message_callback_add("{0}/+/start".format(t), on_start)
     mqttc.message_callback_add("{0}/+/obd2/#".format(t), on_obd2)
+    mqttc.message_callback_add("{0}/+/fms/#".format(t), on_fms)
 
     if cf.o2smonitor:
         mqttc.message_callback_add(cf.o2smonitor + "/+", on_tell)
