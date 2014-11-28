@@ -39,6 +39,15 @@ ALTER TABLE location ADD ghash VARCHAR(6);
 ALTER TABLE location ADD cc VARCHAR(2);
 ALTER TABLE location ADD alt INTEGER;
 
+FIXME: add ghash (insert '1' into geo and update location set ghash = '1' where ghash is NULL)
+FIXME: drop table geo
+
+UPDATE location SET vel = 0 WHERE vel IS NULL;
+UPDATE location SET cog = 0 WHERE cog IS NULL;
+UPDATE location SET trip = 0 WHERE trip IS NULL;
+UPDATE location SET dist = 0 WHERE dist IS NULL;
+UPDATE location SET alt = 0 WHERE alt IS NULL;
+
 
 ALTER TABLE waypoint ADD tid VARCHAR(2);
 
