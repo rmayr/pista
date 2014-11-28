@@ -9,6 +9,7 @@ import datetime
 import owntracks
 from owntracks import cf
 from owntracks.revgeo import RevGeo
+from owntracks.can2human import can2human
 import paho.mqtt.client as paho
 import ssl
 import json
@@ -306,6 +307,7 @@ def on_obd2(mosq, userdata, msg):
         pid = args[3]
 
     log.debug("_obd2: {0} {1}".format(msg.topic, msg.payload))
+    watcher(mosq, msg.topic, msg.payload)
     try:
         data = {
             'topic'  : msg.topic,
@@ -330,6 +332,7 @@ def on_fms(mosq, userdata, msg):
     basetopic, suffix = tsplit(msg.topic)
 
     log.debug("_fms: {0} {1}".format(msg.topic, msg.payload))
+    watcher(mosq, msg.topic, msg.payload)
     try:
         data = {
             'topic'  : msg.topic,
@@ -551,10 +554,18 @@ def watcher(mosq, topic, data):
     fmt = u"%-14s %-32s %s"
 
     if type(data) is not dict:
-        s = fmt % (tstamp, topic, data)
-        bb = bytearray(s.encode('utf-8'))
-        mosq.publish(wt, bb, qos=0, retain=False)
-        return
+	human = can2human(str(topic), str(data))
+
+	if human != None:
+		s = fmt % (tstamp, topic, human)
+		bb = bytearray(s.encode('utf-8'))
+		mosq.publish(wt, bb, qos=0, retain=False)
+		return
+	else:
+		s = fmt % (tstamp, topic, data)
+		bb = bytearray(s.encode('utf-8'))
+		mosq.publish(wt, bb, qos=0, retain=False)
+		return
 
     time_str = None
 
