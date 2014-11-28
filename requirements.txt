@@ -1,3 +1,4 @@
+# apt-get install python-dev
 paho-mqtt
 MySQL-python
 peewee
