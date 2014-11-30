@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+__author__    = 'Jan-Piet Mens <jpmens()gmail.com>'
+__copyright__ = 'Copyright 2014 Jan-Piet Mens'
+__license__   = """Eclipse Public License - v 1.0 (http://www.eclipse.org/legal/epl-v10.html)"""
+
 from peewee import *
 from owntracks import cf
 import datetime
