@@ -11,7 +11,7 @@ import re
 import os
 import sys
 
-import dtc
+from owntracks.dtc import dtcString
 
 def obd22human(splits, payload):
 	human = None
