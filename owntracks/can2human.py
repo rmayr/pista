@@ -517,17 +517,36 @@ def obd22human(splits, payload):
 
 		elif splits[1] == "03":
 			dtcs = int(payload[0:2], 16)
+			human = None
 			for dtcnum in range(0, dtcs):
-				human = "DTC: %s" % (dtcString(payload[2 + dtcnum * 4:2 + dtcnum * 4 + 4]))
+				if human == None:
+					human = "DTCs (%d):" % (dtcs)
+				else:
+					human += "," 
+				human += " %s" % (dtcString(payload[2 + dtcnum * 4:2 + dtcnum * 4 + 4]))
 
 		elif splits[1] == "09":
-			if len(splits) >= 7:
-				if splits[2] == "02":
+			if len(splits) >= 3:
+				if splits[2] == "00":
+					human = "PIDs supported bitmap: TODO %s" % (payload)
+
+				elif splits[2] == "01":
+					human = "VIN Message Count in PID 02: %d" % (val)
+
+				elif splits[2] == "02":
 					name = payload.decode("hex")
 					human = "VIN: %s" % name
+
+				elif splits[2] == "03":
+					human = "Calibration ID message count in PID 04: %d" % (val)
+
 				elif splits[2] == "04":
 					name = payload.decode("hex")
 					human = "Calibration ID: %s" % name
+
+				elif splits[2] == "05":
+					human = "Calibration verification numbers (CVN) message count in PID 06: %d" % (val)
+
 				elif splits[2] == "06":
 					human = "CVN: %s" % payload
 
