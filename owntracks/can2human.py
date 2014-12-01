@@ -17,8 +17,8 @@ def obd22human(splits, payload):
 	human = None
 	if len(splits) >= 2:
 		if splits[1] == "01" or splits[1] == "02":
+			val = int(payload, 16)
 			if len(splits) >= 3:
-				val = int(payload, 16)
 				if splits[2] == "00":
 					human = "PIDs supported bitmap: TODO %s" % (payload)
 	
@@ -527,6 +527,7 @@ def obd22human(splits, payload):
 
 		elif splits[1] == "09":
 			if len(splits) >= 3:
+				val = int(payload, 16)
 				if splits[2] == "00":
 					human = "PIDs supported bitmap: TODO %s" % (payload)
 
