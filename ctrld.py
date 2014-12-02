@@ -45,9 +45,13 @@ def conf():
 
     username = request.forms.get('username')
     password = request.forms.get('password')
+    clientid = request.forms.get('clientid')
     apns_token = request.forms.get('token')
 
     authorized = auth.check(username, password, apns_token)
+
+    if clientid is None or len(clientid) < 1:
+        clientid = ''
 
     log.info("CONF: (username=%s, token=%s) authorized=%s" % (username, apns_token, authorized))
 
@@ -124,7 +128,7 @@ def conf():
             'port'          : mqttport,
             'tls'           : mqtt_tls,
             'auth'          : mqtt_auth,
-            'clientid'      : 'iosCTRL-' + username,
+            'clientid'      : 'iosCTRL-' + clientid + '-' + username,
             'trackurl'      : trackurl,
             'username'      : mqtt_username,  # Return to client for MQTT connection
             'password'      : mqtt_password,  # Return to client for MQTT connection
