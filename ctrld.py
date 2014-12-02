@@ -99,6 +99,8 @@ def conf():
     # those.
     try:
         for sub in Acl.select().where(Acl.username == username):
+            if sub.startswith('_'):    # FIXME this is temporary
+                continue
             new_sub = sub.topic.replace('%u', username)
             if '%c' not in new_sub:
                 # Ensure that CTRL get's correct topics. In particular, not more
