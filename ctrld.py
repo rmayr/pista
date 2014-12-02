@@ -121,7 +121,7 @@ def conf():
     except Exception, e:
         log.error("Can't query ACL for topic list: %s" % (str(e)))
 
-    mqtt_id = 'iosCTRL-' + clientid + '-' + username
+    mqtt_id = 'iosCTRL-' + username + '-' + clientid
     mqtt_id = mqtt_id[0:22]
 
     resp = {
