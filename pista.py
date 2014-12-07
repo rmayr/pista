@@ -731,3 +731,4 @@ if __name__ == '__main__':
         host=pistaconf.get('listen_host', "127.0.0.1"),
         port=pistaconf.get('listen_port', 8080),
         reloader=True)
+    log.info("Bottle returns")
