@@ -326,6 +326,51 @@ http:/..../index
 
 #### uWSGI
 
+There are about a trillion and a half ways of installing a uWSGI application behind an
+Apache or NGINX Web server. These are just a few notes on using _pista_ behind an Apache
+reverse proxy.
+
+##### Apache location
+
+Configure a location and proxy that to the loopback address, port 3031 (or any other free
+TCP port number) on your Apache server.
+
+```
+<Location /pista>
+   ProxyPass http://127.0.0.1:3031
+</Location>
+```
+
+Download and install uWSGI as [per instructions](http://uwsgi-docs.readthedocs.org/en/latest/Download.html). In the simplest of cases download the tarball of a stable version, extract and run `make`; this should create the `uwsgi` binary.
+
+Create a configuration file for _pista_ under uWSGI, called `pista.ini`:
+
+
+```ini
+[uwsgi]
+base = /Users/jpm/Auto/projects/on-github/owntracks/pista
+chdir = %(base)
+
+socket = 127.0.0.1:3031
+protocol = http
+processes = 1
+
+file  = pista.py
+env = O2SCONFIG=/Users/jpm/Auto/projects/on-github/owntracks/pista/o2s.conf
+
+# uid = www-data
+# gid = www-data
+logto = /tmp/uwsgi-%n.log
+
+plugins = python
+py-autoreload = 1
+```
+
+Launch that by running `uwsgi pista.ini`. This will launch the application and have it listen
+to HTTP requests on the configured address/port number.
+
+Use your Web browser to access your Apache server at the `/pista` location you defined above. (`http://my-apache.example.org/pista/index`.
+
 ### Testing
 
 * From within the browser, obtain `http://.../config.js` and verify its content. This
