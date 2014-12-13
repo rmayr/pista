@@ -78,7 +78,7 @@ function mapit(topic, d, date)
 
 	user.data   = d;
 
-	console.log(user.name + ": " + user.status);
+	// console.log(user.name + ": " + user.status);
 		
 	if (user.marker) {
 		f = friend_move(user, d.lat, d.lon);
