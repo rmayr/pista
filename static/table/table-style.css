@@ -55,16 +55,6 @@ td.cc, td.trip, td.t {
 	font-size: 80%;
 }
 
-td.car {
-	font-weight: bold;
-	width: 10px;
-}
-
 td.vel, td.alt {
 	text-align: right;
-}
-
-.hihi {
-	background: yellow;
-	color: red;
 }
