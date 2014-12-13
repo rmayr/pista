@@ -248,6 +248,10 @@ def getusertids(username):
 def enable_cors():
     response.headers['Access-Control-Allow-Origin'] = '*'
 
+@app.route('/')
+def root_page():
+    return template('index', pistapages=cf.g('pista', 'pages'))
+
 @app.route('/index')
 @auth_basic(check_auth)
 def index():
