@@ -274,6 +274,7 @@ def on_alarm(mosq, userdata, msg):
     if item is None or type(item) != dict:
         return
 
+    item['cc']   = '??'
     item['addr'] = 'unknown location'
     try:
         g = geo.rev(item.get('lat'), item.get('lon'), api='google')
@@ -690,8 +691,8 @@ def on_message(mosq, userdata, msg):
         return
 
     item['ghash'] = None
-    item['cc']    = None
-    item['addr']  = None
+    item['cc']    = '??'
+    item['addr']  = 'unknown location'
     event_desc = "(%s, %s)" % (lat, lon)
     g = geo.rev(lat, lon, api='google')
     if g is not None:
