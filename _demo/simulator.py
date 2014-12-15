@@ -19,6 +19,14 @@ TIDS = {
     'dM' : _dM(),
 }
 
+info = {
+    'dK' : "your driver: Janine",
+    'dB' : "su conductor: Jose-Maria",
+    'dH' : "Ihr Fahrer: Hans Werner",
+    'dM' : "votre conductrice: Anne Marie",
+    'M1' : "next tour: June",
+}
+
 clientid = 'demo-simulator-%s' % os.getpid()
 mqttc = paho.Client(clientid, clean_session=True, userdata=None, protocol=3)
 mqttc.username_pw_set(os.getenv('SIMUSERNAME', ''), os.getenv('SIMPASSWORD', ''))
@@ -27,6 +35,7 @@ mqttc.connect("localhost", 1883, 60)
 mqttc.loop_start()
 
 def coll2json(loc, alarm=None):
+
     data = {
         'tst' : int(time.time()),
         'tid' : loc.tid,
@@ -41,8 +50,10 @@ def coll2json(loc, alarm=None):
         'vel'  : loc.vel,
     }
 
-    if alarm:
+    if alarm and loc.tid == 'dB':
         data['t'] = 'a'
+        data['event'] = 'leave'
+        data['desc'] = 'airport'
 
     return json.dumps(data)
 
@@ -83,6 +94,7 @@ def startup(tid, status):
         'voltage/batt'  : '4.%s' % random.randint(2, 6),
         'voltage/ext'   : '13.%s' % random.randint(2, 6),
         'operators'     : '26202 +26201 +26203 +26207',
+        'info'          : info[tid],
     }
 
     for o in objs:
