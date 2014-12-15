@@ -22,8 +22,8 @@ TIDS = {
 info = {
     'dK' : "your driver: Janine",
     'dB' : "su conductor: Jose-Maria",
-    'dH' : "Ihr Fahrer: Hans Werner",
-    'dM' : "votre conductrice: Anne Marie",
+    'dM' : "Ihr Fahrer: Hans Werner",
+    'dH' : "votre conductrice: Anne Marie",
     'M1' : "next tour: June",
 }
 
