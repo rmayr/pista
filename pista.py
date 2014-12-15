@@ -31,6 +31,7 @@ from owntracks.dbschema import db, Geo, Location, Waypoint, User, Acl, Inventory
 from owntracks.auth import PistaAuth
 from owntracks import haversine
 import pytz
+import httpagentparser
 
 log = logging.getLogger(__name__)
 
@@ -156,6 +157,7 @@ def getDBdata(usertid, from_date, to_date, spacing, tzname='UTC'):
         except:
             pass
 
+    log.info("getDBdata: FROM={0}, TO={1} returns {2} points for {3}".format(from_date, to_date, len(track), usertid))
     return track
 
 def getDBwaypoints(usertid, lat_min, lat_max, lon_min, lon_max):
@@ -407,6 +409,20 @@ def get_download():
         'gpx':  'application/gpx+xml',
     }
 
+    EOL = "\n"
+    os = 'unknown'
+    user_agent = request.environ.get('HTTP_USER_AGENT')
+
+    try:
+        os = httpagentparser.detect(user_agent)['os']['name'].upper()
+    except:
+        pass
+
+    if os == 'WINDOWS':
+        EOL = "\r\n"
+
+    log.debug("client OS = {0} ({1})".format(os, user_agent))
+
     current_user = request.auth[0]
 
     usertid = request.params.get('usertid')
@@ -439,20 +455,21 @@ def get_download():
     if fmt == 'txt':
 
         info = "Timestamp({0})".format(tzname)
-        s.write("%-10s %-10s %s %s\n" % ("Latitude", "Longitude", info, "Location"))
+        s.write("%-10s %-10s %s %s%s" % ("Latitude", "Longitude", info, "Location", EOL))
 
         for tp in track:
 
             revgeo = tp.get('revgeo', "")
 
-            s.write(u'%-10s %-10s %s %-14s %6s %s\n' % \
+            s.write(u'%-10s %-10s %s %-14s %6s %s%s' % \
                 (tp.get('lat'),
                 tp.get('lon'),
                 utc_to_localtime(tp.get('tst'), tzname),
                 tp.get('vel', ''),
                 tp.get('addr', ""),
-                revgeo))
-        s.write("\nTrip: %.2f kilometers" % (kilometers))
+                revgeo,
+                EOL))
+        s.write("%sTrip: %.2f kilometers%s" % (EOL, kilometers, EOL))
 
     if fmt == 'csv':
 
@@ -461,7 +478,7 @@ def get_download():
         for key in tp.keys():
             title = title + u'"%s";' % key
 
-        s.write("%s\n" % title[0:-1])  # chomp last separator
+        s.write("%s%s" % (title[0:-1], EOL))  # chomp last separator
 
         for tp in track:
             line = ""
@@ -470,7 +487,7 @@ def get_download():
                     tp['tst'] = utc_to_localtime(tp.get('tst'), tzname)
                 line = line + u'"%s";' % tp[key]
 
-            s.write(u'%s\n' % line)
+            s.write(u'%s%s' % (line, EOL))
 
     if fmt == 'gpx':
         root = ET.Element('gpx')
@@ -511,8 +528,7 @@ def get_download():
     if fmt in mimetype:
         content_type = mimetype[fmt]
 
-    s.seek(0, os.SEEK_END)
-    octets = s.tell()
+    octets = len(s.getvalue())
 
     response.content_type = content_type
     response.headers['Content-Disposition'] = 'attachment; filename="%s.%s"' % (trackname, fmt)
