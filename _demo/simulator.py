@@ -62,6 +62,9 @@ def myfunc(tid, loclist):
     run = 1
     while run:
         try:
+            # Periodically force M1 to be offline
+            mqttc.publish('owntracks/demo/M1/status', '0', qos=0, retain=True)
+
             # Forwards ....
             for l in loclist:
                 payload = coll2json(l)
