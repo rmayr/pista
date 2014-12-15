@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from data import *
-from data import _dM
+from data import _dM, _dK, _dB, _dH
 import paho.mqtt.client as paho
 import time
 import json
@@ -10,10 +10,12 @@ import sys
 from threading import Thread
 import random
 
+PAUSE = 15  # seconds. Fractions (e.g. 0.3) OK
+
 TIDS = {
-#    'dK' : _dK(),
-#    'dB' : _dB(),
-#    'dH' : _dH(),
+    'dK' : _dK(),
+    'dB' : _dB(),
+    'dH' : _dH(),
     'dM' : _dM(),
 }
 
@@ -43,7 +45,6 @@ def coll2json(loc):
 
 def myfunc(tid, loclist):
     print "Here is ", tid, " with ", len(loclist)
-    pause = 0.3
     run = 1
     while run:
         try:
@@ -51,24 +52,24 @@ def myfunc(tid, loclist):
             for l in loclist:
                 payload = coll2json(l)
                 mqttc.publish('owntracks/demo/%s' % tid, payload, qos=0, retain=True)
-                time.sleep(pause)
+                time.sleep(PAUSE)
 
             # ... and Reverse!
             for l in reversed(loclist):
                 payload = coll2json(l)
                 mqttc.publish('owntracks/demo/%s' % tid, payload, qos=0, retain=True)
-                time.sleep(pause)
+                time.sleep(PAUSE)
 
         except KeyboardInterrupt:
             sys.exit(0)
         run = 1
     
-def startup(tid):
+def startup(tid, status):
     imei = '1234567890123%s' % random.randint(11, 20)
     objs = {
-        'status'        : '1',
+        'status'        : status,
         'start'         : '%s 0.10.97 20141202T084939Z' % (imei),
-        'gpio/7'        : '1',
+        'gpio/7'        : 1,
         'voltage/batt'  : '4.%s' % random.randint(2, 6),
         'voltage/ext'   : '13.%s' % random.randint(2, 6),
         'operators'     : '26202 +26201 +26203 +26207',
@@ -80,8 +81,17 @@ def startup(tid):
 
         mqttc.publish(topic, payload, qos=0, retain=True)
 
+# Create an inactive vehicle
+
+startup('M1', 0)
+payload = coll2json(
+        Loc('M1', 45.603651, 14.190238, 285, 59, 257, 'l', 886, 26850)
+        )
+mqttc.publish('owntracks/demo/M1', payload, qos=0, retain=True)
+
+
 for tid in TIDS:
-    startup(tid)
+    startup(tid, 1)
     try:
         t = Thread(target=myfunc, args=(tid, TIDS[tid],))
         t.start()
