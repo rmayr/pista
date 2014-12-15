@@ -487,6 +487,7 @@ def get_download():
                     tp['tst'] = utc_to_localtime(tp.get('tst'), tzname)
                 line = line + u'"%s";' % tp[key]
 
+# FIXME: semicolon at eol
             s.write(u'%s%s' % (line, EOL))
 
     if fmt == 'gpx':
@@ -520,7 +521,9 @@ def get_download():
         for trackpoint in trackpoints:
             segment.append(trackpoint)
 
-        s.write(prettify(root))
+        root_string = prettify(root)
+        root_string = root_string.replace('\n', EOL)
+        s.write(root_string)
 
 
 
