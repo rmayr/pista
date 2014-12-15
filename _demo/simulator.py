@@ -21,7 +21,7 @@ TIDS = {
 
 clientid = 'demo-simulator-%s' % os.getpid()
 mqttc = paho.Client(clientid, clean_session=True, userdata=None, protocol=3)
-mqttc.username_pw_set('o2sagent', 'f000')
+mqttc.username_pw_set(os.getenv('SIMUSERNAME', ''), os.getenv('SIMPASSWORD', ''))
 mqttc.connect("localhost", 1883, 60)
 
 mqttc.loop_start()
