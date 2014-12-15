@@ -57,7 +57,7 @@ def coll2json(loc, alarm=None):
 
     return json.dumps(data)
 
-def myfunc(tid, loclist):
+def myfunc(tid, loclist, n=0):
     print "Here is ", tid, " with ", len(loclist)
     run = 1
     while run:
@@ -69,7 +69,7 @@ def myfunc(tid, loclist):
             for l in loclist:
                 payload = coll2json(l)
                 mqttc.publish('owntracks/demo/%s' % tid, payload, qos=0, retain=True)
-                time.sleep(PAUSE)
+                time.sleep(PAUSE + n)
 
             # ... and Reverse!
             alarm = 0
@@ -78,7 +78,7 @@ def myfunc(tid, loclist):
                 if alarm == 0:
                     alarm = 1
                 mqttc.publish('owntracks/demo/%s' % tid, payload, qos=0, retain=True)
-                time.sleep(PAUSE)
+                time.sleep(PAUSE + n)
 
         except KeyboardInterrupt:
             sys.exit(0)
@@ -115,11 +115,13 @@ payload = coll2json(
 mqttc.publish('owntracks/demo/M1', payload, qos=0, retain=True)
 
 
+n = 0
 for tid in TIDS:
     startup(tid, 1)
     try:
-        t = Thread(target=myfunc, args=(tid, TIDS[tid],))
+        t = Thread(target=myfunc, args=(tid, TIDS[tid], n, ))
         t.start()
     except KeyboardInterrupt:
         sys.exit(0)
+    n = n + 2
 
