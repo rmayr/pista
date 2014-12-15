@@ -66,10 +66,14 @@ def myfunc(tid, loclist):
     
 def startup(tid, status):
     imei = '1234567890123%s' % random.randint(11, 20)
+    gpio = 1
+    if status != 1:
+        gpio = 0
+
     objs = {
         'status'        : status,
         'start'         : '%s 0.10.97 20141202T084939Z' % (imei),
-        'gpio/7'        : 1,
+        'gpio/7'        : gpio,
         'voltage/batt'  : '4.%s' % random.randint(2, 6),
         'voltage/ext'   : '13.%s' % random.randint(2, 6),
         'operators'     : '26202 +26201 +26203 +26207',
@@ -85,7 +89,7 @@ def startup(tid, status):
 
 startup('M1', -1)
 payload = coll2json(
-        Loc('M1', 45.603651, 14.190238, 285, 59, 257, 'l', 886, 26850)
+        Loc('M1', 45.603651, 14.190238, 285, 19, 57, 'l', 886, 26850)
         )
 mqttc.publish('owntracks/demo/M1', payload, qos=0, retain=True)
 
