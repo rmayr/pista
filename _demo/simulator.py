@@ -83,7 +83,7 @@ def startup(tid, status):
 
 # Create an inactive vehicle
 
-startup('M1', 0)
+startup('M1', -1)
 payload = coll2json(
         Loc('M1', 45.603651, 14.190238, 285, 59, 257, 'l', 886, 26850)
         )
