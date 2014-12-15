@@ -26,7 +26,7 @@ mqttc.connect("localhost", 1883, 60)
 
 mqttc.loop_start()
 
-def coll2json(loc):
+def coll2json(loc, alarm=None):
     data = {
         'tst' : int(time.time()),
         'tid' : loc.tid,
@@ -40,6 +40,9 @@ def coll2json(loc):
         'alt'  : loc.alt,
         'vel'  : loc.vel,
     }
+
+    if alarm:
+        data['t'] = 'a'
 
     return json.dumps(data)
 
@@ -55,8 +58,11 @@ def myfunc(tid, loclist):
                 time.sleep(PAUSE)
 
             # ... and Reverse!
+            alarm = 0
             for l in reversed(loclist):
-                payload = coll2json(l)
+                payload = coll2json(l, alarm)
+                if alarm == 0:
+                    alarm = 1
                 mqttc.publish('owntracks/demo/%s' % tid, payload, qos=0, retain=True)
                 time.sleep(PAUSE)
 
