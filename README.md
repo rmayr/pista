@@ -337,7 +337,7 @@ TCP port number) on your Apache server.
 
 ```
 <Location /pista>
-   RedirectMatch /pista /pista/
+   RedirectMatch /pista$ /pista/
    ProxyPassReverse http://127.0.0.1:3031
 </Location>
 ```
