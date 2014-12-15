@@ -151,6 +151,8 @@ def getDBdata(usertid, from_date, to_date, spacing, tzname='UTC'):
                 'ghash' : l.ghash,
                 'cc'  : l.cc,
                 'addr' : l.addr,
+                'dist' : l.dist,
+                'trip' : l.trip,
             }
 
             track.append(tp)
@@ -487,7 +489,7 @@ def get_download():
                     tp['tst'] = utc_to_localtime(tp.get('tst'), tzname)
                 line = line + u'"%s";' % tp[key]
 
-# FIXME: semicolon at eol
+            line = line[0:-1]
             s.write(u'%s%s' % (line, EOL))
 
     if fmt == 'gpx':
