@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from data import *
-from data import _dM, _dK, _dB, _dH
+from data import _dM, _dK, _dB, _dH, _dN
 import paho.mqtt.client as paho
 import time
 import json
@@ -17,6 +17,7 @@ TIDS = {
     'dB' : _dB(),
     'dH' : _dH(),
     'dM' : _dM(),
+    'dN' : _dN()
 }
 
 info = {
@@ -24,6 +25,7 @@ info = {
     'dB' : "su conductor: Jose-Maria",
     'dM' : "Ihr Fahrer: Hans Werner",
     'dH' : "votre conductrice: Anne Marie",
+    'dN' : 'Germany-France',
     'M1' : "next tour: June",
 }
 
@@ -54,6 +56,11 @@ def coll2json(loc, alarm=None):
         data['t'] = 'a'
         data['event'] = 'leave'
         data['desc'] = 'airport'
+
+    status = 0
+    if loc.t == 'f' or loc.t == 'L':
+        status = -1
+    mqttc.publish('owntracks/demo/%s' % loc.tid, status, qos=0, retain=True)
 
     return json.dumps(data)
 
