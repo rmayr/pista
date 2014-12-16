@@ -90,18 +90,10 @@
     }
 
     function localstamp(tst) {
-        /* tst is seconds in UTC. Convert to local time
-         * using moment(). Check if day differs from 'today'
-         * and if so, mark the day specifically. This returns
-         * a string. Either:
-         *      HH:MM:SS
-         * or
-         *      dd<HH:MM:SS
-         */
+        /* tst is seconds in UTC. Convert to local time.  */
         var utcSeconds = tst * 1000;
         var d = moment.utc(utcSeconds).local();
 
-        var daystring = d.format("DD");
         var output = d.format("DD MMM YYYY HH:mm:ss");
 
         return output;
