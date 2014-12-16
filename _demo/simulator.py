@@ -84,8 +84,8 @@ def myfunc(tid, loclist, n=0):
             sys.exit(0)
         run = 1
     
-def startup(tid, status):
-    imei = '1234567890123%s' % random.randint(11, 20)
+def startup(tid, status, n=0):
+    imei = '1234567890123%d' % n
     gpio = 1
     if status != 1:
         gpio = 0
@@ -117,7 +117,7 @@ mqttc.publish('owntracks/demo/M1', payload, qos=0, retain=True)
 
 n = 0
 for tid in TIDS:
-    startup(tid, 1)
+    startup(tid, 1, n)
     try:
         t = Thread(target=myfunc, args=(tid, TIDS[tid], n, ))
         t.start()
