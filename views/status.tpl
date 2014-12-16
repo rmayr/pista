@@ -7,6 +7,7 @@
     <script src="all/mqtt.js" type="text/javascript"></script>
     <script src="map/mustache.js" type="text/javascript"></script>
     <script src="status/getpopup.js" type="text/javascript"></script>
+    <script src="js/moment.min.js" type="text/javascript"></script>
 
     <style>
 	.fixed-size-square {
@@ -88,6 +89,23 @@
     	console.log("STATUS: " + status + "; " + reason);
     }
 
+    function localstamp(tst) {
+        /* tst is seconds in UTC. Convert to local time
+         * using moment(). Check if day differs from 'today'
+         * and if so, mark the day specifically. This returns
+         * a string. Either:
+         *      HH:MM:SS
+         * or
+         *      dd<HH:MM:SS
+         */
+        var utcSeconds = tst * 1000;
+        var d = moment.utc(utcSeconds).local();
+
+        var daystring = d.format("DD");
+        var output = d.format("DD MMM YYYY HH:mm:ss");
+
+        return output;
+    }
 
     function handlerfunc(topic, payload) {
 	var matrix = $("#matrix");
@@ -131,6 +149,8 @@
 						},
 					});
 					*/
+
+					d.dstamp = localstamp(d.tst);
 
 					text = getPopupText(d);
 
