@@ -211,6 +211,7 @@ $(document).ready( function () {
 
 				var daystring = d.format("DD");
 				var timestring = d.format("HH:mm:ss");
+				var fulldate = d.format("DD MMM YYYY HH:mm:ss");
 
 				var output = "";
 				var now = moment();
@@ -221,7 +222,7 @@ $(document).ready( function () {
 				}
 				output = output + timestring;
 
-				return output;
+				return '<acronym title="' + fulldate + '">' + output + '</acronym>';
 			}
 		},
 		{
