@@ -10,6 +10,7 @@ ins = {
     'owntracks-HE-2014-11-09-2014-11-11.csv' : 'dH',
     'owntracks-MV-2014-10-23-2014-10-25.csv' : 'dM',
     'owntracks-PN-2014-12-15-2014-12-15.csv' : 'dN',
+    'owntracks-MV-2014-12-16-2014-12-16.csv' : 'dG'
 }
 
 t = string.Template("Loc('$tid', $lat, $lon, $alt, $vel, $cog, '$t', $dist, $trip),")

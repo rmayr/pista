@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from data import *
-from data import _dM, _dK, _dB, _dH, _dN
+from data import _dM, _dK, _dB, _dH, _dN, _dG
 import paho.mqtt.client as paho
 import time
 import json
@@ -17,7 +17,8 @@ TIDS = {
     'dB' : _dB(),
     'dH' : _dH(),
     'dM' : _dM(),
-    'dN' : _dN()
+    'dN' : _dN(),
+    'dG' : _dG(),
 }
 
 info = {
@@ -26,6 +27,7 @@ info = {
     'dM' : "Ihr Fahrer: Hans Werner",
     'dH' : "votre conductrice: Anne Marie",
     'dN' : 'Germany-France',
+    'dG' : 'ruta: norte',
     'M1' : "next tour: June",
 }
 
