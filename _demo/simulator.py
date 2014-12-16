@@ -110,7 +110,7 @@ def startup(tid, status):
 
 startup('M1', -1)
 payload = coll2json(
-        Loc('M1', 45.603651, 14.190238, 285, 19, 57, 'l', 886, 26850)
+        Loc('M1', 45.605092, 14.184552, 285, 19, 57, 'l', 886, 26850)
         )
 mqttc.publish('owntracks/demo/M1', payload, qos=0, retain=True)
 
