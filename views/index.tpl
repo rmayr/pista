@@ -34,9 +34,14 @@ connections will work.
 </ul>
 You'll be prompted for credentials as soon as you select one of the options.
 
+
 %if isdemo is True:
-	You are now on a demonstration site: the username is <tt>demo</tt> and the password is <tt>demo</tt>.
+	<p>You are now on a demonstration site: the username is <tt>demo</tt> and the password is <tt>demo</tt>.</p>
 %end
+
+<p>
+Visit us at <a href="http://owntracks.de">owntracks.de</a> for more information.
+</p>
 
 
 %end
