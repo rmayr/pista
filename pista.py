@@ -254,12 +254,12 @@ def enable_cors():
 
 @app.route('/')
 def root_page():
-    return template('index', pistapages=cf.g('pista', 'pages'))
+    return template('index', pistapages=cf.g('pista', 'pages'), isdemo=cf.g('pista', 'is_demo'))
 
 @app.route('/index')
 @auth_basic(check_auth)
 def index():
-    return template('index', pistapages=cf.g('pista', 'pages'))
+    return template('index', pistapages=cf.g('pista', 'pages'), isdemo=cf.g('pista', 'is_demo'))
 
 @app.route('/about')
 def page_about():

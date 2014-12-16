@@ -226,6 +226,10 @@ listen_port = 8080
 
 pages = ['about', 'map', 'table', 'tracks', 'console', 'status', 'hw' ]
 
+# Set to True if Demo site. You should not set this.
+
+is_demo = False
+
 # The following parameters are for the Websocket connections and
 # most of these are made available to Web apps via a GET request
 # to ../config.js.
