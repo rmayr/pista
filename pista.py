@@ -523,7 +523,7 @@ def get_download():
         date_style = xlwt.XFStyle()
         date_style.num_format_str = 'D-MMM-YY HH:MM:SS'
 
-        wb = xlwt.Workbook()
+        wb = xlwt.Workbook(encoding='utf-8')
         ws = wb.add_sheet('OwnTracks')
 
         coldesc = {
@@ -571,6 +571,10 @@ def get_download():
             ws.write(r, 10, tp.get('addr'))
 
             r = r + 1
+
+        r = r + 2
+        link_style = xlwt.easyxf('font: underline single')
+        ws.write(r, 0, xlwt.Formula('HYPERLINK("http://owntracks.de";"OwnTracks.de")'), link_style)
 
         wb.save(sio)
 
