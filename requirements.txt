@@ -7,3 +7,5 @@ python-dateutil
 bottle
 pytz
 httpagentparser
+
+xlsw
