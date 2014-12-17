@@ -557,6 +557,11 @@ def get_download():
             else:
                 ws.write(0, c, txt, style0)
 
+        trip_start = trip_end = 0
+        try:
+            trip_start = int(track[0]['trip'] / 1000)
+        except:
+            pass
         r = 1
         for tp in track:
             ws.write(r, 0, tp.get('tst'), date_style)
@@ -571,7 +576,17 @@ def get_download():
             ws.write(r, 9, tp.get('cc'), fixed_style)
             ws.write(r, 10, tp.get('addr'))
 
+            trip_end = int(tp.get('trip', 0) / 1000)
+
             r = r + 1
+
+        r = r + 1
+        ws.write(r, 0, "Haversine dist (km)")
+        ws.write(r, 1, kilometers)
+
+        r = r + 1
+        ws.write(r, 0, "Total trip (km)")
+        ws.write(r, 1, trip_end - trip_start)
 
         r = r + 2
         link_style = xlwt.easyxf('font: underline single')
