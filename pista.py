@@ -526,12 +526,35 @@ def get_download():
         wb = xlwt.Workbook()
         ws = wb.add_sheet('OwnTracks')
 
-        ws.col(0).width = 256 * 25          # tst (date)
-        ws.col(5).width = 256 * 3           # t
-        ws.col(9).width = 256 * 5           # cc
-        ws.col(10).width = 256 * 60         # addr
+        coldesc = {
+                      # Width, Heading,
+            'tst'   : [ 25,     "Timestamp" ],
+            'lat'   : [ 12,   "Latitude" ],
+            'lon'   : [ 12,   "Longitude" ],
+            'alt'   : [ None,   "Altitude (m)" ],
+            'vel'   : [ None,   "Velocity (km)" ],
+            't'     : [ 3,      "Trigger" ],
+            'cog'   : [ 7,   "Course" ],
+            'dist'  : [ None,   "Distance (m)" ],
+            'trip'  : [ None,   "Trip (km)" ],
+            'cc'    : [ 5,      "Country" ],
+            'addr'  : [ 60,     "Location" ],
+        }
         for c, txt in enumerate(cols):      # Heading
-            ws.write(0, c, txt, style0)
+            if txt in coldesc:
+                width, heading = coldesc[txt]
+                if width is None:
+                    width = len(heading)
+                if width < len(heading):
+                    width = len(heading)
+
+                ws.col(c).width = 256 * width
+                if heading is not None:
+                    ws.write(0, c, heading, style0)
+                else:
+                    ws.write(0, c, txt, style0)
+            else:
+                ws.write(0, c, txt, style0)
 
         r = 1
         for tp in track:
