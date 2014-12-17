@@ -463,17 +463,18 @@ def get_download():
     if fmt == 'txt':
 
         info = "Timestamp({0})".format(tzname)
-        s.write("%-10s %-10s %s %s%s" % ("Latitude", "Longitude", info, "Location", EOL))
+        s.write("%-10s %-10s %s %s %s%s" % ("Latitude", "Longitude", info, "Speed", "Location", EOL))
 
         for tp in track:
 
             revgeo = tp.get('revgeo', "")
+            vel = "%9d" % tp.get('vel', 0)
 
             s.write(u'%-10s %-10s %s %-14s %6s %s%s' % \
                 (tp.get('lat'),
                 tp.get('lon'),
                 utc_to_localtime(tp.get('tst'), tzname),
-                tp.get('vel', ''),
+                vel,
                 tp.get('addr', ""),
                 revgeo,
                 EOL))
