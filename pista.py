@@ -484,7 +484,7 @@ def get_download():
         tp = track[0]
         title = ""
         for key in tp.keys():
-            title = title + u'"%s";' % key
+            title = title + u'"%s",' % key
 
         s.write("%s%s" % (title[0:-1], EOL))  # chomp last separator
 
@@ -493,9 +493,9 @@ def get_download():
             for key in tp:
                 if key == 'tst':
                     tp['tst'] = utc_to_localtime(tp.get('tst'), tzname)
-                line = line + u'"%s";' % tp[key]
+                line = line + u'"%s",' % tp[key]
 
-            line = line[0:-1]
+            line = line[0:-1]   # chop last separator
             s.write(u'%s%s' % (line, EOL))
 
     if fmt == 'xls':
