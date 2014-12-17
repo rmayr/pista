@@ -49,9 +49,13 @@
 	    <div><a href='#' id='getmap'>Show on map</a></div>
 	    <div>
 	      Download 
+	      {{ have_xls }}
 		[<a href='#' fmt='txt' class='download'>TXT</a>]
 		[<a href='#' fmt='csv' class='download'>CSV</a>]
 		[<a href='#' fmt='gpx' class='download'>GPX</a>]
+%if have_xls == True:
+		[<a href='#' fmt='xls' class='download'>XLS</a>]
+%end
 	    </div>
 
 	</div> <!-- end navbar -->
