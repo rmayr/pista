@@ -36,7 +36,7 @@ You'll be prompted for credentials as soon as you select one of the options.
 
 
 %if isdemo is True:
-	<p>You are now on a demonstration site: the username is <tt>demo</tt> and the password is <tt>demo</tt>.</p>
+	<p>You are now on a demonstration site: the username is <tt>demo</tt> and the password is <tt>demo</tt>. Please note that historic data for <i>Tracks</i> is limited to a 24-hour period and is cleared out at 23:00 UTC daily.</p>
 %end
 
 <p>
