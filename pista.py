@@ -32,6 +32,11 @@ from owntracks.auth import PistaAuth
 from owntracks import haversine
 import pytz
 import httpagentparser
+HAVE_XLS=True
+try:
+    import xlwt
+except ImportError:
+    HAVE_XLS=False
 
 log = logging.getLogger(__name__)
 
@@ -333,7 +338,7 @@ def page_table():
 @app.route('/tracks')
 @auth_basic(check_auth)
 def page_tracks():
-    return template('tracks', pistapages=cf.g('pista', 'pages'))
+    return template('tracks', pistapages=cf.g('pista', 'pages'), have_xls=HAVE_XLS)
 
 @app.route('/hello')
 def hello():
@@ -409,6 +414,7 @@ def get_download():
         'csv':  'text/csv',
         'txt':  'text/plain',
         'gpx':  'application/gpx+xml',
+        'xls':  'application/vnd.ms-excel',
     }
 
     EOL = "\n"
@@ -491,6 +497,60 @@ def get_download():
 
             line = line[0:-1]
             s.write(u'%s%s' % (line, EOL))
+
+    if fmt == 'xls':
+        if not HAVE_XLS:
+            return  # FIXME
+
+        cols = [ 'tst', 'lat', 'lon', 'alt', 'vel', 't', 'cog', 'dist', 'trip', 'cc', 'addr' ]
+
+        font0 = xlwt.Font()
+        font0.name = 'Arial'
+        font0.colour_index = 2
+        font0.bold = True
+
+        style0 = xlwt.XFStyle()
+        style0.font = font0
+
+        courier = xlwt.Font()
+        courier.name = 'Courier New'
+        courier.bold = False
+
+        fixed_style = xlwt.XFStyle()
+        fixed_style.font = courier
+
+
+        date_style = xlwt.XFStyle()
+        date_style.num_format_str = 'D-MMM-YY HH:MM:SS'
+
+        wb = xlwt.Workbook()
+        ws = wb.add_sheet('OwnTracks')
+
+        ws.col(0).width = 256 * 25          # tst (date)
+        ws.col(5).width = 256 * 3           # t
+        ws.col(9).width = 256 * 5           # cc
+        ws.col(10).width = 256 * 60         # addr
+        for c, txt in enumerate(cols):      # Heading
+            ws.write(0, c, txt, style0)
+
+        r = 1
+        for tp in track:
+            ws.write(r, 0, tp.get('tst'), date_style)
+            ws.write(r, 1, str(tp.get('lat')))
+            ws.write(r, 2, str(tp.get('lon')))
+            ws.write(r, 3, tp.get('alt'))
+            ws.write(r, 4, tp.get('vel'))
+            ws.write(r, 5, tp.get('t'), fixed_style)
+            ws.write(r, 6, tp.get('cog'))
+            ws.write(r, 7, tp.get('dist'))
+            ws.write(r, 8, int(tp.get('trip') / 1000))
+            ws.write(r, 9, tp.get('cc'), fixed_style)
+            ws.write(r, 10, tp.get('addr'))
+
+            r = r + 1
+
+        wb.save(sio)
+
 
     if fmt == 'gpx':
         root = ET.Element('gpx')
