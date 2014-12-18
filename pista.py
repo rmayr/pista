@@ -582,7 +582,7 @@ def get_download():
 
         r = r + 1
         ws.write(r, 0, "Haversine dist (km)")
-        ws.write(r, 1, kilometers)
+        ws.write(r, 1, round(kilometers, 2))
 
         r = r + 1
         ws.write(r, 0, "Total trip (km)")
