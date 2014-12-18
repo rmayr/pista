@@ -589,8 +589,12 @@ def get_download():
         ws.write(r, 1, trip_end - trip_start)
 
         r = r + 2
-        link_style = xlwt.easyxf('font: underline single')
-        ws.write(r, 0, xlwt.Formula('HYPERLINK("http://owntracks.de";"OwnTracks.de")'), link_style)
+        ws.write(r, 0, xlwt.Formula('HYPERLINK("http://owntracks.de";"OwnTracks.de")'),
+                xlwt.easyxf(
+                    'font: name Arial;'
+                    'font: color red;'
+                    'font: underline single;'
+                ))
 
         wb.save(sio)
 
