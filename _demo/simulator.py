@@ -59,7 +59,7 @@ def coll2json(loc, alarm=None):
         data['event'] = 'leave'
         data['desc'] = 'airport'
 
-    status = 0
+    status = 1
     if loc.t == 'f' or loc.t == 'L':
         status = -1
     mqttc.publish('owntracks/demo/%s' % loc.tid, status, qos=0, retain=True)
