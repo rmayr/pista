@@ -70,22 +70,22 @@ def myfunc(tid, loclist, n=0):
     print "Here is ", tid, " with ", len(loclist)
     run = 1
     while run:
+        alarm = 1
         try:
             # Periodically force M1 to be offline
             mqttc.publish('owntracks/demo/M1/status', '0', qos=0, retain=True)
 
             # Forwards ....
             for l in loclist:
-                payload = coll2json(l)
+                payload = coll2json(l, alarm)
+                if alarm == 1:
+                    alarm = 0
                 mqttc.publish('owntracks/demo/%s' % tid, payload, qos=0, retain=True)
                 time.sleep(PAUSE + n)
 
             # ... and Reverse!
-            alarm = 0
             for l in reversed(loclist):
-                payload = coll2json(l, alarm)
-                if alarm == 0:
-                    alarm = 1
+                payload = coll2json(l, alarm=0)
                 mqttc.publish('owntracks/demo/%s' % tid, payload, qos=0, retain=True)
                 time.sleep(PAUSE + n)
 
