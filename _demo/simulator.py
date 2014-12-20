@@ -82,10 +82,12 @@ def myfunc(tid, loclist, n=0):
 
             # Forwards ....
             for l in loclist:
+                topic = 'owntracks/demo/%s' % tid
                 payload = coll2json(l, alarm)
                 if alarm == 1:
+                    topic = 'owntracks/demo/%s/alarm' % tid
                     alarm = 0
-                mqttc.publish('owntracks/demo/%s' % tid, payload, qos=0, retain=True)
+                mqttc.publish(topic, payload, qos=0, retain=True)
                 time.sleep(PAUSE + n)
 
             # ... and Reverse!
