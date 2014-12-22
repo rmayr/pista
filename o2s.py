@@ -19,7 +19,7 @@ import ssl
 import json
 import socket
 from owntracks import mobile_codes
-from owntracks.dbschema import db, Location, Waypoint, RAWdata, Operators, Inventory, Obd2, Fms, createalltables, dbconn
+from owntracks.dbschema import db, Location, Waypoint, RAWdata, Operators, Inventory, Obd2, Fms, createalltables, dbconn, Lastloc
 import io
 import csv
 import imp
@@ -713,6 +713,34 @@ def on_message(mosq, userdata, msg):
             loca.save()
         except Exception, e:
             log.error("Cannot INSERT location for {0} into DB: {1}".format(topic, str(e)))
+
+        # Upsert last vehicle location into Lastloc
+        try:
+            ll = Lastloc.get(Lastloc.topic == topic)
+            ll.tid     = item.get('tid')
+            ll.lat     = item.get('lat')
+            ll.lon     = item.get('lon')
+            ll.tst     = item.get('tst')
+            ll.vel     = item.get('vel')
+            ll.alt     = item.get('alt')
+            ll.cog     = item.get('cog')
+            ll.trip    = item.get('trip')
+            ll.dist    = item.get('dist')
+            ll.t       = item.get('t')
+            ll.ghash   = item.get('ghash')
+            ll.cc      = item.get('cc')
+            ll.save()
+
+        except Lastloc.DoesNotExist:
+            try:
+                ll = Lastloc(**item)
+                ll.save()
+            except Exception, e:
+                log.error("Cannot INSERT lastloc into DB: {0}".format(str(e)))
+        except Exception, e:
+            log.error("Cannot UPSERT location into DB: {0}".format(str(e)))
+
+
 
     item['tst'] = orig_tst
     watcher(mosq, topic, item)

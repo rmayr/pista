@@ -69,6 +69,22 @@ class Location(OwntracksModel):
             (('topic', ), False),  # create index l_topic on location(topic (100));
         )
 
+# Last reported location per topic (topic is unique)
+class Lastloc(OwntracksModel):
+    topic           = CharField(null=False, unique=True)
+    tid             = CharField(null=False, max_length=2)
+    lat             = DecimalField(null=False, max_digits=10, decimal_places=7)
+    lon             = DecimalField(null=False, max_digits=10, decimal_places=7)
+    tst             = DateTimeField(default=datetime.datetime.now, index=True)
+    vel             = IntegerField(null=True)
+    alt             = IntegerField(null=True)
+    cog             = IntegerField(null=True)
+    trip            = IntegerField(null=True)
+    dist            = IntegerField(null=True)
+    t               = CharField(null=True, max_length=1)
+    ghash           = CharField(null=True, max_length=8)
+    cc              = CharField(null=True, max_length=2)
+
 class RAWdata(OwntracksModel):
     topic           = CharField(null=False)
     tst             = DateTimeField(default=datetime.datetime.now, index=True)
@@ -171,6 +187,7 @@ def createalltables():
     db.connect()
 
     Location.create_table(fail_silently=silent)
+    Lastloc.create_table(fail_silently=silent)
     Waypoint.create_table(fail_silently=silent)
     Geo.create_table(fail_silently=silent)
     User.create_table(fail_silently=silent)
