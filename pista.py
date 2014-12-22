@@ -338,7 +338,14 @@ def page_table():
 @app.route('/tracks')
 @auth_basic(check_auth)
 def page_tracks():
-    return template('tracks', pistapages=cf.g('pista', 'pages'), have_xls=HAVE_XLS)
+
+    isdemo = isdemo=cf.g('pista', 'is_demo')
+    if isdemo == True:
+        isdemo = 1
+    else:
+        isdemo = 0
+
+    return template('tracks', pistapages=cf.g('pista', 'pages'), have_xls=HAVE_XLS, isdemo=isdemo)
 
 @app.route('/hello')
 def hello():

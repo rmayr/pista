@@ -69,6 +69,7 @@
     	var map;
 	var geojson;
 	var line_color = '#ff0000';
+	var is_demo = {{ isdemo }}
 
 	load_map(config.apikey);
 
@@ -139,8 +140,11 @@
 
 		}
 
-		if (feature.properties.description) {
-			layer.bindPopup(feature.properties.description);
+		if (is_demo == false) {
+
+			if (feature.properties.description) {
+				layer.bindPopup(feature.properties.description);
+			}
 		}
 	}
 
