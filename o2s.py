@@ -781,7 +781,10 @@ def on_message(mosq, userdata, msg):
 
     # Geofence events
     if wp:
-        wp.check(new_data)
+        try:
+            wp.check(new_data)
+        except Exception, e:
+            log.error("Cannot check waypoint: {0}".format(str(e)))
 
 
 def t_ghash(rest, val):
