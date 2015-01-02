@@ -219,6 +219,13 @@ $(document).ready( function () {
 					(now.get('month') == d.get('month')) &&
 					(now.get('date') != d.get('date'))) {
 					output = daystring + "&lsaquo;";
+				} else {
+					if ( (now.get('month') != d.get('month')) ||
+					     (now.get('date') != d.get('date'))
+					   )
+					{
+						output = daystring + "&lsaquo;";
+					}
 				}
 				output = output + timestring;
 
