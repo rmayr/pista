@@ -112,8 +112,6 @@ class Operators(OwntracksModel):
 
 class Waypoint(OwntracksModel):
     topic           = CharField(null=False)
-    username        = CharField(null=False)
-    device          = CharField(null=False)
     tid             = CharField(null=False, max_length=2)
     lat             = DecimalField(null=False, max_digits=10, decimal_places=7)
     lon             = DecimalField(null=False, max_digits=10, decimal_places=7)

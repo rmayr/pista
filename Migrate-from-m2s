@@ -50,5 +50,7 @@ UPDATE location SET alt = 0 WHERE alt IS NULL;
 
 
 ALTER TABLE waypoint ADD tid VARCHAR(2);
+ALTER TABLE waypoint DROP username;
+ALTER TABLE waypoint DROP device;
 
 -- now run `python lib/dbschema.py'

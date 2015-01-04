@@ -27,7 +27,7 @@ from owntracks.ElementTree_pretty import prettify
 import time
 from owntracks import cf
 import paho.mqtt.client as paho
-from owntracks.dbschema import db, Geo, Location, Waypoint, User, Acl, Inventory, JOIN_LEFT_OUTER, fn, createalltables, dbconn
+from owntracks.dbschema import db, Geo, Location, Waypoint, User, Acl, Inventory, JOIN_LEFT_OUTER, fn, createalltables, dbconn, RAWdata
 from owntracks.auth import PistaAuth
 from owntracks import haversine
 import pytz
@@ -178,8 +178,6 @@ def getDBwaypoints(usertid, lat_min, lat_max, lon_min, lon_max):
 
     dbconn()
     query = Waypoint.select().where(
-                # FIXME (Waypoint.username == username) &
-                # FIXME (Waypoint.device == device) &
                     (Waypoint.lat >= lat_min) &
                     (Waypoint.lat <= lat_max) &
                     (Waypoint.lon >= lon_min) &
@@ -834,6 +832,29 @@ def flotbatt(voltage):
     }
 
     return flot
+
+@app.route("/utility/battery.json", method="GET")
+def json_batt():
+
+    result = []
+    dbconn()
+    query = (RAWdata.select(RAWdata.tst, RAWdata.payload)
+            .where(
+                RAWdata.topic == 'owntracks/gw/356612028111492/voltage/batt'
+            )
+            )
+
+    query = query.order_by(RAWdata.tst.desc()).limit(190)
+
+    time_format = "%Y-%m-%d %H:%M:%S"
+    for q in query.naive():
+        tstamp = q.tst.strftime(time_format)
+        print tstamp, q.payload
+        result.append( { 'tst' : tstamp, 'batt' : float(q.payload) } )
+
+    j = json.dumps(result)
+    print j
+    return j
 
 
 @app.route('/<filename:re:.*\.js>')
