@@ -41,19 +41,21 @@ Upon launching one of the utilities, the database schema is created:
 * `rawdata` raw incoming data
 * `user` authenticates users in [mosquitto-auth-plug] and in _pista_.
 * `waypoint` waypoints table. This is also the basis for drawing geo fences on the map.
+* `lastloc` contains the last location of each device; basically `location` but only the last.
 
 ### `o2s`
 
 _o2s_ (OwnTracks to Storage) is responsible for subscribing to MQTT for the OwnTracks topics and comitting these to storage (i.e. to a database). In particular, _o2s_ also provides support for
 
-* Republishing formatted debugging strings to the `_look` topic
+* Republishing formatted debugging strings to the `_look` topic so that Pista (Tables, Map, Console) see what's going on
 * Republishing whole "objects" to the `_map/` topic
 * Handling geo-fences from waypoints (enter/leave)
 * Storing OBD2 data
-* etc.
+* Optional storage of raw data (i.e. all subscribes seen go to database table for debugging purposes)
 
-Upon startup, _o2s_ subscribes to the configured MQTT broker awaiting publishes
-from OwnTracks devices. Location and Waypoint publishes are comitted to storage.
+Upon startup, _o2s_ connects to the configured MQTT broker, subscribes to a
+list of topics and awaits publishes from OwnTracks devices. Location and
+Waypoint publishes are comitted to storage.
 
 
 #### `_map/`
@@ -89,7 +91,8 @@ thusly might look like this:
 
 Note for example the `tstamp`, `status`, `addr`, and `compass` elements which are not part
 of the [OwnTracks JSON](https://github.com/owntracks/owntracks/wiki/JSON) format for Location
-publishes. These elements are assembled by _o2s_ into this object.
+publishes. These elements are assembled by _o2s_ into this object, allowing us to use a single
+(large) JSON publish to pass all device information at once to the Pista websocket clients.
 
 #### Waypoints
 
@@ -126,7 +129,14 @@ _map/9e33dafec92ce71a34f3cf10b8d747b7834bda7e {"lat": 51.1694, "radius": 300, "_
 
 ### `pista`
 
-_pista_ (the Spanish word for _track_) is a Python Bottle app which works hand-in-hand with _o2s_ for displaying data, maps, tracks and information from that database.
+_pista_ (the Spanish and Italian word for _track_) is a Python Bottle app which works hand-in-hand with _o2s_ for displaying data, maps, tracks and information from that database. Pista itself
+is a collection of individual pages called Table, Tracks, Map, Hardware, etc. which you enable
+or disable for your installation. For example, if you're interested in data from a couple of
+[owtracks.org] apps only, you will not need the Hardware page (which shows information which our
+apps don't publish anyway; this is interesting for the Greenwich devices only).
+
+Pista requires connection to an MQTT broker with support for Websockets (e.g. Mosquitto version 1.4 or higher, HiveMQ, or similar). Pista can make use of TLS connections for Websockets, but will
+probably not work if it is used behind a (corporate) HTTP proxy.
 
 Ensure you've configured `o2s.conf` and that the environment variable
 `O2SCONFIG` points to that file so that _pista_ will be able to access _o2s_' database.
