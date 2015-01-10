@@ -101,6 +101,12 @@ skip_retained = False
 
 # This is a Python list of topics to track. Note that just the base topic
 # is required here; o2s subscribes to the required subtopics
+# For example if you have a device publishing to `owntracks/jane/iphone' as
+# its base topic, you would specify
+#
+# 	base_topics = [ 'owntracks/jane' ]
+#
+# here.
 
 base_topics = [ 'owntracks/gw', 'owntracks/jane']
 
