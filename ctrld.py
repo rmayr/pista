@@ -43,10 +43,10 @@ def conf():
     resp = {}
     data = bottle.request.body.read()
 
-    username = request.forms.get('username')
-    password = request.forms.get('password')
-    clientid = request.forms.get('clientid')
-    apns_token = request.forms.get('token')
+    username = request.forms.get('username').strip()
+    password = request.forms.get('password').strip()
+    clientid = request.forms.get('clientid').strip()
+    apns_token = request.forms.get('token').strip()
 
     authorized = auth.check(username, password, apns_token)
 
@@ -181,14 +181,14 @@ def ctrl_trackdump(user):
         log.error("%s" % str(e))
         return False
 
-    username = request.forms.get('username')
-    password = request.forms.get('password')
-    tid = request.forms.get('tid')
+    username = request.forms.get('username').strip()
+    password = request.forms.get('password').strip()
+    tid = request.forms.get('tid').strip()
     try:
         nrecs = int(request.forms.get('nrecs'))
     except:
         nrecs = 10
-    topic = request.forms.get('topic')
+    topic = request.forms.get('topic').strip()
 
     authorized = auth.check(username, password)
 
