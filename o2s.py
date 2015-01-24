@@ -365,7 +365,12 @@ def on_start(mosq, userdata, msg):
     except:
         log.error("Cannot split() on ../start")
         return
-    startup_dt = dateutil.parser.parse(tstamp)
+
+    startup_dt = None
+    try:
+        startup_dt = dateutil.parser.parse(tstamp)
+    except:
+        startup_dt = datetime.datetime.now()
 
     # Inventory must have base topic in it so that we can later associate TID
     # with the IMEI
