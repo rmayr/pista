@@ -535,14 +535,14 @@ def obd22human(splits, payload):
 					human = "VIN Message Count in PID 02: %d" % (val)
 
 				elif splits[2] == "02":
-					name = payload.decode("hex")
+					name = payload.decode("hex").encode("string-escape")
 					human = "VIN: %s" % name
 
 				elif splits[2] == "03":
 					human = "Calibration ID message count in PID 04: %d" % (val)
 
 				elif splits[2] == "04":
-					name = payload.decode("hex")
+					name = payload.decode("hex").encode("string-escape")
 					human = "Calibration ID: %s" % name
 
 				elif splits[2] == "05":
@@ -561,10 +561,12 @@ def fms2human(splits, payload):
 	if len(splits) >= 1:
 
 		if splits[0] == "vehicleid":
-			human = "Vehicle ID = %s" % (payload)
+			id = payload.decode("hex").encode("string-escape")
+			human = "Vehicle ID = %s" % (id)
 
 		if splits[0] == "driverid":
-			human = "Driver ID = %s" % (payload)
+			id = payload.decode("hex").encode("string-escape")
+			human = "Driver ID = %s" % (id)
 
 		if splits[0] == "timedate":
 			year = int(payload[10:], 16) + 1985
@@ -684,7 +686,8 @@ def fms2human(splits, payload):
 					human = "Fuel Economy = %f km/L" % (econ)
 			
 				elif splits[1] == "fmssw":
-					human = "FMS SW = %s" % (payload)
+					id = payload.decode("hex").encode("string-escape")
+					human = "FMS SW = %s" % (id)
 			
 				elif splits[1] == "pedal0":
 					Samples = int(payload[2:], 16) * 256 + int(payload[0:2], 16)
