@@ -644,9 +644,9 @@ def fms2human(splits, payload):
 					level = float(int(payload, 16)) * 0.4
 					human = "Fuel Level = %f %%" % (level)
 			
-				elif splits[1] == "axesweight":
+				elif splits[1] == "axlesweight":
 					weight = float(int(payload[8:]) * 256 * 256 * 256 * 256 + int(payload[6:8], 16) * 256 * 256 * 256 + int(payload[4:6], 16) * 256 * 256 + int(payload[2:4], 16) * 256 + int(payload[0:2], 16)) * 0.5
-					human = "Axes Weight = %f kg" % (weight)
+					human = "Axles Weight = %f kg" % (weight)
 			
 				elif splits[1] == "enginehours":
 					hours = float(int(payload[6:], 16) * 256 * 256 * 256 + int(payload[4:6], 16) * 256 * 256 + int(payload[2:4], 16) * 256 + int(payload[0:2], 16)) * 0.05
@@ -672,8 +672,8 @@ def fms2human(splits, payload):
 					human = "Tachograph Data = %s" % (payload)
 			
 				elif splits[1] == "tachospeed":
-					speed = int(payload[2:], 16) * 256 + int(payload[0:2], 16)
-					human = "Tachograph Speed %d km/h" % (speed)
+					speed = float(int(payload[2:], 16) * 256 + int(payload[0:2], 16)) / 256.0
+					human = "Tachograph Speed %f km/h" % (speed)
 			
 				elif splits[1] == "fuelrate":
 					rate = int(payload[2:], 16) * 256 + int(payload[0:2], 16) * 0.05
