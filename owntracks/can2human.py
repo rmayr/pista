@@ -676,8 +676,8 @@ def fms2human(splits, payload):
 					human = "Tachograph Speed %f km/h" % (speed)
 			
 				elif splits[1] == "fuelrate":
-					rate = int(payload[2:], 16) * 256 + int(payload[0:2], 16) * 0.05
-					human = "Fuel Rate = %d L/h" % (rate)
+					rate = float(int(payload[2:], 16) * 256 + int(payload[0:2], 16)) * 0.05
+					human = "Fuel Rate = %f L/h" % (rate)
 			
 				elif splits[1] == "fuelecon":
 					econ = int(payload[2:], 16) * 256 + int(payload[0:2], 16) / 512
