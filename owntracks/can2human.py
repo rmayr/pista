@@ -637,7 +637,7 @@ def fms2human(splits, payload):
 					human = "# Samples rpm >= 1701 = %d" % (Samples)
 			
 				elif splits[1] == "totalfuel":
-					fuel = float(int(payload[6:], 16) * 256 * 256 * 256 + int(payload[4:6], 16) * 256 * 256 + int(payload[2:4], 16) * 256 + int(payload[0:2], 16)) * 0.001
+					fuel = float(int(payload[6:], 16) * 256 * 256 * 256 + int(payload[4:6], 16) * 256 * 256 + int(payload[2:4], 16) * 256 + int(payload[0:2], 16)) * 0.5
 					human = "Total Fuel = %f L" % (fuel)
 			
 				elif splits[1] == "fuellevel":
