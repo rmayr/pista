@@ -680,8 +680,8 @@ def fms2human(splits, payload):
 					human = "Fuel Rate = %f L/h" % (rate)
 			
 				elif splits[1] == "fuelecon":
-					econ = int(payload[2:], 16) * 256 + int(payload[0:2], 16) / 512
-					human = "Fuel Economy = %d km/L" % (econ)
+					econ = float(int(payload[2:], 16) * 256 + int(payload[0:2], 16)) / 512.0
+					human = "Fuel Economy = %f km/L" % (econ)
 			
 				elif splits[1] == "fmssw":
 					human = "FMS SW = %s" % (payload)
