@@ -46,7 +46,7 @@ def conf():
     username = request.forms.get('username').strip()
     password = request.forms.get('password').strip()
     clientid = request.forms.get('clientid').strip()
-    apns_token = request.forms.get('token').strip()
+    apns_token = request.forms.get('token')
 
     authorized = auth.check(username, password, apns_token)
 
