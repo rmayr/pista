@@ -8,3 +8,4 @@
 *.pickle
 obsolete/
 *.conf
+build
