@@ -17,8 +17,10 @@ db = None
 
 engines = {
     'postgresql' : PostgresqlDatabase(cf.dbname,
-                        user=cf.dbuser,
+			host=cf.dbhost,
                         port=cf.dbport,
+                        user=cf.dbuser,
+                        password=cf.dbpasswd,
                         threadlocals=True),
     'mysql'      : MySQLDatabase(cf.dbname,
                         user=cf.dbuser,

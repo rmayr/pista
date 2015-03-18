@@ -1,4 +1,10 @@
 # apt-get install python-dev
 paho-mqtt
 peewee
+python-geohash
+python-dateutil
+bottle
+pytz
 httpagentparser
+psycopg2
+xlwt
