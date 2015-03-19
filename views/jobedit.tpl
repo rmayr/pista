@@ -63,10 +63,19 @@
 
 </script>
 
-    <h2>Activo Job Editor (age)</h2>
+    <h2>Activo Job Editor (aje)</h2>
+
+<div id='container'>
+  <div>
+    <p class='description'>
+    Select a <acronym title="Tracker-ID">TID</acronym>
+    <select id='usertid'></select>
+    </p>
+  </div>
+</div>
 
 
-<table id='jobtable' class="table table-striped compact nowrap" cellspacing="0" width="100%">
+<table id='jobtable' class="table table-striped compact nowrap" cellspacing="0" width="80%">
   <colgroup>
     <col span="1" style="width: 10%;">
     <col span="1" style="width: 90%;">
