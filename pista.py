@@ -868,7 +868,15 @@ def javascripts(filename):
 def stylesheets(filename):
     return static_file(filename, root='static')
 
+#@app.get('/<filename:re:/img/clear.png>')
+#def images(filename):
+#    return static_file(filename, root='static')
+
 @app.get('/<filename:re:.*\.(jpg|gif|png|ico)>')
+def images(filename):
+    return static_file(filename, root='static')
+
+@app.get('/<filename:re:.*\.(eot|ttf|woff|svg|woff2)>')
 def images(filename):
     return static_file(filename, root='static')
 
