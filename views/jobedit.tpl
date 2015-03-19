@@ -16,9 +16,10 @@
     $.fn.editable.defaults.mode = 'inline';
 
     var joblist = [];
+    var maxjobs = 10;
 
-    for (var i = 0; i < 20; i++) {
-    	joblist[i] = "nottin";
+    for (var i = 0; i < maxjobs; i++) {
+    	joblist[i] = "";
     }
 
 
@@ -30,10 +31,15 @@
 		console.log(topic + " " + payload);
 
 		var i = topic.lastIndexOf("/");
+		var pkid = "pk" + topic.substr(i + 1, topic.len); // "pk03"
+
 		var nn = parseInt(topic.substr(i + 1, topic.len));
 
 		joblist[nn] = payload;
 		console.log("joblist[" + nn + "] = " + joblist[nn]);
+
+		var pk = $('#' + pkid);
+		$(pk).html(joblist[nn]); // Sets visible text and field's default
 	
 	} catch (err) {
 		console.log("handlerfunc: " + err);
@@ -67,15 +73,16 @@
   </colgroup>
 <tr><th>Number</th><th>Job</th></tr>
 
-<tr>
-   <td>1</td>
-   <td><a href="#" class='jobclass' data-type="text" data-clear="1" data-pk="01"></a></td></tr>
-<tr>
-   <td>2</td>
-   <td><a href="#" class='jobclass' data-type="text" data-clear="1" data-pk="02"></a></td></tr>
-<tr>
-   <td>3</td>
-   <td><a href="#" class='jobclass' data-type="text" data-clear="1" data-pk="03"></a></td></tr>
+ <tr><td>1</td>
+   <td><a href="#" id='pk01' data-pk="01" data-type="text" data-clear="1"></a></td></tr>
+ <tr><td>2</td>
+   <td><a href="#" id='pk02' data-pk="02" data-type="text" data-clear="1"></a></td></tr>
+ <tr><td>3</td>
+   <td><a href="#" id='pk03' data-pk="03" data-type="text" data-clear="1"></a></td></tr>
+ <tr><td>4</td>
+   <td><a href="#" id='pk04' data-pk="04" data-type="text" data-clear="1"></a></td></tr>
+ <tr><td>5</td>
+   <td><a href="#" id='pk05' data-pk="05" data-type="text" data-clear="1"></a></td></tr>
 
 </table>
 
@@ -91,13 +98,13 @@
 		    clear: true,
 		    name: 'jobdesc',
 		    autotext: 'always',
-		    display: function() {
-				/* Get the PK and add joblist[nn] to the column's value */
-				nn = parseInt($(this).data('pk'));
-				
-				$(this).text(joblist[nn]);
-				console.log("Setting text = " + joblist[nn]);
-			   },
+//		    display: function() {
+//				/* Get the PK and add joblist[nn] to the column's value */
+//				nn = parseInt($(this).data('pk'));
+//				
+//				$(this).text(joblist[nn]);
+//				console.log("Setting text = " + joblist[nn]);
+//			   },
 		    url:   function(params) {
 				// params.name = field name
 				// params.value = newly entered value
