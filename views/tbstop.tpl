@@ -72,6 +72,9 @@
 %if 'status' in pistapages:
             <li class="{{ "active" if page == "status" else "xxxx" }}" ><a href="status">Status</a></li>
 %end
+%if 'jobedit' in pistapages:
+            <li class="{{ "active" if page == "jobedit" else "xxxx" }}" ><a href="jobedit">Jobedit</a></li>
+%end
           </ul>
           <ul class="nav navbar-nav navbar-right">
             <!-- 

@@ -266,8 +266,11 @@ def index():
 
 @app.route('/about')
 def page_about():
-
     return template('about', pistapages=cf.g('pista', 'pages'))
+
+@app.route('/jobedit')
+def page_jobedit():
+    return template('jobedit', pistapages=cf.g('pista', 'pages'))
 
 @app.route('/console')
 @auth_basic(check_auth)
