@@ -81,3 +81,17 @@ function mqtt_connect()
 	/* Connect to MQTT broker */
 	mqtt.connect(options);
 }
+
+function mqtt_publish(topic, payload, qos, retain)
+{
+	var message = new Messaging.Message(payload);
+
+	if (typeof(qos) === 'undefined') qos = 0;
+	if (typeof(retain) === 'undefined') retain = 0;
+
+	message.destinationName = topic;
+	message.qos		= qos;
+	message.retained	= retain;
+
+	mqtt.send(message);
+}
