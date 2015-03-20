@@ -53,7 +53,7 @@
     // FIXME: tlist must be populated with topic for a particular vehicle
     // FIXME: difficulty: we don't know the topic branch for it!
 
-    tlist = [ 'owntracks/gw/K2/proxy/jobs/+' ];
+    tlist = [ '/owntracks/gw/B2/proxy/jobs/+' ];
 
     for (var n = 0; n < tlist.length; n++) {
 		sub.push(tlist[n]);
@@ -122,7 +122,7 @@
 				// alert("Thanks for " + params.pk + " = " + params.value);
 
 				// FIXME: need real topic ...
-				var topic = 'owntracks/gw/K2/proxy/jobs/' + params.pk;
+				var topic = '/owntracks/gw/B2/proxy/jobs/' + params.pk;
 				var payload = params.value;
 				var qos = 2;
 				var retain = true;
