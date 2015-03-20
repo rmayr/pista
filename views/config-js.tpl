@@ -27,5 +27,6 @@ var config = {
 
    // Map and Table
    maptopic: {{ !maptopic }},
+   jobtopic: {{ !jobtopic }},
 
 };

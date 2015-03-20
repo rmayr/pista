@@ -1,0 +1,13 @@
+
+.yellowText{ background-color: #ff9900; }
+.blueText{ background-color: #0000ff; }
+.redText{ background-color: #ff0000; }
+
+.description {
+	color: gray;
+	width: 80%;
+}
+
+#datepick {
+	font-size: 85%;
+}
