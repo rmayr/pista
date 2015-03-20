@@ -19,7 +19,7 @@ import ssl
 import json
 import socket
 from owntracks import mobile_codes
-from owntracks.dbschema import db, Location, Waypoint, RAWdata, Operators, Inventory, Obd2, Fms, createalltables, dbconn, Lastloc
+from owntracks.dbschema import db, Location, Waypoint, RAWdata, Operators, Inventory, Job, Obd2, Fms, createalltables, dbconn, Lastloc
 import io
 import csv
 import imp
@@ -39,8 +39,11 @@ LASTLOC_EXPIRY = 3600
 
 storage = cf.g('features', 'storage', 'True')
 maptopic = None
+jobtopic = None
 devices = {}
 imeilist = {}
+jobs = {}
+jobnames = {}
 
 createalltables()
 
@@ -101,6 +104,7 @@ def on_connect(mosq, userdata, rc):
         mqttc.subscribe("%s/+/info" % t, 0)
         mqttc.subscribe("%s/+/voltage/+" % t, 0)
         mqttc.subscribe("%s/+/gpio/+" % t, 0)
+        mqttc.subscribe("%s/+/proxy/jobs/+" % t, 0)
 
     if cf.o2smonitor:
         mqttc.subscribe(cf.o2smonitor + "/+", 2)
@@ -167,6 +171,28 @@ def push_map(mosq, device, device_data):
         mosq.publish(topic, payload, qos=0, retain=True)
     except Exception, e:
         log.error("Cannot publish to maptopic at [{0}]: {1}".format(topic, str(e)))
+
+def push_job(mosq, device, job_data):
+    ''' device is the original topic to which an update was published.
+    ''' 
+
+    if 'tid' not in job_data:
+        log.debug("Object {0} is not yet complete.".format(device))
+        return
+
+    try:
+        payload = json.dumps(job_data, sort_keys=True, separators=(',',':'))
+    except Exception, e:
+        log.error("Can't convert to JSON: {0}".format(str(e)))
+        return
+
+    try:
+        if device.startswith('/'):
+            device = device[1:]     # for Ben
+        topic = jobtopic.format(device)
+        mosq.publish(topic, payload, qos=0, retain=True)
+    except Exception, e:
+        log.error("Cannot publish to jobtopic at [{0}]: {1}".format(topic, str(e)))
 
 def on_info(mosq, userdata, msg):
     if (skip_retained and msg.retain == 1) or len(msg.payload) == 0:
@@ -428,6 +454,88 @@ def on_gpio(mosq, userdata, msg):
     save_rawdata(msg.topic, msg.payload)
     watcher(mosq, msg.topic, msg.payload)
 
+def on_job(mosq, userdata, msg):
+    if (skip_retained and msg.retain == 1) or len(msg.payload) == 0:
+        return
+
+    log.debug("_job: {0} {1}".format(msg.topic, msg.payload))
+
+    save_rawdata(msg.topic, msg.payload)
+    watcher(mosq, msg.topic, msg.payload)
+
+    # topic owntracks/gw/B2/proxy/jobs/[active|<jobid>]
+    base_topic, suffix = tsplit(msg.topic)
+    device = base_topic
+
+    if not device in jobs:
+        jobs[device] = dict(topic=device)
+
+    # update the tid if we have it
+    tid = "??"
+    try:
+        if device in devices:
+            tid = devices[device]['tid']
+            jobs[device].update(dict(tid=tid))
+    except:
+        pass
+
+    parts = suffix.split('/')
+    last_part = parts[len(parts) - 1]
+
+    # suffix proxy/jobs/[active|<jobid>]
+    if last_part == 'active':
+        job = int(msg.payload)
+        jobname = msg.payload
+        if job == -1:
+            jobname = "None"
+        elif job in jobnames:
+            jobname = jobnames[job]
+
+        now = int(time.time())
+        nowstr = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(now))
+
+        if maptopic:
+            if device in devices:
+                devices[device].update(dict(activejob=jobname))
+                push_map(mosq, device, devices[device])
+        if jobtopic:
+            if device in jobs:
+                if job == -1:
+                    jobs[device].update(dict(end=now))
+                else:
+                    jobs[device].update(dict(job=job, jobname=jobname, start=now, end=None))
+                push_job(mosq, device, jobs[base_topic])
+
+        if storage:
+            if job == -1:
+                try:
+                    jb = Job.get(Job.topic == device, Job.end == None)
+                    jb.end = nowstr
+                    jb.save()
+                except Job.DoesNotExist:
+                    log.error("Received 'end' event for job with no active row")
+                except Exception, e:
+                    raise
+                    log.error("DB error on UPDATE Job: {0}".format(str(e)))
+
+            else:
+                try:
+                    data = {
+                        'topic'   : device,
+                        'tid'     : tid,
+                        'job'     : job,
+                        'jobname' : jobname,
+                        'start'   : nowstr,
+                    }
+                    jb = Job(**data)
+                    jb.save()
+                except Exception, e:
+                    log.error("Cannot store JOB for topic {0}: {1}".format(msg.topic, str(e)))
+ 
+    else:
+        # update the job name list
+        jobnames[int(last_part)] = msg.payload
+
 def on_operator_watch(mosq, userdata, msg):
     if (skip_retained and msg.retain == 1) or len(msg.payload) == 0:
         return
@@ -595,10 +703,11 @@ def watcher(mosq, topic, data):
             lat = data.get('lat')
             lon = data.get('lon')
             addr = data.get('addr', '')
+            activejob = data.get('activejob', '')
 
             loc = "%s,%s" % (lat, lon)
-            s = "t=%s tid=%-2s c=%-3s v=%-6s a=%-6s trip=%-7s dist=%-5s loc=%-20s %s" % (
-                    t, tid, cog, vel, alt, trip, dist, loc, addr
+            s = "t=%s tid=%-2s c=%-3s v=%-6s a=%-6s trip=%-7s dist=%-5s loc=%-20s %s %s" % (
+                    t, tid, cog, vel, alt, trip, dist, loc, addr, activejob
                 )
             s = fmt % (tstamp, topic, s)
             bb = bytearray(s.encode('utf-8'))
@@ -775,6 +884,7 @@ def on_message(mosq, userdata, msg):
             't'       : item.get('t', '-'),
             'trip'    : item.get('trip'),
             'dist'    : item.get('dist'),
+            'activejob' : item.get('activejob'),
         }
     # Republish to map.
     if maptopic:
@@ -933,6 +1043,7 @@ if m.get('ca_certs') is not None:   # use TLS
 
 
 maptopic = m.get('maptopic', None)
+jobtopic = m.get('jobtopic', None)
 skip_retained = m.get('skip_retained', False)
 host = m.get('host', 'localhost')
 port = int(m.get('port', 1883))
@@ -955,6 +1066,7 @@ for t in base_topics:
     mqttc.message_callback_add("{0}/+/start".format(t), on_start)
     mqttc.message_callback_add("{0}/+/obd2/#".format(t), on_obd2)
     mqttc.message_callback_add("{0}/+/fms/#".format(t), on_fms)
+    mqttc.message_callback_add("{0}/+/proxy/jobs/+".format(t), on_job)
 
     if cf.o2smonitor:
         mqttc.message_callback_add(cf.o2smonitor + "/+", on_tell)

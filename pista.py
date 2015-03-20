@@ -266,8 +266,11 @@ def index():
 
 @app.route('/about')
 def page_about():
-
     return template('about', pistapages=cf.g('pista', 'pages'))
+
+@app.route('/jobedit')
+def page_jobedit():
+    return template('jobedit', pistapages=cf.g('pista', 'pages'))
 
 @app.route('/console')
 @auth_basic(check_auth)
@@ -332,6 +335,11 @@ def page_console():
 @auth_basic(check_auth)
 def page_table():
     return template('table', pistapages=cf.g('pista', 'pages'))
+
+@app.route('/jobs')
+@auth_basic(check_auth)
+def page_job():
+    return template('jobs', pistapages=cf.g('pista', 'pages'), have_xls=HAVE_XLS, isdemo=0)
 
 @app.route('/tracks')
 @auth_basic(check_auth)
@@ -781,6 +789,7 @@ def onevehicle(tid):
         'lon'       : None,
         'modif'     : None,
         'compass'   : None,
+        'activejob' : None,
     }
 
     key = "tid:%s" % tid
@@ -868,7 +877,15 @@ def javascripts(filename):
 def stylesheets(filename):
     return static_file(filename, root='static')
 
+#@app.get('/<filename:re:/img/clear.png>')
+#def images(filename):
+#    return static_file(filename, root='static')
+
 @app.get('/<filename:re:.*\.(jpg|gif|png|ico)>')
+def images(filename):
+    return static_file(filename, root='static')
+
+@app.get('/<filename:re:.*\.(eot|ttf|woff|svg|woff2)>')
 def images(filename):
     return static_file(filename, root='static')
 

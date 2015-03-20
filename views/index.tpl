@@ -27,6 +27,9 @@ connections will work.
 %if 'status' in pistapages:
 <li><a href="status">Status</a> provides an overview of connected vehicles; hover over them to see up-to-date information which is displayed in real-time.</li>
 %end
+%if 'jobs' in pistapages:
+<li><a href="jobs">Jobs</a> provides historic job data. Select the vehicle you're interested in seeing, select a date or range of dates and show the job history or download the data as CSV or text.</li>
+%end
 %if 'hw' in pistapages:
 <li><a href="hw">Hardware</a> displays information of the individual Greenwich devices.</li>
 %end
