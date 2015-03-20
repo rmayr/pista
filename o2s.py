@@ -467,44 +467,46 @@ def on_job(mosq, userdata, msg):
     base_topic, suffix = tsplit(msg.topic)
     device = base_topic
 
-    if not device in jobs:
-        jobs[device] = dict(topic=device)
-
-    # update the tid if we have it
-    tid = "??"
-    try:
-        if device in devices:
-            tid = devices[device]['tid']
-            jobs[device].update(dict(tid=tid))
-    except:
-        pass
-
     parts = suffix.split('/')
     last_part = parts[len(parts) - 1]
 
     # suffix proxy/jobs/[active|<jobid>]
     if last_part == 'active':
+        # extract the job id and name from our topic
         job = int(msg.payload)
         jobname = msg.payload
+
         if job == -1:
             jobname = "None"
         elif job in jobnames:
             jobname = jobnames[job]
 
+        # get the tid if we have it
+        tid = "??"
+        try:
+            if device in devices:
+                tid = devices[device]['tid']
+        except:
+            pass
+
         now = int(time.time())
         nowstr = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(now))
 
+        if not device in jobs:
+            jobs[device] = dict(topic=device, tid=tid, job=job, jobname=jobname, start=None, end=None)
+
+        # update the 'activejob' parameter in our map display
         if maptopic:
             if device in devices:
                 devices[device].update(dict(activejob=jobname))
                 push_map(mosq, device, devices[device])
+
         if jobtopic:
-            if device in jobs:
-                if job == -1:
-                    jobs[device].update(dict(end=now))
-                else:
-                    jobs[device].update(dict(job=job, jobname=jobname, start=now, end=None))
-                push_job(mosq, device, jobs[base_topic])
+            if job == -1:
+                jobs[device].update(dict(end=now))
+            else:
+                jobs[device].update(dict(job=job, jobname=jobname, start=now, end=None))
+            push_job(mosq, device, jobs[base_topic])
 
         if storage:
             if job == -1:
@@ -517,7 +519,7 @@ def on_job(mosq, userdata, msg):
                 except Exception, e:
                     raise
                     log.error("DB error on UPDATE Job: {0}".format(str(e)))
-
+  
             else:
                 try:
                     data = {

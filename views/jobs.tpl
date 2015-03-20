@@ -26,9 +26,11 @@ function handlerfunc(topic, payload) {
 	try {
 		var d = JSON.parse(payload);
 
+		if (d.job == -1) { return; }
+
 		// console.log(topic + " " + payload);
 		var duration = null;
-		if (d.end != null && d.end != undefined) {
+		if (d.start != null && d.start != undefined && d.end != null && d.end != undefined) {
 			var elapsed = d.end - d.start;
 			var hours = Math.floor(elapsed / 3600);
 			var minutes = Math.floor((elapsed % 3600) / 60);

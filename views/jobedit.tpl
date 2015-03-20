@@ -1,4 +1,4 @@
-% include('tbstop.tpl', page='jobedit', page_title='OwnTracks Jobedit')
+% include('tbstop.tpl', page='jobedit', page_title='OwnTracks Job Edit')
 %if 'about' in pistapages:
 
     <!-- Custom styles for this template -->
@@ -16,7 +16,7 @@
     $.fn.editable.defaults.mode = 'inline';
 
     var joblist = [];
-    var maxjobs = 10;
+    var maxjobs = 20;
 
     for (var i = 0; i < maxjobs; i++) {
     	joblist[i] = "";
@@ -47,7 +47,7 @@
 	}
     };
 
-    var tlist = [ config.maptopic ];
+    var tlist = [ config.jobtopic ];
     var sub = [];
 
     // FIXME: tlist must be populated with topic for a particular vehicle
@@ -92,6 +92,36 @@
    <td><a href="#" id='pk04' data-pk="04" data-type="text" data-clear="1"></a></td></tr>
  <tr><td>5</td>
    <td><a href="#" id='pk05' data-pk="05" data-type="text" data-clear="1"></a></td></tr>
+ <tr><td>6</td>
+   <td><a href="#" id='pk06' data-pk="06" data-type="text" data-clear="1"></a></td></tr>
+ <tr><td>7</td>
+   <td><a href="#" id='pk07' data-pk="07" data-type="text" data-clear="1"></a></td></tr>
+ <tr><td>8</td>
+   <td><a href="#" id='pk08' data-pk="08" data-type="text" data-clear="1"></a></td></tr>
+ <tr><td>9</td>
+   <td><a href="#" id='pk09' data-pk="09" data-type="text" data-clear="1"></a></td></tr>
+ <tr><td>10</td>
+   <td><a href="#" id='pk10' data-pk="10" data-type="text" data-clear="1"></a></td></tr>
+ <tr><td>11</td>
+   <td><a href="#" id='pk11' data-pk="11" data-type="text" data-clear="1"></a></td></tr>
+ <tr><td>12</td>
+   <td><a href="#" id='pk12' data-pk="12" data-type="text" data-clear="1"></a></td></tr>
+ <tr><td>13</td>
+   <td><a href="#" id='pk13' data-pk="13" data-type="text" data-clear="1"></a></td></tr>
+ <tr><td>14</td>
+   <td><a href="#" id='pk14' data-pk="14" data-type="text" data-clear="1"></a></td></tr>
+ <tr><td>15</td>
+   <td><a href="#" id='pk15' data-pk="15" data-type="text" data-clear="1"></a></td></tr>
+ <tr><td>16</td>
+   <td><a href="#" id='pk16' data-pk="16" data-type="text" data-clear="1"></a></td></tr>
+ <tr><td>17</td>
+   <td><a href="#" id='pk17' data-pk="17" data-type="text" data-clear="1"></a></td></tr>
+ <tr><td>18</td>
+   <td><a href="#" id='pk18' data-pk="18" data-type="text" data-clear="1"></a></td></tr>
+ <tr><td>19</td>
+   <td><a href="#" id='pk19' data-pk="19" data-type="text" data-clear="1"></a></td></tr>
+ <tr><td>20</td>
+   <td><a href="#" id='pk20' data-pk="20" data-type="text" data-clear="1"></a></td></tr>
 
 </table>
 
