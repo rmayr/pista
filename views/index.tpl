@@ -30,6 +30,9 @@ connections will work.
 %if 'jobs' in pistapages:
 <li><a href="jobs">Jobs</a> provides historic job data. Select the vehicle you're interested in seeing, select a date or range of dates and show the job history or download the data as CSV or text.</li>
 %end
+%if 'job-edit' in pistapages:
+<li><a href="job-edit">Job Edit</a> edit job details.</li>
+%end
 %if 'hw' in pistapages:
 <li><a href="hw">Hardware</a> displays information of the individual Greenwich devices.</li>
 %end
