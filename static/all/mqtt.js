@@ -93,5 +93,10 @@ function mqtt_publish(topic, payload, qos, retain)
 	message.qos		= qos;
 	message.retained	= retain;
 
-	mqtt.send(message);
+	console.log("MQTT PUB " + topic + ", " + payload)
+	try {
+		mqtt.send(message);
+	} catch (err) {
+		console.log("mqtt.send: " + err);
+	}
 }
