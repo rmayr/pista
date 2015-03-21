@@ -158,6 +158,10 @@
 	$('#inventorytid').on('change', function() {
 		var topic =  $('#inventorytid').children(':selected').attr('id');
 		console.log( "TOPIC is now " + topic );
+
+		// FIXME: I think it is *here* (ie. on change) that I'll have to
+		// re-SUB to MQTT, have the job list populated and then set a
+		// timeout to invoke .editable
 	});
 
 
