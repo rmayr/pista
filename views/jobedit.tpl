@@ -63,13 +63,13 @@
 
 </script>
 
-    <h2>Activo Job Editor (aje)</h2>
+    <h2>Activo Job Editor</h2>
 
 <div id='container'>
   <div>
     <p class='description'>
     Select a <acronym title="Tracker-ID">TID</acronym>
-    <select id='usertid'></select>
+    <select id='inventorytid'></select>
     </p>
   </div>
 </div>
@@ -130,6 +130,37 @@
 
 
     $(document).ready(function() {
+
+	/* Populate the SELECT box with a list of TID; the .id in each
+	   will contain the MQTT topic name for that particular TID. */
+        var $select = $('#inventorytid');
+        $.ajax({
+                        type: 'GET',
+                        url: 'api/inventorytopics',
+                        async: true,
+                        success: function(data) {
+
+                                // clear current content of select
+                                $select.html('');
+
+                                // iterate and append
+                                $.each(data.userlist, function(key, val) {
+                                        $select.append('<option id="' + val.id + '">' +
+                                                val.name + '</option>');
+                                })
+                            },
+                        error: function() {
+                                $select.html("none available");
+                                }
+        });
+
+
+	$('#inventorytid').on('change', function() {
+		var topic =  $('#inventorytid').children(':selected').attr('id');
+		console.log( "TOPIC is now " + topic );
+	});
+
+
     	/* Attempt to "wait a bit" so that MQTT has had time to read retained subs ... */
 	setTimeout(function(){
 		$('#jobtable a').editable({
