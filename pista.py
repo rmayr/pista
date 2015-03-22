@@ -858,7 +858,7 @@ def onevehicle(tid):
         'lon'       : None,
         'modif'     : None,
         'compass'   : None,
-        'activejob' : None,
+        'jobname'   : None,
     }
 
     key = "tid:%s" % tid

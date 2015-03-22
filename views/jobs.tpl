@@ -26,12 +26,14 @@ function handlerfunc(topic, payload) {
 	try {
 		var d = JSON.parse(payload);
 
-		if (d.job == -1) { return; }
+		if (d.job == 0 || d.job == null || d.job == undefined) { 
+			return; 
+		}
 
 		// console.log(topic + " " + payload);
 		var duration = null;
-		if (d.start != null && d.start != undefined && d.end != null && d.end != undefined) {
-			var elapsed = d.end - d.start;
+		if (d.jobstart != null && d.jobstart != undefined && d.jobend != null && d.jobend != undefined) {
+			var elapsed = d.jobend - d.jobstart;
 			var hours = Math.floor(elapsed / 3600);
 			var minutes = Math.floor((elapsed % 3600) / 60);
 			var seconds = Math.floor((elapsed % 3600) % 60); 
@@ -49,8 +51,8 @@ function handlerfunc(topic, payload) {
 			tid:		d.tid,
 			job:		d.job,
 			jobname:	d.jobname,
-			start:		d.start,
-			end:		d.end,
+			start:		d.jobstart,
+			end:		d.jobend,
 			duration:	duration,
 		};
 		upsert(o);
@@ -262,7 +264,7 @@ $(document).ready( function () {
     });
 
 
-    var tlist = [ config.jobtopic ];
+    var tlist = [ config.maptopic ];
     var sub = [];
 
     for (var n = 0; n < tlist.length; n++) {

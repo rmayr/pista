@@ -36,16 +36,18 @@ log = logging.getLogger(__name__)
 SEEN_DRIVING = 1200
 MAX_VOLTAGES = 10
 LASTLOC_EXPIRY = 3600
+MAX_JOBS = 16
+INACTIVE_JOB = 0
 
 storage = cf.g('features', 'storage', 'True')
 maptopic = None
 jobtopic = None
 devices = {}
 imeilist = {}
-jobs = {}
 jobnames = {}
 
 createalltables()
+jobnames[0] = ""
 
 geo = RevGeo(cf.config('revgeo'), storage=storage)
 wp = None
@@ -171,28 +173,6 @@ def push_map(mosq, device, device_data):
         mosq.publish(topic, payload, qos=0, retain=True)
     except Exception, e:
         log.error("Cannot publish to maptopic at [{0}]: {1}".format(topic, str(e)))
-
-def push_job(mosq, device, job_data):
-    ''' device is the original topic to which an update was published.
-    ''' 
-
-    if 'tid' not in job_data:
-        log.debug("Object {0} is not yet complete.".format(device))
-        return
-
-    try:
-        payload = json.dumps(job_data, sort_keys=True, separators=(',',':'))
-    except Exception, e:
-        log.error("Can't convert to JSON: {0}".format(str(e)))
-        return
-
-    try:
-        if device.startswith('/'):
-            device = device[1:]     # for Ben
-        topic = jobtopic.format(device)
-        mosq.publish(topic, payload, qos=0, retain=True)
-    except Exception, e:
-        log.error("Cannot publish to jobtopic at [{0}]: {1}".format(topic, str(e)))
 
 def on_info(mosq, userdata, msg):
     if (skip_retained and msg.retain == 1) or len(msg.payload) == 0:
@@ -455,6 +435,22 @@ def on_gpio(mosq, userdata, msg):
     watcher(mosq, msg.topic, msg.payload)
 
 def on_job(mosq, userdata, msg):
+    # topic owntracks/gw/B2/proxy/jobs/[active|<jobid>]
+    base_topic, suffix = tsplit(msg.topic)
+
+    parts = suffix.split('/')
+    last_part = parts[len(parts) - 1]
+
+    # suffix proxy/jobs/[active|<jobid>]
+    if last_part == 'active':
+        # handle this active job change event
+        on_activejob(mosq, msg, base_topic)
+    else:
+        # update the job name list
+        jobnames[int(last_part)] = msg.payload
+
+def on_activejob(mosq, msg, device):
+    # ignore retained 'active' messages (assume we have already processed)
     if (skip_retained and msg.retain == 1) or len(msg.payload) == 0:
         return
 
@@ -462,82 +458,60 @@ def on_job(mosq, userdata, msg):
 
     save_rawdata(msg.topic, msg.payload)
     watcher(mosq, msg.topic, msg.payload)
+        
+    # extract the job id and name from our topic
+    job = int(msg.payload)
+    jobname = msg.payload
 
-    # topic owntracks/gw/B2/proxy/jobs/[active|<jobid>]
-    base_topic, suffix = tsplit(msg.topic)
-    device = base_topic
+    if job in jobnames:
+        jobname = jobnames[job]
 
-    parts = suffix.split('/')
-    last_part = parts[len(parts) - 1]
+    # get the tid if we have it
+    tid = "??"
+    try:
+        if device in devices:
+           tid = devices[device]['tid']
+    except:
+        pass
 
-    # suffix proxy/jobs/[active|<jobid>]
-    if last_part == 'active':
-        # extract the job id and name from our topic
-        job = int(msg.payload)
-        jobname = msg.payload
+    now = int(time.time())
+    nowstr = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(now))
 
-        if job == -1:
-            jobname = "None"
-        elif job in jobnames:
-            jobname = jobnames[job]
-
-        # get the tid if we have it
-        tid = "??"
-        try:
-            if device in devices:
-                tid = devices[device]['tid']
-        except:
-            pass
-
-        now = int(time.time())
-        nowstr = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(now))
-
-        if not device in jobs:
-            jobs[device] = dict(topic=device, tid=tid, job=job, jobname=jobname, start=None, end=None)
-
-        # update the 'activejob' parameter in our map display
-        if maptopic:
-            if device in devices:
-                devices[device].update(dict(activejob=jobname))
-                push_map(mosq, device, devices[device])
-
-        if jobtopic:
-            if job == -1:
-                jobs[device].update(dict(end=now))
+    # update the job parameters in our map display
+    if maptopic:
+        if device in devices:
+            if job == INACTIVE_JOB:
+                devices[device].update(dict(jobend=now))
             else:
-                jobs[device].update(dict(job=job, jobname=jobname, start=now, end=None))
-            push_job(mosq, device, jobs[base_topic])
+                devices[device].update(dict(job=job, jobname=jobname, jobstart=now, jobend=None))
+            push_map(mosq, device, devices[device])
 
-        if storage:
-            if job == -1:
-                try:
-                    jb = Job.get(Job.topic == device, Job.end == None)
-                    jb.end = nowstr
-                    jb.save()
-                except Job.DoesNotExist:
-                    log.error("Received 'end' event for job with no active row")
-                except Exception, e:
-                    raise
-                    log.error("DB error on UPDATE Job: {0}".format(str(e)))
+    if storage:
+        if job == INACTIVE_JOB:
+            try:
+                jb = Job.get(Job.topic == device, Job.end == None)
+                jb.end = nowstr
+                jb.save()
+            except Job.DoesNotExist:
+                log.error("Received 'end' event for job with no active row")
+            except Exception, e:
+                raise
+                log.error("DB error on UPDATE Job: {0}".format(str(e)))
   
-            else:
-                try:
-                    data = {
-                        'topic'   : device,
-                        'tid'     : tid,
-                        'job'     : job,
-                        'jobname' : jobname,
-                        'start'   : nowstr,
-                    }
-                    jb = Job(**data)
-                    jb.save()
-                except Exception, e:
-                    log.error("Cannot store JOB for topic {0}: {1}".format(msg.topic, str(e)))
+        else:
+            try:
+                data = {
+                    'topic'   : device,
+                    'tid'     : tid,
+                    'job'     : job,
+                    'jobname' : jobname,
+                    'start'   : nowstr,
+                }
+                jb = Job(**data)
+                jb.save()
+            except Exception, e:
+                log.error("Cannot store JOB for topic {0}: {1}".format(msg.topic, str(e)))
  
-    else:
-        # update the job name list
-        jobnames[int(last_part)] = msg.payload
-
 def on_operator_watch(mosq, userdata, msg):
     if (skip_retained and msg.retain == 1) or len(msg.payload) == 0:
         return
