@@ -125,16 +125,6 @@ base_topics = [ 'owntracks/gw', 'owntracks/jane']
 
 maptopic = "_owntracks/_map/{0}"
 
-# If not None, jobtopic is a format string used to publish objects to Pista's
-# Job page. {0} is filled with the original location topic
-# If this is not defined (i.e. None) those pages will be empty. The same rules
-# as for `watcher' apply here.
-
-# _owntracks/_job/<fulltopic>
-# _owntracks/_job/owntracks/echle/BB/status
-
-jobtopic = "_owntracks/_job/{0}"
-
 # If the `geofences' feature is enabled and alert_topic is not None, it is an
 # MQTT topic name to which geofence enter/leave events will be published. The
 # payload will consist of a JSON object which is populated with the elements
@@ -297,8 +287,6 @@ console_topic = "_owntracks/_look/#"
 ; end with a slash.
 
 maptopic = "_owntracks/_map/+/+/+"
-
-jobtopic = "_owntracks/_job/+/+/+"
 
 
 # TABLE:

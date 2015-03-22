@@ -20,7 +20,7 @@ function getPopupText(user, lat, lon) {
 			<tr><td>Altitude</td><td>{{alt}}</td></tr>\
 			<tr><td>CoG</td><td>{{compass}}</td></tr>\
 			<tr><td>Updated</td><td>{{dstamp}}</td></tr>\
-			<tr><td>Job</td><td>{{activejob}}</td></tr>\
+			<tr><td>Last Job</td><td>{{jobname}}</td></tr>\
 		</table>";
 
 	try {

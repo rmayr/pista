@@ -33,8 +33,10 @@ function handlerfunc(topic, payload) {
 		// console.log(topic + " " + payload);
 	
 		d.status =  (d.status === undefined) ? null : d.status;
+		d.jobname =  (d.jobname === undefined) ? null : d.jobname;
 		d.vel = (d.vel) ? Math.round(d.vel) : "";
 		d.alt = (d.alt) ? Math.round(d.alt) + "m" : "";
+
 		var latlon = d.lat + "," + d.lon;
 		var tstamp = d.dstamp;
 		var addr = d.addr;
@@ -43,6 +45,7 @@ function handlerfunc(topic, payload) {
 		var odo = d.odo ? d.odo : 0;
 	
 		var mapslink = '<a href="http://maps.google.com/?q=' + latlon + '">' + addr + '</a>';
+
 		var o = {
 			topic:          d.topic,
 			status:         d.status,
@@ -55,6 +58,7 @@ function handlerfunc(topic, payload) {
 			addr: 	        addr,
 			location:       mapslink,
 			tid:            tid,
+                        jobname:        d.jobname,
 			cc:		d.cc,
 			t:		d.t,
 			trip:		d.trip,
@@ -279,12 +283,20 @@ $(document).ready( function () {
 			render: 'location',
                         "targets" : [10],
                 },
+                {
+                        className: 'jobname',
+                        name: 'jobname',
+                        title: "Last Job",
+                        data: null,
+                        render: 'jobname',
+                        "targets" : [11],
+                },
 		{
 			className: 'trip',
 			name: 'trip',
 			title: "Trip/Odo",
 			data: null,
-                        "targets" : [11],
+                        "targets" : [12],
 			render : function(data, type, row) {
 				trip = data.trip;
 				odo = data.odo;

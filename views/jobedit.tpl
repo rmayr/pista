@@ -16,7 +16,7 @@
     $.fn.editable.defaults.mode = 'inline';
 
     var joblist = [];
-    var maxjobs = 20;
+    var maxjobs = 16;
 
     for (var i = 0; i < maxjobs; i++) {
     	joblist[i] = "";
@@ -114,14 +114,6 @@
    <td><a href="#" id='pk15' data-pk="15" data-type="text" data-clear="1"></a></td></tr>
  <tr><td>16</td>
    <td><a href="#" id='pk16' data-pk="16" data-type="text" data-clear="1"></a></td></tr>
- <tr><td>17</td>
-   <td><a href="#" id='pk17' data-pk="17" data-type="text" data-clear="1"></a></td></tr>
- <tr><td>18</td>
-   <td><a href="#" id='pk18' data-pk="18" data-type="text" data-clear="1"></a></td></tr>
- <tr><td>19</td>
-   <td><a href="#" id='pk19' data-pk="19" data-type="text" data-clear="1"></a></td></tr>
- <tr><td>20</td>
-   <td><a href="#" id='pk20' data-pk="20" data-type="text" data-clear="1"></a></td></tr>
 
 </table>
 
