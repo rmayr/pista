@@ -106,7 +106,8 @@ def on_connect(mosq, userdata, rc):
         mqttc.subscribe("%s/+/info" % t, 0)
         mqttc.subscribe("%s/+/voltage/+" % t, 0)
         mqttc.subscribe("%s/+/gpio/+" % t, 0)
-        mqttc.subscribe("%s/+/proxy/jobs/+" % t, 0)
+        if cf.g('features', 'activo', False) == True:
+            mqttc.subscribe("%s/+/proxy/jobs/+" % t, 0)
 
     if cf.o2smonitor:
         mqttc.subscribe(cf.o2smonitor + "/+", 2)
@@ -435,6 +436,10 @@ def on_gpio(mosq, userdata, msg):
     watcher(mosq, msg.topic, msg.payload)
 
 def on_job(mosq, userdata, msg):
+    # ignore if 'activo' hasn't been enabled
+    if cf.g('features', 'activo', False) == False:
+        return
+
     # topic owntracks/gw/B2/proxy/jobs/[active|<jobid>]
     base_topic, suffix = tsplit(msg.topic)
 
@@ -1042,7 +1047,9 @@ for t in base_topics:
     mqttc.message_callback_add("{0}/+/start".format(t), on_start)
     mqttc.message_callback_add("{0}/+/obd2/#".format(t), on_obd2)
     mqttc.message_callback_add("{0}/+/fms/#".format(t), on_fms)
-    mqttc.message_callback_add("{0}/+/proxy/jobs/+".format(t), on_job)
+
+    if cf.g('features', 'activo', False) == True:
+        mqttc.message_callback_add("{0}/+/proxy/jobs/+".format(t), on_job)
 
     if cf.o2smonitor:
         mqttc.message_callback_add(cf.o2smonitor + "/+", on_tell)
