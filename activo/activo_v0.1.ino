@@ -21,7 +21,7 @@
 // lcd
 #define LCD_CHARS               20
 #define LCD_LINES               4
-#define JOB_ACTIVE_ACK_TIMEOUT  15000
+#define JOB_ACTIVE_ACK_TIMEOUT  20000
 #define JOB_ACTIVE_VIEW_REFRESH 1000
 
 // job constraints
