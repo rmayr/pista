@@ -25,12 +25,6 @@ function errorfunc(status, reason) {
 function handlerfunc(topic, payload) {
 	try {
 		var d = JSON.parse(payload);
-
-		if (d._type != 'location') {
-			// console.log('Not a location: ignoring ' + payload);
-			return;
-		}
-		// console.log(topic + " " + payload);
 	
 		d.status =  (d.status === undefined) ? null : d.status;
 		d.jobname =  (d.jobname === undefined) ? null : d.jobname;
@@ -286,7 +280,7 @@ $(document).ready( function () {
                 {
                         className: 'jobname',
                         name: 'jobname',
-                        title: "Last Job",
+                        title: "Job",
                         data: null,
                         render: 'jobname',
                         "targets" : [11],
@@ -334,7 +328,8 @@ $(document).ready( function () {
 
 <div class='toggle-bar'>
 Toggle: <a href="#" class="toggle-vis" data-column="0">Topic</a> -
-        <a href="#" class="toggle-vis" data-column="6">LatLon</a>
+        <a href="#" class="toggle-vis" data-column="6">LatLon</a> -
+        <a href="#" class="toggle-vis" data-column="11">Job</a>
 </div>
 
 <div>

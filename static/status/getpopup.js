@@ -12,7 +12,7 @@ Speed   : {{vel}}\n\
 Altitude: {{alt}}\n\
 CoG     : {{compass}}\n\
 Updated : {{dstamp}}\n\
-Last Job: {{jobname}}\n\
+Job     : {{jobname}}\n\
 ";
 
         try {

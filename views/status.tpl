@@ -105,9 +105,7 @@
 	var d;
 	try {
 		d = JSON.parse(payload);
-		if (d._type != 'location') {
-			return;
-		}
+
 		if (d.tid) {
 			var tid = d.tid;
 			/* Use topic in map data; not extended MQTT topic */

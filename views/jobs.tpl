@@ -26,17 +26,11 @@ function handlerfunc(topic, payload) {
 	try {
 		var d = JSON.parse(payload);
 
-		if (d.job == 0 || d.job == null || d.job == undefined) { 
-			return; 
-		}
-
-		// console.log(topic + " " + payload);
 		var duration = null;
-		if (d.jobstart != null && d.jobstart != undefined && d.jobend != null && d.jobend != undefined) {
-			var elapsed = d.jobend - d.jobstart;
-			var hours = Math.floor(elapsed / 3600);
-			var minutes = Math.floor((elapsed % 3600) / 60);
-			var seconds = Math.floor((elapsed % 3600) % 60); 
+		if (d.jobduration != null && d.jobduration != undefined) {
+			var hours = Math.floor(d.jobduration / 3600);
+			var minutes = Math.floor((d.jobduration % 3600) / 60);
+			var seconds = Math.floor((d.jobduration % 3600) % 60); 
 			if (hours === 0 && minutes === 0) {
 				duration = seconds + "s";
 			} else if (hours === 0) {
@@ -51,8 +45,8 @@ function handlerfunc(topic, payload) {
 			tid:		d.tid,
 			job:		d.job,
 			jobname:	d.jobname,
-			start:		d.jobstart,
-			end:		d.jobend,
+			jobstart:	d.jobstart,
+			jobend:		d.jobend,
 			duration:	duration,
 		};
 		upsert(o);
@@ -125,7 +119,7 @@ $(document).ready( function () {
                         "targets" : [1],
 			render : function(data, type, row) {
 				var icon = 'red';
-				if (data.end === null || data.end === undefined) {
+				if (data.jobend === null || data.jobend === undefined) {
 					icon = 'green';
 				}
 				return '<img src="images/' + icon + 'dot.gif" />';
@@ -157,8 +151,8 @@ $(document).ready( function () {
                         "targets" : [4],
 		},
 		{
-			className: 'start',
-			name: 'start',
+			className: 'jobstart',
+			name: 'jobstart',
 			title: "Start",
 			data: null,
                         "targets" : [5],
@@ -172,7 +166,11 @@ $(document).ready( function () {
 				 * or
 				 * 	dd<HH:MM:SS
 				 */
-				var utcSeconds = data.start * 1000;
+                                if (data.jobstart === null || data.jobstart === undefined) {
+                                        return null;
+                                }
+
+				var utcSeconds = data.jobstart * 1000;
 				var d = moment.utc(utcSeconds).local();
 
 				var daystring = d.format("DD");
@@ -199,8 +197,8 @@ $(document).ready( function () {
 			}
 		},
 		{
-                        className: 'end',
-                        name: 'end',
+                        className: 'jobend',
+                        name: 'jobend',
                         title: "End",
                         data: null,
                         "targets" : [6],
@@ -214,11 +212,11 @@ $(document).ready( function () {
                                  * or
                                  *      dd<HH:MM:SS
                                  */
-				if (data.end === null || data.end === undefined) {
+				if (data.jobend === null || data.jobend === undefined) {
 					return null;
 				}
 
-                                var utcSeconds = data.end * 1000;
+                                var utcSeconds = data.jobend * 1000;
                                 var d = moment.utc(utcSeconds).local();
 
                                 var daystring = d.format("DD");
@@ -264,7 +262,7 @@ $(document).ready( function () {
     });
 
 
-    var tlist = [ config.maptopic ];
+    var tlist = [ config.jobtopic ];
     var sub = [];
 
     for (var n = 0; n < tlist.length; n++) {
