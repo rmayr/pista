@@ -92,6 +92,7 @@ class Job(OwntracksModel):
     jobname         = CharField(null=True, max_length=20)
     start           = DateTimeField(default=datetime.datetime.now, index=True)
     end             = DateTimeField(null=True)
+    duration        = IntegerField(null=True)
 
     class Meta:
         indexes = (

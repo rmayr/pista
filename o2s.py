@@ -539,6 +539,7 @@ def on_activejob(mosq, msg, device):
             try:
                 jb = Job.get(Job.topic == device, Job.end == None)
                 jb.end = nowstr
+                jb.duration = jobduration
                 jb.save()
             except Job.DoesNotExist:
                 log.error("Received 'end' event for job with no active row")
