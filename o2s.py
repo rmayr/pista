@@ -44,6 +44,7 @@ maptopic = None
 jobtopic = None
 devices = {}
 imeilist = {}
+jobs = {}
 jobnames = {}
 
 createalltables()
@@ -153,14 +154,12 @@ def push_map(mosq, device, device_data):
         device_data contains all we currently know of this device. If the
         data doesn't have a TID, do not publish as this means the object
         isn't yet complete, i.e. we don't yet know its position.
-        Ensure device_data is marked as type 'location'
     '''
 
     if 'tid' not in device_data:
         log.debug("Object {0} is not yet complete.".format(device))
         return
 
-    device_data['_type'] = 'location'
     try:
         payload = json.dumps(device_data, sort_keys=True, separators=(',',':'))
     except Exception, e:
@@ -174,6 +173,33 @@ def push_map(mosq, device, device_data):
         mosq.publish(topic, payload, qos=0, retain=True)
     except Exception, e:
         log.error("Cannot publish to maptopic at [{0}]: {1}".format(topic, str(e)))
+
+def push_job(mosq, device, job_data):
+    ''' device is the original topic to which an update was published.
+        job_data contains all we currently know of this device. If the
+        data doesn't have a TID, do not publish as this means the object
+        isn't yet complete, i.e. we don't yet know its position.
+    '''
+
+    if 'tid' not in job_data:
+        log.debug("Object {0} is not yet complete.".format(device))
+        return
+
+    try:
+        payload = json.dumps(job_data, sort_keys=True, separators=(',',':'))
+    except Exception, e:
+        log.error("Can't convert to JSON: {0}".format(str(e)))
+        return
+
+    log.debug("Job payload: {0}".format(payload))
+
+    try:
+        if device.startswith('/'):
+            device = device[1:]     # for Ben
+        topic = jobtopic.format(device)
+        mosq.publish(topic, payload, qos=0, retain=True)
+    except Exception, e:
+        log.error("Cannot publish to jobtopic at [{0}]: {1}".format(topic, str(e)))
 
 def on_info(mosq, userdata, msg):
     if (skip_retained and msg.retain == 1) or len(msg.payload) == 0:
@@ -463,39 +489,57 @@ def on_activejob(mosq, msg, device):
 
     save_rawdata(msg.topic, msg.payload)
     watcher(mosq, msg.topic, msg.payload)
-        
-    # extract the job id and name from our topic
-    job = int(msg.payload)
-    jobname = msg.payload
 
-    if job in jobnames:
-        jobname = jobnames[job]
-
-    # get the tid if we have it
-    tid = "??"
-    try:
-        if device in devices:
-           tid = devices[device]['tid']
-    except:
-        pass
+    # initialise our job list    
+    if device not in jobs:
+        jobs[device] = dict(topic=device)
+  
+    # update the tid from our map data
+    tid = '??'
+    if device in devices and 'tid' in devices[device]:
+        tid = devices[device]['tid']
+        jobs[device].update(dict(tid=tid))
 
     now = int(time.time())
     nowstr = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(now))
 
+    # extract the job id
+    job = int(msg.payload)
+
+    # calculate the job metadata
+    jobname = None
+    jobduration = None
+    if job == INACTIVE_JOB:
+        if 'jobstart' in jobs[device] and jobs[device]['jobstart'] != None:
+            jobduration = now - jobs[device]['jobstart']
+    else:
+        if job in jobnames:
+            jobname = jobnames[job]
+        else:
+            jobname = msg.payload
+
     # update the job parameters in our map display
     if maptopic:
         if device in devices:
-            if job == INACTIVE_JOB:
-                devices[device].update(dict(jobend=now))
-            else:
-                devices[device].update(dict(job=job, jobname=jobname, jobstart=now, jobend=None))
+            devices[device].update(dict(job=job, jobname=jobname))
             push_map(mosq, device, devices[device])
+
+    # update the job topic
+    if jobtopic:
+        if device in jobs:
+            if job == INACTIVE_JOB:
+                jobs[device].update(dict(jobend=now, jobduration=jobduration))
+            else:
+                jobs[device].update(dict(job=job, jobname=jobname, jobstart=now, jobend=None, jobduration=None))
+            if 'jobstart' in jobs[device]:
+                push_job(mosq, device, jobs[device])
 
     if storage:
         if job == INACTIVE_JOB:
             try:
                 jb = Job.get(Job.topic == device, Job.end == None)
                 jb.end = nowstr
+                jb.duration = jobduration
                 jb.save()
             except Job.DoesNotExist:
                 log.error("Received 'end' event for job with no active row")
@@ -596,7 +640,6 @@ def payload2location(topic, payload):
             csvreader = csv.DictReader(io.StringIO(u(payload)), fieldnames=fieldnames)
             for r in csvreader:
                 item = {
-                    '_type' : 'location',
                     'tid'   : r.get('tid', '??'),
                     'tst'   : int(r.get('tst', 0), 16),
                     't'     : r.get('t', 'X'),
@@ -669,33 +712,26 @@ def watcher(mosq, topic, data):
     time_str = None
 
     # FIXME: support waypoint, alarm and alert
-    if '_type' in data:
-        if data['_type'] == 'location':
-            if 'tst' in data:
-                tstamp = datetime.datetime.fromtimestamp(data['tst']).strftime(time_format)
-            t   = data.get('t')
-            tid = data.get('tid')
-            cog = data.get('cog')
-            vel = data.get('vel')
-            vel = "%3d" % data.get('vel')
-            alt = data.get('alt')
-            trip = data.get('trip')
-            dist = data.get('dist')
-            lat = data.get('lat')
-            lon = data.get('lon')
-            addr = data.get('addr', '')
-            activejob = data.get('activejob', '')
+    if 'tst' in data:
+        tstamp = datetime.datetime.fromtimestamp(data['tst']).strftime(time_format)
+    t   = data.get('t')
+    tid = data.get('tid')
+    cog = data.get('cog')
+    vel = "%3d" % data.get('vel')
+    alt = data.get('alt')
+    trip = data.get('trip')
+    dist = data.get('dist')
+    lat = data.get('lat')
+    lon = data.get('lon')
+    addr = data.get('addr', '')
 
-            loc = "%s,%s" % (lat, lon)
-            s = "t=%s tid=%-2s c=%-3s v=%-6s a=%-6s trip=%-7s dist=%-5s loc=%-20s %s %s" % (
-                    t, tid, cog, vel, alt, trip, dist, loc, addr, activejob
-                )
-            s = fmt % (tstamp, topic, s)
-            bb = bytearray(s.encode('utf-8'))
-            mosq.publish(wt, bb, qos=0, retain=False)
-    else:
-        s = fmt % (tstamp, topic, json.dumps(data))
-        mosq.publish(wt, s, qos=0, retain=False)
+    loc = "%s,%s" % (lat, lon)
+    s = "t=%s tid=%-2s c=%-3s v=%-6s a=%-6s trip=%-7s dist=%-5s loc=%-20s %s" % (
+            t, tid, cog, vel, alt, trip, dist, loc, addr
+        )
+    s = fmt % (tstamp, topic, s)
+    bb = bytearray(s.encode('utf-8'))
+    mosq.publish(wt, bb, qos=0, retain=False)
 
 
 def on_message(mosq, userdata, msg):
@@ -720,8 +756,6 @@ def on_message(mosq, userdata, msg):
         return
 
 
-    types = ['location', 'waypoint']
-
     payload = str(msg.payload)
     save_rawdata(topic, msg.payload)
 
@@ -732,11 +766,8 @@ def on_message(mosq, userdata, msg):
     if item is None or type(item) != dict:
         return
 
-    if '_type' not in item or item['_type'] not in types:
-        return
     if 'lat' not in item or 'lon' not in item:
         return
-
 
     tid = item.get('tid')
     tst = item.get('tst', int(time.time()))
@@ -745,7 +776,6 @@ def on_message(mosq, userdata, msg):
     trip = item.get('trip', 0)
     dist = item.get('dist', 0)
     vel = item.get('vel', 0)
-
 
     t_ignore = cf.g('features', 't_store', [ 'p' ])
     if item['t'] in t_ignore:
@@ -763,27 +793,6 @@ def on_message(mosq, userdata, msg):
         except Exception, e:
             log.error("Reconnect to DB: {0}".format(str(e)))
             return
-
-    if item['_type'] == 'waypoint':
-        # FIXME: publish this as geofence for maps
-
-        if storage:
-            # Upsert
-            try:
-                db.execute_sql("""
-                      REPLACE INTO waypoint
-                      (topic, tid, lat, lon, tst, rad, waypoint)
-                      VALUES (%s, %s, %s, %s, %s, %s, %s)
-                      """, (
-                          item['topic'], item['tid'], item['lat'],
-                          item['lon'], tstamp, item['rad'], item['desc'],))
-            except Exception, e:
-                log.error("Cannot UPSERT waypoint into DB: {0}".format(str(e)))
-
-            return
-
-    if item['_type'] != 'location':
-        return
 
     item['ghash'] = None
     item['cc']    = '??'
@@ -865,7 +874,6 @@ def on_message(mosq, userdata, msg):
             't'       : item.get('t', '-'),
             'trip'    : item.get('trip'),
             'dist'    : item.get('dist'),
-            'activejob' : item.get('activejob'),
         }
     # Republish to map.
     if maptopic:
