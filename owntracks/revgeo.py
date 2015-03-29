@@ -55,6 +55,8 @@ class RevGeo(object):
 
         src = methods[api][0]
         func = methods[api][1]
+        # print "FIXME: rev lookup src={0}, lat={1}, lon={2} method={3}".format(src, lat, lon, api)
+
         data = func(lat, lon)
         if data is None or type(data) is not dict:
             return None
@@ -97,7 +99,7 @@ class RevGeo(object):
             maplang = self.region_bias
             url = 'http://maps.googleapis.com/maps/api/geocode/json' + \
                     '?latlng=%s,%s&sensor=false&language=%s&region=%s' % (lat, lon, maplang, self.region_bias)
-            google_data = json.load(urllib2.urlopen(url))
+            google_data = json.load(urllib2.urlopen(url, timeout=5))
 
             revgeo = { }
             if 'status' in google_data and google_data['status'] != 'OK':
