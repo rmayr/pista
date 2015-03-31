@@ -25,6 +25,10 @@ function errorfunc(status, reason) {
 function handlerfunc(topic, payload) {
 	try {
 		var d = JSON.parse(payload);
+
+		if (d._type != 'location') {
+			return;
+		}
 	
 		d.status =  (d.status === undefined) ? null : d.status;
 		d.jobname =  (d.jobname === undefined) ? null : d.jobname;
@@ -52,7 +56,7 @@ function handlerfunc(topic, payload) {
 			addr: 	        addr,
 			location:       mapslink,
 			tid:            tid,
-                        jobname:        d.jobname,
+            jobname:        d.jobname,
 			cc:		d.cc,
 			t:		d.t,
 			trip:		d.trip,

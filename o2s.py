@@ -154,12 +154,14 @@ def push_map(mosq, device, device_data):
         device_data contains all we currently know of this device. If the
         data doesn't have a TID, do not publish as this means the object
         isn't yet complete, i.e. we don't yet know its position.
+        Ensure device_data is marked as type 'location'
     '''
 
     if 'tid' not in device_data:
         log.debug("Object {0} is not yet complete.".format(device))
         return
 
+    device_data['_type'] = 'location'
     try:
         payload = json.dumps(device_data, sort_keys=True, separators=(',',':'))
     except Exception, e:
@@ -712,27 +714,32 @@ def watcher(mosq, topic, data):
     time_str = None
 
     # FIXME: support waypoint, alarm and alert
-    if 'tst' in data:
-        tstamp = datetime.datetime.fromtimestamp(data['tst']).strftime(time_format)
-    t   = data.get('t')
-    tid = data.get('tid')
-    cog = data.get('cog')
-    vel = "%3d" % data.get('vel')
-    alt = data.get('alt')
-    trip = data.get('trip')
-    dist = data.get('dist')
-    lat = data.get('lat')
-    lon = data.get('lon')
-    addr = data.get('addr', '')
+    if '_type' in data:
+        if data['_type'] == 'location':
+            if 'tst' in data:
+                tstamp = datetime.datetime.fromtimestamp(data['tst']).strftime(time_format)
+            t   = data.get('t')
+            tid = data.get('tid')
+            cog = data.get('cog')
+            vel = data.get('vel')
+            vel = "%3d" % data.get('vel')
+            alt = data.get('alt')
+            trip = data.get('trip')
+            dist = data.get('dist')
+            lat = data.get('lat')
+            lon = data.get('lon')
+            addr = data.get('addr', '')
 
-    loc = "%s,%s" % (lat, lon)
-    s = "t=%s tid=%-2s c=%-3s v=%-6s a=%-6s trip=%-7s dist=%-5s loc=%-20s %s" % (
-            t, tid, cog, vel, alt, trip, dist, loc, addr
-        )
-    s = fmt % (tstamp, topic, s)
-    bb = bytearray(s.encode('utf-8'))
-    mosq.publish(wt, bb, qos=0, retain=False)
-
+            loc = "%s,%s" % (lat, lon)
+            s = "t=%s tid=%-2s c=%-3s v=%-6s a=%-6s trip=%-7s dist=%-5s loc=%-20s %s" % (
+                    t, tid, cog, vel, alt, trip, dist, loc, addr
+                )
+            s = fmt % (tstamp, topic, s)
+            bb = bytearray(s.encode('utf-8'))
+            mosq.publish(wt, bb, qos=0, retain=False)
+    else:
+        s = fmt % (tstamp, topic, json.dumps(data))
+        mosq.publish(wt, s, qos=0, retain=False)
 
 def on_message(mosq, userdata, msg):
     
@@ -756,6 +763,8 @@ def on_message(mosq, userdata, msg):
         return
 
 
+    types = ['location', 'waypoint']
+
     payload = str(msg.payload)
     save_rawdata(topic, msg.payload)
 
@@ -766,6 +775,8 @@ def on_message(mosq, userdata, msg):
     if item is None or type(item) != dict:
         return
 
+    if '_type' not in item or item['_type'] not in types:
+        return
     if 'lat' not in item or 'lon' not in item:
         return
 
@@ -793,6 +804,27 @@ def on_message(mosq, userdata, msg):
         except Exception, e:
             log.error("Reconnect to DB: {0}".format(str(e)))
             return
+
+    if item['_type'] == 'waypoint':
+        # FIXME: publish this as geofence for maps
+
+        if storage:
+            # Upsert
+            try:
+                db.execute_sql("""
+                      REPLACE INTO waypoint
+                      (topic, tid, lat, lon, tst, rad, waypoint)
+                      VALUES (%s, %s, %s, %s, %s, %s, %s)
+                      """, (
+                          item['topic'], item['tid'], item['lat'],
+                          item['lon'], tstamp, item['rad'], item['desc'],))
+            except Exception, e:
+                log.error("Cannot UPSERT waypoint into DB: {0}".format(str(e)))
+
+            return
+
+    if item['_type'] != 'location':
+        return
 
     item['ghash'] = None
     item['cc']    = '??'

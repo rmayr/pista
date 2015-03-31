@@ -53,39 +53,40 @@ function handlerfunc(topic, payload) {
 	try {
 		var d = $.parseJSON(payload);
 
-		var date = new Date(d.tst * 1000); //convert epoch time to datetime
-		var tstamp = localstamp(d.tst);
+		if (d._type == 'location') {
 
-		d.dstamp = tstamp;	// Override server-data
+			var date = new Date(d.tst * 1000); //convert epoch time to datetime
+			var tstamp = localstamp(d.tst);
 
-		$('#msg-date').text(tstamp);
-		$('#msg-user').text(d.tid);
-		$('#link-revgeo').text(d.addr);
-		$('#link-revgeo').prop("href", 'http://maps.google.com/?q=' + d.lat + ',' + d.lon);
-		$('#msg-lat').text(d.lat);
-		$('#msg-lon').text(d.lon);
+			d.dstamp = tstamp;	// Override server-data
 
-		if (d.vel) {
-			$('#msg-vel').text(Math.round(d.vel) + "k");
+			$('#msg-date').text(tstamp);
+			$('#msg-user').text(d.tid);
+			$('#link-revgeo').text(d.addr);
+			$('#link-revgeo').prop("href", 'http://maps.google.com/?q=' + d.lat + ',' + d.lon);
+			$('#msg-lat').text(d.lat);
+			$('#msg-lon').text(d.lon);
+
+			if (d.vel) {
+				$('#msg-vel').text(Math.round(d.vel) + "k");
+			}
+			if (d.alt) {
+				$('#msg-alt').text(Math.round(d.alt) + "m");
+			}
+
+			if (d.cog) {
+				$('#img-cog').show();
+				// -90 because original arrow points right (90)
+				$('#img-cog').rotate(parseFloat(d.cog) - 90.0);
+			} else {
+					$('#img-cog').hide();
+			}
+			mapit(topic, d, date);
 		}
-		if (d.alt) {
-			$('#msg-alt').text(Math.round(d.alt) + "m");
-		}
 
-		if (d.cog) {
-			$('#img-cog').show();
-			// -90 because original arrow points right (90)
-			$('#img-cog').rotate(parseFloat(d.cog) - 90.0);
-		} else {
-			$('#img-cog').hide();
-		}
-		mapit(topic, d, date);
-	
-/*
 		if (d._type == 'fence') {
 			draw_geofence(d);
 		}
-*/
 	} catch (err) {
 		console.log("JSON parse error " + err);
 		return;
