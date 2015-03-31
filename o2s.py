@@ -642,6 +642,7 @@ def payload2location(topic, payload):
             csvreader = csv.DictReader(io.StringIO(u(payload)), fieldnames=fieldnames)
             for r in csvreader:
                 item = {
+                    '_type' : 'location',
                     'tid'   : r.get('tid', '??'),
                     'tst'   : int(r.get('tst', 0), 16),
                     't'     : r.get('t', 'X'),
@@ -761,7 +762,6 @@ def on_message(mosq, userdata, msg):
         # mosq.publish(maptopic + "/" + topic, None, qos=2, retain=True)
 
         return
-
 
     types = ['location', 'waypoint']
 
