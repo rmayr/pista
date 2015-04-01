@@ -379,7 +379,8 @@ def page_console():
 @app.route('/table')
 @auth_basic(check_auth)
 def page_table():
-    return template('table', pistapages=cf.g('pista', 'pages'))
+    activo = cf.g('features', 'activo', False)
+    return template('table', pistapages=cf.g('pista', 'pages'), activo=activo)
 
 @app.route('/jobs')
 @auth_basic(check_auth)
@@ -418,6 +419,7 @@ def config_js():
     if 'basic_auth' in newconf and newconf['basic_auth'] == False:
         basic_auth = False
 
+    newconf['activo'] = cf.g('features', 'activo', False)
     for key in newconf:
         if type(newconf[key]) == str:
             if newconf[key][0] != '"' and newconf[key][0] != '"':

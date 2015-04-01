@@ -56,7 +56,7 @@ function handlerfunc(topic, payload) {
 			addr: 	        addr,
 			location:       mapslink,
 			tid:            tid,
-            jobname:        d.jobname,
+		        jobname:        d.jobname,
 			cc:		d.cc,
 			t:		d.t,
 			trip:		d.trip,
@@ -332,8 +332,10 @@ $(document).ready( function () {
 
 <div class='toggle-bar'>
 Toggle: <a href="#" class="toggle-vis" data-column="0">Topic</a> -
-        <a href="#" class="toggle-vis" data-column="6">LatLon</a> -
-        <a href="#" class="toggle-vis" data-column="11">Job</a>
+        <a href="#" class="toggle-vis" data-column="6">LatLon</a>
+%if activo == True:
+        - <a href="#" class="toggle-vis" data-column="11">Job</a>
+%end
 </div>
 
 <div>

@@ -31,4 +31,7 @@ var config = {
    // Job
    jobtopic: {{ !jobtopic }},
 
+   // Activo enabled?
+   activo: {{ !activo }},
+
 };
