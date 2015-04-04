@@ -287,6 +287,7 @@ $(document).ready( function () {
                         title: "Job",
                         data: null,
                         render: 'jobname',
+			visible: config.activo, // True if Activo true
                         "targets" : [11],
                 },
 		{
