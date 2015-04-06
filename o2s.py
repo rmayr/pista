@@ -830,6 +830,12 @@ def on_message(mosq, userdata, msg):
     item['cc']    = '??'
     item['addr']  = 'unknown location'
     event_desc = "(%s, %s)" % (lat, lon)
+
+
+    time_format = "%d.%m %H:%M:%S"
+    p_tstamp = datetime.datetime.fromtimestamp(int(time.time())).strftime(time_format)
+
+
     g = geo.rev(lat, lon, api='google')
     if g is not None:
         item['ghash'] = g.get('ghash')
@@ -838,7 +844,7 @@ def on_message(mosq, userdata, msg):
             event_desc = g.get('addr')
             item['addr'] = g.get('addr')
             addr = g.get('addr')
-        print "%s %-2s %5d %s [%s] %s,%s" % (g.get('cached', -1), tid, vel, addr, item.get('ghash'), item.get('lat'), item.get('lon'))
+        print "%s %s %-2s %5d %s [%s] %s,%s" % (p_tstamp, g.get('cached', -1), tid, vel, addr, item.get('ghash'), item.get('lat'), item.get('lon'))
     else:
         print "  %-2s" % tid
 
