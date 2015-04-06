@@ -833,7 +833,7 @@ def on_message(mosq, userdata, msg):
 
 
     time_format = "%d.%m %H:%M:%S"
-    p_tstamp = datetime.datetime.fromtimestamp(int(time.time())).strftime(time_format)
+    p_tstamp = datetime.datetime.fromtimestamp(int(tst)).strftime(time_format)
 
 
     g = geo.rev(lat, lon, api='google')
