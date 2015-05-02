@@ -46,9 +46,15 @@ devices = {}
 imeilist = {}
 jobs = {}
 jobnames = {}
+tasknames = {}
+placenames = {}
+machinenames = {}
 
 createalltables()
 jobnames[0] = ""
+tasknames[0] = ""
+placenames[0] = ""
+machinenames[0] = ""
 
 geo = RevGeo(cf.config('revgeo'), storage=storage)
 wp = None
@@ -108,7 +114,7 @@ def on_connect(mosq, userdata, rc):
         mqttc.subscribe("%s/+/voltage/+" % t, 0)
         mqttc.subscribe("%s/+/gpio/+" % t, 0)
         if cf.g('features', 'activo', False) == True:
-            mqttc.subscribe("%s/+/proxy/jobs/+" % t, 0)
+            mqttc.subscribe("%s/+/proxy/jobs/#" % t, 0)
 
     if cf.o2smonitor:
         mqttc.subscribe(cf.o2smonitor + "/+", 2)
@@ -472,15 +478,49 @@ def on_job(mosq, userdata, msg):
     base_topic, suffix = tsplit(msg.topic)
 
     parts = suffix.split('/')
-    last_part = parts[len(parts) - 1]
 
-    # suffix proxy/jobs/[active|<jobid>]
-    if last_part == 'active':
-        # handle this active job change event
-        on_activejob(mosq, msg, base_topic)
-    else:
-        # update the job name list
-        jobnames[int(last_part)] = msg.payload
+    # topic owntracks/user/device/proxy/jobs/[currentjob|active|<jobid>
+    if len(parts) == 3:
+        last_part = parts[len(parts) - 1]
+
+        # suffix proxy/jobs/[currentjob|job<jobid>]
+        if last_part == 'active':
+            # handle this active job change event
+            on_activejob(mosq, msg, base_topic)
+        elif last_part == 'currentjob':
+	    # skip current jobs w/o timestamp
+            pass
+        else:
+            # update the job name list
+            jobnames[int(last_part)] = msg.payload
+
+    # topic owntracks/user/device/proxy/jobs/[job|place|machine]/<jobid>
+    # topic owntracks/user/device/proxy/jobs/currentjob/<timestamp>
+    elif len(parts) == 4:
+        id_part = parts[len(parts) - 2]
+        if id_part == 'currentjob':
+            timestamp = long(parts[len(parts) - 1])
+            on_currentjob(mosq, msg, base_topic, timestamp)
+        elif id_part == 'job':
+            job = int(parts[len(parts) - 1])
+            jobnames[job] = msg.payload
+        elif id_part == 'place':
+            place = int(parts[len(parts) - 1])
+            placeparts = msg.payload.split(' ')
+            placenames[place] = placeparts[0]
+        elif id_part == 'machine':
+            machine = int(parts[len(parts) - 1])
+            machineparts = msg.payload.split(' ')
+            machinenames[machine] = machineparts[0]
+
+
+    # topic owntracks/user/device/proxy/jobs/job/<jobid>/<taskid>
+    elif len(parts) == 5:
+        id_part = parts[len(parts) - 3]
+        if id_part == 'job':
+            job = int(parts[len(parts) - 2])
+            task = int(parts[len(parts) - 1])
+            tasknames[job*10000 + task] = msg.payload
 
 def on_activejob(mosq, msg, device):
     # ignore retained 'active' messages (assume we have already processed)
@@ -533,6 +573,102 @@ def on_activejob(mosq, msg, device):
                 jobs[device].update(dict(jobend=now, jobduration=jobduration))
             else:
                 jobs[device].update(dict(job=job, jobname=jobname, jobstart=now, jobend=None, jobduration=None))
+            if 'jobstart' in jobs[device]:
+                push_job(mosq, device, jobs[device])
+
+    if storage:
+        if job == INACTIVE_JOB:
+            try:
+                jb = Job.get(Job.topic == device, Job.end == None)
+                jb.end = nowstr
+                jb.duration = jobduration
+                jb.save()
+            except Job.DoesNotExist:
+                log.error("Received 'end' event for job with no active row")
+            except Exception, e:
+                raise
+                log.error("DB error on UPDATE Job: {0}".format(str(e)))
+  
+        else:
+            try:
+                data = {
+                    'topic'   : device,
+                    'tid'     : tid,
+                    'job'     : job,
+                    'jobname' : jobname,
+                    'start'   : nowstr,
+                }
+                jb = Job(**data)
+                jb.save()
+            except Exception, e:
+                log.error("Cannot store JOB for topic {0}: {1}".format(msg.topic, str(e)))
+ 
+def on_currentjob(mosq, msg, device, timestamp):
+    # ignore retained 'active' messages (assume we have already processed)
+    if (skip_retained and msg.retain == 1) or len(msg.payload) == 0:
+        return
+
+    log.debug("_job: {0} {1}".format(msg.topic, msg.payload))
+
+    save_rawdata(msg.topic, msg.payload)
+    watcher(mosq, msg.topic, msg.payload)
+
+    # initialise our job list    
+    if device not in jobs:
+        jobs[device] = dict(topic=device)
+  
+    # update the tid from our map data
+    tid = '??'
+    if device in devices and 'tid' in devices[device]:
+        tid = devices[device]['tid']
+        jobs[device].update(dict(tid=tid))
+
+    now = timestamp
+    nowstr = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(now))
+
+    # extract the job id
+    job = 0
+    task = 0
+    place = 0
+    machine = 0
+    components = msg.payload.split(' ')
+    if len(components) == 4:
+        job = int(components[0])
+        task = int(components[1])
+        place = int(components[2])
+        machine = int(components[3])
+
+    # calculate the job metadata FIXME
+    jobname = None
+    jobduration = None
+    if job == 0:
+        if 'jobstart' in jobs[device] and jobs[device]['jobstart'] != None:
+            jobduration = now - jobs[device]['jobstart']
+    else:
+        if job in jobnames:
+            jobname = jobnames[job]
+            if job*10000 + task in tasknames:
+                jobname = jobname + ' ' + tasknames[job* 10000 + task]
+                if place in placenames:
+               	    jobname = jobname + ' ' + placenames[place]
+                    if machine in machinenames:
+                        jobname = jobname + ' ' + machinenames[machine]
+        else:
+            jobname = msg.payload
+
+    # update the job parameters in our map display
+    if maptopic:
+        if device in devices:
+            devices[device].update(dict(job=job, jobname=jobname))
+            push_map(mosq, device, devices[device])
+
+    # update the job topic
+    if jobtopic:
+        if device in jobs:
+            if job == INACTIVE_JOB:
+                jobs[device].update(dict(jobend=now, jobduration=jobduration))
+            else:
+                jobs[device].update(dict(job='%d/%d/%d/%d' % (job, task, place, machine), jobname=jobname, jobstart=now, jobend=None, jobduration=None))
             if 'jobstart' in jobs[device]:
                 push_job(mosq, device, jobs[device])
 
@@ -1095,7 +1231,7 @@ for t in base_topics:
     mqttc.message_callback_add("{0}/+/fms/#".format(t), on_fms)
 
     if cf.g('features', 'activo', False) == True:
-        mqttc.message_callback_add("{0}/+/proxy/jobs/+".format(t), on_job)
+        mqttc.message_callback_add("{0}/+/proxy/jobs/#".format(t), on_job)
 
     if cf.o2smonitor:
         mqttc.message_callback_add(cf.o2smonitor + "/+", on_tell)
