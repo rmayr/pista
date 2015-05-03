@@ -258,7 +258,7 @@ $(document).ready( function () {
 				  "k": "Transition to park",
 				  "L": "Last recorded before graceful shutdown",
 				  "l": "GPS signal lost",
-				  "m": "Manually requested",
+				  "u": "Manually requested",
 				  "t": "Device is moving",
 				  "T": "Stationary; maxInterval has elapsed",
 				  "v": "Transition from park to move",
