@@ -188,7 +188,7 @@ alert_keys = None
 # Which DB driver to use. One of `sqlite', `mysql', or `postgresql'
 #
 # mysql:      dbhost, dbname, dbuser, dbpasswd
-# postgresql: dbhost, dbname, dbuser, dbpasswd
+# postgresql: dbhost, dbname, dbuser, dbpasswd, dbport
 # sqlite:     dbpath
 dbengine = mysql
 dbhost = 'localhost'
