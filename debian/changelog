@@ -1,4 +1,10 @@
-owntracks-pista (0.20150317) UNRELEASED; urgency=medium
+owntracks-pista (0.20150913) experimental; urgency=low
+
+  * Pulled new version from Github, recompiled for Debian jessie
+
+ -- Rene Mayrhofer <rmayr@debian.org>  Sun, 13 Sep 2015 17:51:42 +0200
+
+owntracks-pista (0.20150317) experimental; urgency=low
 
   * Initial packaging
 

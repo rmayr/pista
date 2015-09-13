@@ -2,7 +2,7 @@ Source: owntracks-pista
 Section: python
 Priority: extra
 Maintainer: Rene Mayrhofer <rmayr@debian.org>
-Build-Depends: debhelper (>= 9), python, dh-virtualenv
+Build-Depends: debhelper (>= 9), python, dh-virtualenv, libpq-dev
 Standards-Version: 3.9.5
 
 Package: owntracks-pista
