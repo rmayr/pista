@@ -52,7 +52,6 @@ class Config(RawConfigParser):
         self.loglevelnumber = getattr(logging, self.loglevel.upper())
         self.o2smonitor     = self.g('features', 'o2smonitor')
 
-
     def g(self, section, key, default=None):
         try:
             val = self.get(section, key)

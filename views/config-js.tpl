@@ -28,4 +28,10 @@ var config = {
    // Map and Table
    maptopic: {{ !maptopic }},
 
+   // Job
+   jobtopic: {{ !jobtopic }},
+
+   // Activo enabled?
+   activo: {{ !activo }},
+
 };

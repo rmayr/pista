@@ -60,7 +60,6 @@ function handlerfunc(topic, payload) {
 
 			d.dstamp = tstamp;	// Override server-data
 
-
 			$('#msg-date').text(tstamp);
 			$('#msg-user').text(d.tid);
 			$('#link-revgeo').text(d.addr);

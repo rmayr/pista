@@ -14,6 +14,10 @@ CoG     : {{compass}}\n\
 Updated : {{dstamp}}\n\
 ";
 
+	if (config.activo === true) {
+		template = template + "Job     : {{jobname}}\n";
+	}
+
         try {
                 text = Mustache.render(template, data);
         } catch(err) {

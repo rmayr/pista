@@ -248,6 +248,51 @@ def getusertids(username):
 
     return sorted(set(tidlist))
 
+def getinventorytopics(username):
+    ''' username is probably a logged-in user. Obtain a list of TIDs
+        that user is allowed to see '''
+
+    # First, get a list of ACL topics the user is authorized for. If the
+    # `username' is a superuser, add '#' to the subscription list, so
+    # that paho matches that as true in any case. (Superusers possibly
+    # don't have ACL entries in the database.)
+
+    sublist = []
+
+    superuser = False
+    try:
+        u = User.get(User.username == username)
+        superuser = u.superuser
+    except User.DoesNotExist:
+        log.debug("User {0} does not exist".format(username))
+        return []
+    except Exception, e:
+        raise
+
+    if not superuser:
+        query = (Acl.select(Acl). where(
+                    (Acl.username == username)
+                ))
+        sublist = [ q.topic for q in query.naive() ]
+    else:
+        sublist.append('#')
+
+    # Find distinct topic, tid combinations in Inventory table and
+    # let Paho check if subscription matches
+
+    topiclist = []
+
+    query = (Inventory.select(Inventory.tid, Inventory.topic)
+                    .distinct()
+                    .order_by(Inventory.tid)
+                    )
+    for q in query:
+        for sub in sublist:
+            if paho.topic_matches_sub(sub, q.topic):
+                topiclist.append( dict(tid=q.tid, topic=q.topic) )
+
+    return topiclist
+
 
 #-----------------
 
@@ -266,8 +311,11 @@ def index():
 
 @app.route('/about')
 def page_about():
-
     return template('about', pistapages=cf.g('pista', 'pages'))
+
+@app.route('/jobedit')
+def page_jobedit():
+    return template('jobedit', pistapages=cf.g('pista', 'pages'))
 
 @app.route('/console')
 @auth_basic(check_auth)
@@ -331,7 +379,13 @@ def page_console():
 @app.route('/table')
 @auth_basic(check_auth)
 def page_table():
-    return template('table', pistapages=cf.g('pista', 'pages'))
+    activo = cf.g('features', 'activo', False)
+    return template('table', pistapages=cf.g('pista', 'pages'), activo=activo)
+
+@app.route('/jobs')
+@auth_basic(check_auth)
+def page_job():
+    return template('jobs', pistapages=cf.g('pista', 'pages'), have_xls=HAVE_XLS, isdemo=0)
 
 @app.route('/tracks')
 @auth_basic(check_auth)
@@ -365,6 +419,7 @@ def config_js():
     if 'basic_auth' in newconf and newconf['basic_auth'] == False:
         basic_auth = False
 
+    newconf['activo'] = cf.g('features', 'activo', False)
     for key in newconf:
         if type(newconf[key]) == str:
             if newconf[key][0] != '"' and newconf[key][0] != '"':
@@ -408,6 +463,30 @@ def users():
         })
 
     log.debug("/api/userlist returns: {0}".format(json.dumps(allowed_tids)))
+    return dict(userlist=allowed_tids)
+
+@app.route('/api/inventorytopics')
+@auth_basic(check_auth)
+def inventorytopics():
+    ''' Get list of username - topic pairs to populate a select box
+        the id in that select will be set to tid|topic.
+        This is pulled in from the Inventory table. What we're trying
+        to accomplish is to find a TID -> topic association. '''
+
+    current_user = request.auth[0]
+
+    dbconn()
+
+    usertids = getinventorytopics(current_user)
+
+    allowed_tids = []
+    for t in usertids:
+        allowed_tids.append({
+            'name' : t['tid'],
+            'id' : t['topic'],
+        })
+
+    log.debug("/api/inventorytopics returns: {0}".format(json.dumps(allowed_tids)))
     return dict(userlist=allowed_tids)
 
 
@@ -781,6 +860,7 @@ def onevehicle(tid):
         'lon'       : None,
         'modif'     : None,
         'compass'   : None,
+        'jobname'   : None,
     }
 
     key = "tid:%s" % tid
@@ -868,7 +948,15 @@ def javascripts(filename):
 def stylesheets(filename):
     return static_file(filename, root='static')
 
+#@app.get('/<filename:re:/img/clear.png>')
+#def images(filename):
+#    return static_file(filename, root='static')
+
 @app.get('/<filename:re:.*\.(jpg|gif|png|ico)>')
+def images(filename):
+    return static_file(filename, root='static')
+
+@app.get('/<filename:re:.*\.(eot|ttf|woff|svg|woff2)>')
 def images(filename):
     return static_file(filename, root='static')
 

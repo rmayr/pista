@@ -17,7 +17,9 @@ db = None
 
 engines = {
     'postgresql' : PostgresqlDatabase(cf.dbname,
-			host=cf.dbhost,
+                        user=cf.dbuser,
+                        password=cf.dbpasswd,
+                        host=cf.dbhost,
                         port=cf.dbport,
                         user=cf.dbuser,
                         password=cf.dbpasswd,
@@ -87,6 +89,22 @@ class Lastloc(OwntracksModel):
     ghash           = CharField(null=True, max_length=8)
     cc              = CharField(null=True, max_length=2)
 
+class Job(OwntracksModel):
+    topic           = CharField(null=False)
+    tid             = CharField(null=False, max_length=2)
+    job             = IntegerField(null=False)
+    jobname         = CharField(null=True, max_length=20)
+    start           = DateTimeField(default=datetime.datetime.now, index=True)
+    end             = DateTimeField(null=True)
+    duration        = IntegerField(null=True)
+
+    class Meta:
+        indexes = (
+            # When a job ends we look up using tid and null end
+            (('tid', ), False),
+            (('end', ), False),
+        )
+ 
 class RAWdata(OwntracksModel):
     topic           = CharField(null=False)
     tst             = DateTimeField(default=datetime.datetime.now, index=True)
@@ -206,6 +224,12 @@ def createalltables():
     if cf.g('features', 'rawdata', False) == True:
         try:
             RAWdata.create_table(fail_silently=silent)
+        except Exception, e:
+            print str(e)
+
+    if cf.g('features', 'activo', False) == True:
+        try:
+            Job.create_table(fail_silently=silent)
         except Exception, e:
             print str(e)
 

@@ -314,6 +314,7 @@ password = None
 apiKey = None
 console_topic = "_owntracks/_look/#"
 maptopic = "_owntracks/_map/+/+/+"
+jobtopic = "_owntracks/_job/+/+/+"
 topic_visible = False
 ```
 

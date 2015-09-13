@@ -9,3 +9,8 @@
 obsolete/
 *.conf
 build
+nohup.out
+*~
+debian/files
+debian/owntracks-pista
+debian/owntracks-pista.substvars
